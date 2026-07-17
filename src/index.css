@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Gugi&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-gugi: "Gugi", sans-serif;
+  --animate-sidebar-orbit-cw: sidebar-orbit-cw 12s linear infinite;
+  --animate-sidebar-orbit-ccw: sidebar-orbit-ccw 16s linear infinite;
+  --animate-sidebar-orbit-slow: sidebar-orbit-cw 32s linear infinite;
+
+  /* Custom Redefined Purple Palette to support brand color #00624C */
+  --color-purple-50: #e6f3f0;
+  --color-purple-100: #cce7e0;
+  --color-purple-200: #99cfc2;
+  --color-purple-300: #66b8a3;
+  --color-purple-400: #33a085;
+  --color-purple-500: #00624C;
+  --color-purple-600: #004838;
+  --color-purple-700: #003b2e;
+  --color-purple-800: #00271e;
+  --color-purple-900: #001e17;
+  --color-purple-950: #00140f;
+
+  /* Explicit brand colors */
+  --color-primary: #00624C;
+  --color-primary-hover: #004838;
+  
+  @keyframes sidebar-orbit-cw {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes sidebar-orbit-ccw {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+}
+
+.animate-orbit-rotate {
+  transform-origin: 50px 50px;
+  animation: var(--animate-sidebar-orbit-cw);
+}
+
+.animate-orbit-rotate-reverse {
+  transform-origin: 50px 50px;
+  animation: var(--animate-sidebar-orbit-ccw);
+}
+
+.animate-orbit-rotate-slow {
+  transform-origin: 50px 50px;
+  animation: var(--animate-sidebar-orbit-slow);
+}
