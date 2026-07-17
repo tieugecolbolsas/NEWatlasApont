@@ -775,8 +775,12 @@ export default function Apontamentos() {
               const isExpanded = expandedKeys.includes(block.key);
 
               const activeSessionForBlock = activeSessions.find(
-                s => s.num_maquina?.trim().toUpperCase() === block.num_maquina?.trim().toUpperCase() &&
-                     s.operacao_nome?.trim().toUpperCase() === block.operacao_nome?.trim().toUpperCase()
+                s => {
+                  const sMaq = (s.num_maquina || '').split('|')[0].trim().toLowerCase();
+                  const bMaq = (block.num_maquina || '').split('|')[0].trim().toLowerCase();
+                  return sMaq === bMaq && 
+                         s.operacao_nome?.trim().toLowerCase() === block.operacao_nome?.trim().toLowerCase();
+                }
               );
               const isSessionActive = !!activeSessionForBlock;
 
@@ -913,8 +917,8 @@ export default function Apontamentos() {
                               <span className="text-zinc-200 font-semibold text-xs leading-relaxed">{block.operacao_nome}</span>
                             </div>
                             <div>
-                              <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">PROCESSO</span>
-                              <span className="text-zinc-300 uppercase text-[9px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-md w-fit block mt-1 font-bold leading-relaxed">
+                              <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">TIPO DE MÁQUINA</span>
+                              <span className="text-zinc-300 uppercase text-xs bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-md w-fit block mt-1 font-bold leading-relaxed tracking-wide">
                                 {block.processo}
                               </span>
                             </div>
@@ -1207,7 +1211,7 @@ export default function Apontamentos() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                               {/* Descontos (Qualidade) */}
-                              <div className="bg-transparent border border-zinc-900 rounded-lg p-3.5 flex flex-col justify-between">
+                              <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
                                 <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
                                   Descontos (Qualidade)
                                 </span>
@@ -1222,7 +1226,7 @@ export default function Apontamentos() {
                               </div>
 
                               {/* Ritmo Atual */}
-                              <div className="bg-transparent border border-zinc-900 rounded-lg p-3.5 flex flex-col justify-between">
+                              <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
                                 <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
                                   Ritmo de Produção
                                 </span>
@@ -1232,7 +1236,7 @@ export default function Apontamentos() {
                               </div>
 
                               {/* Controle de Matéria-Prima */}
-                              <div className="bg-transparent border border-zinc-900 rounded-lg p-3.5 flex flex-col justify-between">
+                              <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
                                 <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
                                   Controle de Matéria-Prima
                                 </span>
@@ -1283,9 +1287,25 @@ export default function Apontamentos() {
                       <div className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider mb-2 flex items-center gap-1.5 pt-1">
                         <Layers size={11} className="text-[#00624C]" /> Contagens Individuais no Bloco ({block.itens.length})
                       </div>
-                      <div className="divide-y divide-zinc-900/40">
+                      <div className="pt-2">
                         {(() => {
-                          const displayItens = [...block.itens];
+                          const sortedBlockItens = [...block.itens].sort((a, b) => {
+                            const getTimeString = (item: any) => {
+                              const t = item.horario_termino || item.created_at || item.timestamp || item.horario_inicio || '';
+                              if (!t) return '00:00';
+                              if (t.includes('T') || t.includes('-')) {
+                                try {
+                                  const d = new Date(t);
+                                  if (!isNaN(d.getTime())) {
+                                    return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                  }
+                                } catch (e) {}
+                              }
+                              return t;
+                            };
+                            return getTimeString(b).localeCompare(getTimeString(a));
+                          });
+                          const displayItens = [...sortedBlockItens];
                           if (isSessionActive && activeSessionForBlock) {
                             const alreadyHasVirtual = displayItens.some(it => it.isVirtualActive);
                             if (!alreadyHasVirtual) {
@@ -1352,7 +1372,7 @@ export default function Apontamentos() {
                           return (
                             <div 
                               key={item.id || itemIdx} 
-                              className="py-4 border-b border-zinc-900/60 last:border-0 space-y-3"
+                              className="p-4 bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg mb-3 last:mb-0 space-y-3"
                             >
                               {/* Registro de Contagem */}
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1376,21 +1396,29 @@ export default function Apontamentos() {
                                 </div>
 
                                 <div className="flex items-center gap-2 self-end sm:self-auto">
-                                  {ocorrencia && ocorrencia !== 'Produção Normal' && (
-                                    <span className="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">
-                                      Ocorrência: {ocorrencia}
+                                  {item.isVirtualActive ? (
+                                    <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider">
+                                      ÚLTIMO REGISTRO
                                     </span>
-                                  )}
-                                  {!isLegacyRealtime && (
-                                    <span className={`text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded border ${
-                                      status === 'validado'
-                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                        : status === 'rejeitado'
-                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                    }`}>
-                                      {status}
-                                    </span>
+                                  ) : (
+                                    <>
+                                      {ocorrencia && ocorrencia !== 'Produção Normal' && (
+                                        <span className="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">
+                                          Ocorrência: {ocorrencia}
+                                        </span>
+                                      )}
+                                      {!isLegacyRealtime && (
+                                        <span className={`text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded border ${
+                                          status === 'validado'
+                                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                            : status === 'rejeitado'
+                                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                            : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                        }`}>
+                                          {status}
+                                        </span>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                               </div>

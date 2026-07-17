@@ -10,7 +10,7 @@ const useDirectClient =
   window.location.hostname.includes('vercel.app') || 
   window.location.hostname.includes('netlify.app') ||
   window.location.hostname.includes('github.io') ||
-  (supabaseUrl && supabaseAnonKey && !window.location.hostname.includes('run.app'));
+  !!(supabaseUrl && supabaseAnonKey);
 
 let activeClient: any;
 

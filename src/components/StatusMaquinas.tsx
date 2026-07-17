@@ -136,6 +136,11 @@ export default function StatusMaquinas() {
   // Sorting State
   const [sortField, setSortField] = useState<string>('numero');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterProcess, filterStatus, sortField, sortDirection]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -573,6 +578,21 @@ export default function StatusMaquinas() {
     });
 
     return filtered.sort((a, b) => {
+      // Prioritize machines with "produzindo" status (online) on top, and "offline" status at the bottom
+      const getStatusPriority = (status: string) => {
+        const s = String(status).toLowerCase().trim();
+        if (s === 'produzindo') return 3;
+        if (s === 'pausada') return 2;
+        if (s === 'manutencao') return 1;
+        return 0; // offline
+      };
+
+      const priorityA = getStatusPriority(a.status);
+      const priorityB = getStatusPriority(b.status);
+      if (priorityA !== priorityB) {
+        return priorityB - priorityA; // descending order (3 -> 2 -> 1 -> 0)
+      }
+
       let valA: any = a[sortField as keyof Maquina];
       let valB: any = b[sortField as keyof Maquina];
 
@@ -601,6 +621,13 @@ export default function StatusMaquinas() {
       return 0;
     });
   }, [machines, searchTerm, filterProcess, filterStatus, sortField, sortDirection]);
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(sortedAndFilteredMachines.length / itemsPerPage) || 1;
+  const paginatedMachines = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedAndFilteredMachines.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedAndFilteredMachines, currentPage]);
 
   const machineApontamentos = selectedMachine 
     ? todayRegistros.filter(r => String(r.num_maquina || '').toLowerCase().trim() === selectedMachine.numero.toLowerCase().trim())
@@ -737,7 +764,7 @@ export default function StatusMaquinas() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-900/40 text-xs">
-              {sortedAndFilteredMachines.map((m) => {
+              {paginatedMachines.map((m) => {
                 const isProducing = m.status === 'produzindo';
                 const isPaused = m.status === 'pausada';
                 const isMaintenance = m.status === 'manutencao';
@@ -830,6 +857,45 @@ export default function StatusMaquinas() {
           </table>
         </div>
       </div>
+
+      {/* PAGINATION CONTROLS */}
+      {sortedAndFilteredMachines.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 font-mono text-[11px] text-zinc-400">
+          <div className="flex items-center gap-2">
+            <span className="uppercase text-zinc-500 font-bold tracking-wider">Mostrando</span>
+            <span className="text-zinc-200 font-black">
+              {Math.min(sortedAndFilteredMachines.length, (currentPage - 1) * itemsPerPage + 1)}
+            </span>
+            <span className="text-zinc-600">-</span>
+            <span className="text-zinc-200 font-black">
+              {Math.min(sortedAndFilteredMachines.length, currentPage * itemsPerPage)}
+            </span>
+            <span className="uppercase text-zinc-500 font-bold tracking-wider">de</span>
+            <span className="text-zinc-200 font-black">{sortedAndFilteredMachines.length}</span>
+            <span className="uppercase text-zinc-500 font-bold tracking-wider">máquinas</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-zinc-900 text-zinc-300 font-bold transition-all uppercase cursor-pointer"
+            >
+              Anterior
+            </button>
+            <div className="px-3 py-1.5 rounded border border-zinc-900 bg-zinc-950 text-zinc-300 font-black">
+              {currentPage} / {totalPages}
+            </div>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-zinc-900 text-zinc-300 font-bold transition-all uppercase cursor-pointer"
+            >
+              Próximo
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* SIDEBAR DETAILED TELEMETRY DRAWER (SLIDE-OVER PANEL) */}
       <AnimatePresence>
