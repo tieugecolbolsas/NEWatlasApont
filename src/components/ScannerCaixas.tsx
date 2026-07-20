@@ -109,6 +109,14 @@ export default function ScannerCaixas() {
   // Estados do Banco e Histórico de registros
   const [historicoHoje, setHistoricoHoje] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  // Estados do Alerta Customizado e Offline
+  const [customAlert, setCustomAlert] = useState<{show: boolean, type: 'success' | 'warning' | 'error', message: string} | null>(null);
+  const [offlineSessoes, setOfflineSessoes] = useState<any[]>([]);
+
+  const showAlert = (type: 'success' | 'warning' | 'error', message: string) => {
+    setCustomAlert({ show: true, type, message });
+  };
   
   // Estados do Scanner Lente
   const [readerId] = useState(() => `reader-${Math.random().toString(36).substring(2, 9)}`);
@@ -134,7 +142,7 @@ export default function ScannerCaixas() {
   const [formLado, setFormLado] = useState<'Esquerdo' | 'Direito' | 'Único'>('Único');
   const [formTipoMaquina, setFormTipoMaquina] = useState('');
   const [formHoraExtra, setFormHoraExtra] = useState<boolean>(false); // toggle que salva 's' ou 'n'
-  const [formMateriaPrima, setFormMateriaPrima] = useState<number>(0);
+  const [formMateriaPrima, setFormMateriaPrima] = useState<number | ''>(0);
 
   // Estados de Confirmação Individual de Segurança (Cenário A)
   const [confirmaOperadora, setConfirmaOperadora] = useState(false);
@@ -374,27 +382,32 @@ export default function ScannerCaixas() {
     setIsScanning(false);
 
     try {
-      // 1. Consulta a tabela de sessões ativas procurando por num_maquina ou codigo_manual_curto
-      const { data: sessoes, error } = await supabase
-        .schema('AtlasApontamento')
-        .from('sessoes_ativas_terminal')
-        .select('*')
-        .eq('num_maquina', codigo);
-
-      if (error) throw error;
-
-      let sessaoEncontrada = sessoes && sessoes.length > 0 ? sessoes[0] : null;
+      // 0. Consulta as sessões offline salvas em memória
+      let sessaoEncontrada = offlineSessoes.find(s => s.num_maquina === codigo || s.codigo_manual_curto === codigo);
 
       if (!sessaoEncontrada) {
-        // Tenta buscar por codigo_manual_curto se não achar por num_maquina
-        const { data: sessoesCurto, error: errCurto } = await supabase
+        // 1. Consulta a tabela de sessões ativas procurando por num_maquina ou codigo_manual_curto
+        const { data: sessoes, error } = await supabase
           .schema('AtlasApontamento')
           .from('sessoes_ativas_terminal')
           .select('*')
-          .eq('codigo_manual_curto', codigo);
-        
-        if (!errCurto && sessoesCurto && sessoesCurto.length > 0) {
-          sessaoEncontrada = sessoesCurto[0];
+          .eq('num_maquina', codigo);
+
+        if (error) throw error;
+
+        sessaoEncontrada = sessoes && sessoes.length > 0 ? sessoes[0] : null;
+
+        if (!sessaoEncontrada) {
+          // Tenta buscar por codigo_manual_curto se não achar por num_maquina
+          const { data: sessoesCurto, error: errCurto } = await supabase
+            .schema('AtlasApontamento')
+            .from('sessoes_ativas_terminal')
+            .select('*')
+            .eq('codigo_manual_curto', codigo);
+          
+          if (!errCurto && sessoesCurto && sessoesCurto.length > 0) {
+            sessaoEncontrada = sessoesCurto[0];
+          }
         }
       }
 
@@ -464,7 +477,7 @@ export default function ScannerCaixas() {
       }
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao buscar sessões ativas:', err);
-      alert(`Erro ao consultar sessões ativas no Supabase: ${err.message || err}`);
+      showAlert('error', `Erro ao consultar sessões ativas: ${err.message || err}`);
       retomarScanner();
     } finally {
       setIsSearchingSessao(false);
@@ -494,19 +507,19 @@ export default function ScannerCaixas() {
   // ==========================================
   const handleSalvarCenarioA = async () => {
     if (!formOperadora.trim()) {
-      alert("Por favor, informe o Nome da Operadora.");
+      showAlert('warning', "Por favor, informe o Nome da Operadora.");
       return;
     }
     if (!formOperacao.trim()) {
-      alert("Por favor, informe o Nome da Operação.");
+      showAlert('warning', "Por favor, informe o Nome da Operação.");
       return;
     }
     if (!formLote.trim()) {
-      alert("Por favor, informe o número do Lote.");
+      showAlert('warning', "Por favor, informe o número do Lote.");
       return;
     }
     if (!formTipoMaquina.trim()) {
-      alert("Por favor, informe o Tipo de Máquina.");
+      showAlert('warning', "Por favor, informe o Tipo de Máquina.");
       return;
     }
 
@@ -526,7 +539,7 @@ export default function ScannerCaixas() {
       hora_extra: formHoraExtra ? 's' : 'n',
       horario_inicio: horarioInicio,
       user_id: userId,
-      materia_prima_inicial: formMateriaPrima,
+      materia_prima_inicial: Number(formMateriaPrima) || 0,
       observacao: formObservacao.trim()
     };
 
@@ -538,12 +551,20 @@ export default function ScannerCaixas() {
 
       if (error) throw error;
 
-      alert(`Sessão do terminal iniciada para a máquina ${novaSessao.num_maquina}!`);
+      showAlert('success', `Sessão do terminal iniciada com sucesso real para a máquina ${novaSessao.num_maquina}!`);
       retomarScanner();
       await carregarBaseDeDados();
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao criar sessão ativa:', err);
-      alert(`Erro ao salvar início de processo no Supabase: ${err.message || err}`);
+      // Fallback in-memory session activation
+      const fallbackSessao = {
+        ...novaSessao,
+        id: 'offline-' + Math.random().toString(36).substring(2, 9),
+        offline: true
+      };
+      setOfflineSessoes(prev => [...prev, fallbackSessao]);
+      showAlert('warning', `Erro de conexão! Sessão iniciada temporariamente offline (em memória) para a máquina ${novaSessao.num_maquina}.`);
+      retomarScanner();
     } finally {
       setIsSaving(false);
     }
@@ -586,12 +607,20 @@ export default function ScannerCaixas() {
 
       if (error) throw error;
 
-      alert(`Ajuste de Qualidade lançado com sucesso na máquina ${activeSession.num_maquina}!`);
+      showAlert('success', `Ajuste de Qualidade lançado com sucesso na máquina ${activeSession.num_maquina}!`);
       retomarScanner();
       await carregarBaseDeDados();
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao gravar ajuste de qualidade:', err);
-      alert(`Erro no Supabase ao gravar ajuste de qualidade: ${err.message || err}`);
+      // Fallback in-memory record saving
+      const fallbackQualidade = {
+        ...novaQualidadeRegistro,
+        id: 'offline-qualidade-' + Math.random().toString(36).substring(2, 9),
+        offline: true
+      };
+      setHistoricoHoje(prev => [fallbackQualidade, ...prev]);
+      showAlert('warning', `Erro de conexão! Ajuste de qualidade lançado offline na máquina ${activeSession.num_maquina}.`);
+      retomarScanner();
     } finally {
       setIsSaving(false);
     }
@@ -605,7 +634,7 @@ export default function ScannerCaixas() {
     const hasRetrabalho = (Number(retrabalhoProprio) > 0 || Number(retrabalhoTerceiro) > 0);
 
     if (isConformeEmpty && !hasRetrabalho) {
-      alert("Por favor, preencha a Quantidade Conforme ou informe algum valor de Retrabalho.");
+      showAlert('warning', "Por favor, preencha a Quantidade Conforme ou informe algum valor de Retrabalho.");
       return;
     }
 
@@ -642,7 +671,7 @@ export default function ScannerCaixas() {
       retrabalho_proprio: Number(retrabalhoProprio) || 0,
       retrabalho_terceiro: Number(retrabalhoTerceiro) || 0,
       refugo: 0,
-      motivo_ocorrencia: motivoOcorrencia || 'Produção Normal',
+      motivo_ocorrencia: 'Produção Normal',
       user_id: userId,
       materia_prima_inicial: Number(activeSession.materia_prima_inicial) || 0,
       observacao: cenarioBObservacao.trim()
@@ -690,7 +719,7 @@ export default function ScannerCaixas() {
 
         if (errRecreate) throw errRecreate;
 
-        alert(`Apontamento gravado com sucesso! Próximo ciclo de contagem iniciado na máquina ${activeSession.num_maquina}.`);
+        showAlert('success', `Apontamento gravado com sucesso! Próximo ciclo de contagem iniciado na máquina ${activeSession.num_maquina}.`);
         retomarScanner();
       } else {
         // Salva e Mudar Processo: Transiciona o modal B diretamente para o formulário A (Início de Processo)
@@ -708,6 +737,7 @@ export default function ScannerCaixas() {
         setFormTipoMaquina(activeSession.tipo_maquina);
         setFormHoraExtra(activeSession.hora_extra === 's');
 
+        showAlert('success', `Apontamento gravado com sucesso! Prossiga configurando o novo processo para a máquina ${maquinaAtual}.`);
         setShowScenarioA(true); // abre o formulário completo
       }
 
@@ -715,7 +745,57 @@ export default function ScannerCaixas() {
       await carregarBaseDeDados();
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao processar apontamento:', err);
-      alert(`Erro no Supabase ao gravar apontamento: ${err.message || err}`);
+      
+      // Fallback in-memory record saving
+      const fallbackRegistro = {
+        ...novoRegistroDefinitivo,
+        id: 'offline-registro-' + Math.random().toString(36).substring(2, 9),
+        offline: true
+      };
+      setHistoricoHoje(prev => [fallbackRegistro, ...prev]);
+
+      // Remove from offlineSessoes in-memory if it was an offline session
+      setOfflineSessoes(prev => prev.filter(s => s.id !== activeSession.id));
+
+      if (!mudarProcesso) {
+        // Recria sessão ativa offline na memória
+        const novaSessaoRecriada = {
+          num_maquina: activeSession.num_maquina,
+          codigo_manual_curto: activeSession.codigo_manual_curto,
+          operadora_nome: activeSession.operadora_nome,
+          operacao_nome: activeSession.operacao_nome,
+          lote: activeSession.lote,
+          lado: cenarioBLado,
+          tipo_maquina: activeSession.tipo_maquina,
+          hora_extra: activeSession.hora_extra,
+          horario_inicio: horarioTermino,
+          user_id: userId,
+          materia_prima_inicial: Number(activeSession.materia_prima_inicial) || 0,
+          id: 'offline-' + Math.random().toString(36).substring(2, 9),
+          offline: true
+        };
+        setOfflineSessoes(prev => [...prev, novaSessaoRecriada]);
+        showAlert('warning', `Erro de conexão! Apontamento salvo offline (em memória). Próximo ciclo iniciado na máquina ${activeSession.num_maquina}.`);
+        retomarScanner();
+      } else {
+        // Salva e Mudar Processo
+        const maquinaAtual = activeSession.num_maquina;
+        setActiveSession(null);
+
+        // Configura estados do formulário A com a mesma máquina pré-preenchida
+        setScannedTarget(maquinaAtual);
+        setFormMaquina(maquinaAtual);
+        setFormCodigoCurto(gerarCodigoManualCurto());
+        setFormOperadora(activeSession.operadora_nome);
+        setFormOperacao('');
+        setFormLote('');
+        setFormLado(cenarioBLado || 'Único');
+        setFormTipoMaquina(activeSession.tipo_maquina);
+        setFormHoraExtra(activeSession.hora_extra === 's');
+
+        showAlert('warning', `Erro de conexão! Apontamento salvo offline. Prossiga configurando o novo processo para a máquina ${maquinaAtual}.`);
+        setShowScenarioA(true);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -1019,7 +1099,7 @@ export default function ScannerCaixas() {
                       type="button"
                       onClick={() => {
                         if (!formOperadora.trim()) {
-                          alert("Por favor, preencha o Nome da Operadora antes de confirmar.");
+                          showAlert('warning', "Por favor, preencha o Nome da Operadora antes de confirmar.");
                           return;
                         }
                         setConfirmaOperadora(!confirmaOperadora);
@@ -1079,7 +1159,7 @@ export default function ScannerCaixas() {
                         type="button"
                         onClick={() => {
                           if (!formOperacao.trim()) {
-                            alert("Por favor, preencha a Operação antes de confirmar.");
+                            showAlert('warning', "Por favor, preencha a Operação antes de confirmar.");
                             return;
                           }
                           setConfirmaOperacao(!confirmaOperacao);
@@ -1118,6 +1198,8 @@ export default function ScannerCaixas() {
                     <div className="flex gap-2">
                       <input 
                         type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         required
                         disabled={confirmaLote}
                         placeholder="Ex: L-205"
@@ -1129,7 +1211,7 @@ export default function ScannerCaixas() {
                         type="button"
                         onClick={() => {
                           if (!formLote.trim()) {
-                            alert("Por favor, preencha o Lote antes de confirmar.");
+                            showAlert('warning', "Por favor, preencha o Lote antes de confirmar.");
                             return;
                           }
                           setConfirmaLote(!confirmaLote);
@@ -1194,7 +1276,7 @@ export default function ScannerCaixas() {
                         type="button"
                         onClick={() => {
                           if (!formTipoMaquina.trim()) {
-                            alert("Por favor, preencha o Tipo de Máquina antes de confirmar.");
+                            showAlert('warning', "Por favor, preencha o Tipo de Máquina antes de confirmar.");
                             return;
                           }
                           setConfirmaTipoMaquina(!confirmaTipoMaquina);
@@ -1222,8 +1304,16 @@ export default function ScannerCaixas() {
                       min="0"
                       disabled={confirmaMateriaPrima}
                       placeholder="Ex: 500"
-                      value={formMateriaPrima}
-                      onChange={(e) => setFormMateriaPrima(Math.max(0, parseInt(e.target.value) || 0))}
+                      value={formMateriaPrima === '' ? '' : formMateriaPrima}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormMateriaPrima(val === '' ? '' : Math.max(0, parseInt(val) || 0));
+                      }}
+                      onFocus={() => {
+                        if (formMateriaPrima === 0) {
+                          setFormMateriaPrima('');
+                        }
+                      }}
                       className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-bold"
                     />
                     <button
@@ -1560,33 +1650,6 @@ export default function ScannerCaixas() {
                       </div>
                     </div>
 
-                    {/* Motivo Ocorrência */}
-                    <div className="space-y-1">
-                      <label className="text-zinc-400 font-bold block">Motivo / Ocorrência no Turno</label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="text"
-                          disabled={confirmaBMotivoOcorrencia}
-                          placeholder="Ex: Produção Normal"
-                          value={motivoOcorrencia}
-                          onChange={(e) => setMotivoOcorrencia(e.target.value)}
-                          className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] disabled:opacity-50 disabled:bg-zinc-900/30 disabled:border-emerald-600/30"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setConfirmaBMotivoOcorrencia(!confirmaBMotivoOcorrencia)}
-                          className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                            confirmaBMotivoOcorrencia 
-                              ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                              : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                          }`}
-                          title={confirmaBMotivoOcorrencia ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                        >
-                          <Check size={16} />
-                        </button>
-                      </div>
-                    </div>
-
                     {/* Observação (Justificativa de Parada / Treinamento) */}
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
@@ -1619,7 +1682,7 @@ export default function ScannerCaixas() {
                       {/* Botão Salvar e Mudar Processo */}
                       <button 
                         onClick={() => handleSalvarCenarioB(true)}
-                        disabled={isSaving || !(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro && confirmaBMotivoOcorrencia)}
+                        disabled={isSaving || !(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro)}
                         className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 font-bold h-12 md:h-10 px-3 rounded text-[10px] font-mono uppercase tracking-widest transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
                         title="Fecha o lote atual e abre o form para configurar um novo processo/operadora para esta máquina"
                       >
@@ -1629,11 +1692,11 @@ export default function ScannerCaixas() {
                       {/* Botão Salvar (Mantém Processo e reinicia ciclo) */}
                       <button 
                         onClick={() => handleSalvarCenarioB(false)}
-                        disabled={isSaving || !(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro && confirmaBMotivoOcorrencia)}
+                        disabled={isSaving || !(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro)}
                         className="flex-1 bg-[#00624C] hover:bg-[#004838] text-white font-black h-12 md:h-10 px-3 rounded text-[10px] font-mono uppercase tracking-widest shadow-lg shadow-[#00624C]/15 transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
                       >
                         {isSaving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
-                        {!(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro && confirmaBMotivoOcorrencia)
+                        {!(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro)
                           ? "CONFIRME TODOS"
                           : "Salvar e Continuar"}
                       </button>
@@ -1642,6 +1705,57 @@ export default function ScannerCaixas() {
                   </div>
                 </>
               )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL DE ALERTA CUSTOMIZADO */}
+      <AnimatePresence>
+        {customAlert && customAlert.show && (
+          <div className="fixed inset-0 bg-black/75 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+              className="bg-zinc-950 border border-zinc-800 rounded-xl w-full max-w-sm p-6 space-y-4 shadow-2xl text-center"
+            >
+              <div className="flex flex-col items-center gap-3">
+                {customAlert.type === 'success' && (
+                  <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center text-emerald-400">
+                    <CheckCircle2 size={28} />
+                  </div>
+                )}
+                {customAlert.type === 'warning' && (
+                  <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/30 rounded-full flex items-center justify-center text-amber-400">
+                    <AlertCircle size={28} />
+                  </div>
+                )}
+                {customAlert.type === 'error' && (
+                  <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/30 rounded-full flex items-center justify-center text-rose-400">
+                    <XCircle size={28} />
+                  </div>
+                )}
+                
+                <h4 className={`font-mono text-xs uppercase tracking-widest font-black ${
+                  customAlert.type === 'success' ? 'text-emerald-400' :
+                  customAlert.type === 'warning' ? 'text-amber-400' : 'text-rose-400'
+                }`}>
+                  {customAlert.type === 'success' ? 'SUCESSO REALIZADO' :
+                   customAlert.type === 'warning' ? 'AVISO / ATENÇÃO' : 'FALHA REJEITADA'}
+                </h4>
+                
+                <p className="text-zinc-300 font-mono text-xs leading-relaxed uppercase">
+                  {customAlert.message}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setCustomAlert(null)}
+                className="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded text-[10px] font-mono font-bold uppercase tracking-widest transition-colors cursor-pointer"
+              >
+                Ok, Entendido
+              </button>
             </motion.div>
           </div>
         )}
