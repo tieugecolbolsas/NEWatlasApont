@@ -340,6 +340,7 @@ export default function Apontamentos() {
   // Accordion expanded blocks keys
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
+  const [ocorrencias, setOcorrencias] = useState<any[]>([]);
 
   // Carregar histórico do Supabase
   const fetchHistSupabase = async () => {
@@ -374,6 +375,20 @@ export default function Apontamentos() {
         }
       } catch (errActive) {
         console.error('Error fetching active sessions:', errActive);
+      }
+
+      // Query finalizacao_antecipada from ocorrencias_terminal
+      try {
+        const { data: ocorrenciasData, error: ocorrenciasError } = await supabase
+          .schema('AtlasApontamento')
+          .from('ocorrencias_terminal')
+          .select('*')
+          .eq('tipo_ocorrencia', 'finalizacao_antecipada');
+        if (!ocorrenciasError && ocorrenciasData) {
+          setOcorrencias(ocorrenciasData);
+        }
+      } catch (errOcorrencias) {
+        console.error('Error fetching ocorrencias:', errOcorrencias);
       }
 
       // Filter and process on client side to work flawlessly with both real Supabase and Atlas Server wrapper
@@ -986,6 +1001,27 @@ export default function Apontamentos() {
               );
               const isSessionActive = !!activeSessionForBlock;
 
+              const blockFinalizacoes = ocorrencias.filter(o => {
+                const sMaq = (o.num_maquina || '').split('|')[0].trim().toLowerCase();
+                const bMaq = (block.num_maquina || '').split('|')[0].trim().toLowerCase();
+                if (sMaq !== bMaq) return false;
+                if (o.operacao_nome?.trim().toLowerCase() !== block.operacao_nome?.trim().toLowerCase()) return false;
+                
+                const oData = o.data_ocorrencia || o.created_at || o.timestamp || o.horario_inicio;
+                if (!oData) return false;
+                
+                let oDateStr = 'Sem Data';
+                if (oData.includes('-') && !oData.includes('T')) {
+                    const p = oData.split('-');
+                    if (p.length === 3) oDateStr = `${p[2]}/${p[1]}/${p[0]}`;
+                } else {
+                    try {
+                        oDateStr = new Date(oData).toLocaleDateString('pt-BR');
+                    } catch (e) { }
+                }
+                return oDateStr === block.data;
+              });
+
               const blockSoma = block.somaTotal || 0;
               let blockMetaAlvo = 1000;
               if (blockSoma >= 1000 && blockSoma < 1200) {
@@ -1077,18 +1113,25 @@ export default function Apontamentos() {
                                 </span>
                               )}
 
-                              {/* Contador de Observação */}
-                              {(() => {
-                                const obsCount = block.itens.filter((item: any) => item.observacao && item.observacao.trim().length > 0).length;
-                                if (obsCount > 0) {
-                                  return (
-                                    <span className="text-[9px] font-black uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded flex items-center gap-1" title={`${obsCount} observações registradas`}>
-                                      <Mail size={10} /> +{obsCount}
-                                    </span>
-                                  );
-                                }
-                                return null;
-                              })()}
+                              {/* Contador de Observação e Finalização Antecipada */}
+                              <div className="flex items-center gap-1.5">
+                                {(() => {
+                                  const obsCount = block.itens.filter((item: any) => item.observacao && item.observacao.trim().length > 0).length;
+                                  if (obsCount > 0) {
+                                    return (
+                                      <span className="text-[9px] font-black uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded flex items-center gap-1" title={`${obsCount} observações registradas`}>
+                                        <Mail size={10} /> +{obsCount}
+                                      </span>
+                                    );
+                                  }
+                                  return null;
+                                })()}
+                                {blockFinalizacoes.length > 0 && (
+                                  <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 bg-rose-950/40 border border-rose-500/30 px-2 py-0.5 rounded flex items-center gap-1" title={`${blockFinalizacoes.length} finalizações antecipadas`}>
+                                    <Mail size={10} /> +{blockFinalizacoes.length}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <span className="inline-flex px-3 py-1 bg-[#00624C]/15 border border-[#00624C]/35 text-[#00624C] text-base font-extrabold rounded-lg shadow-sm shadow-[#00624C]/10 font-mono">
@@ -1665,15 +1708,27 @@ export default function Apontamentos() {
 
                               {/* Observação correspondente no log */}
                               {item.observacao && item.observacao.trim() && (
-                                <div className="bg-zinc-950/40 border border-zinc-900/60 p-3.5 rounded-lg mt-2 text-xs text-zinc-300">
+                                <div className="bg-amber-950/20 border border-amber-900/50 p-3.5 rounded-lg mt-2 text-xs text-amber-100">
                                   <span className="text-amber-500 font-bold block text-[10px] uppercase tracking-wider mb-1">
                                     ✉ Observação / Justificativa:
                                   </span>
-                                  <p className="font-sans italic leading-relaxed text-zinc-100 font-medium">
+                                  <p className="font-sans italic leading-relaxed text-amber-200 font-medium">
                                     "{item.observacao.trim()}"
                                   </p>
                                 </div>
                               )}
+
+                              {/* Finalização Antecipada */}
+                              {itemIdx === 0 && blockFinalizacoes.length > 0 && blockFinalizacoes.map((fin: any, fIdx: number) => (
+                                <div key={`fin-${fIdx}`} className="bg-rose-950/20 border border-rose-900/50 p-3.5 rounded-lg mt-2 text-xs text-rose-100">
+                                  <span className="text-rose-500 font-bold block text-[10px] uppercase tracking-wider mb-1">
+                                    ✉ Motivo da Finalização Antecipada:
+                                  </span>
+                                  <p className="font-sans italic leading-relaxed text-rose-200 font-medium">
+                                    "{fin.descricao?.trim()}"
+                                  </p>
+                                </div>
+                              ))}
                             </div>
                           );
                         });
