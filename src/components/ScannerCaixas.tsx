@@ -630,7 +630,7 @@ export default function ScannerCaixas() {
       horario_inicio: horarioInicio,
       user_id: userId,
       materia_prima_inicial: Number(formMateriaPrima) || 0,
-      observacao: formObservacao.trim()
+      observacao: formObservacao.trim() ? `[${horarioInicio.slice(0,5)}] ${formObservacao.trim()}` : ''
     };
 
     try {
@@ -883,7 +883,7 @@ export default function ScannerCaixas() {
       motivo_ocorrencia: 'Produção Normal',
       user_id: userId,
       materia_prima_inicial: Number(activeSession.materia_prima_inicial) || 0,
-      observacao: [activeSession.observacao, cenarioBObservacao.trim()].filter(Boolean).join(" | ")
+      observacao: [activeSession.observacao, cenarioBObservacao.trim() ? `[${horarioTermino.slice(0,5)}] ${cenarioBObservacao.trim()}` : ''].filter(Boolean).join(" | ")
     };
 
     try {
@@ -922,7 +922,7 @@ export default function ScannerCaixas() {
           horario_inicio: horarioTermino, // O tempo reinicia na hora exata do término anterior
           user_id: userId,
           materia_prima_inicial: Number(activeSession.materia_prima_inicial) || 0,
-          observacao: activeSession.observacao || ''
+          observacao: [activeSession.observacao, cenarioBObservacao.trim() ? `[${horarioTermino.slice(0,5)}] ${cenarioBObservacao.trim()}` : ''].filter(Boolean).join(" | ")
         };
 
         const { error: errRecreate } = await supabase

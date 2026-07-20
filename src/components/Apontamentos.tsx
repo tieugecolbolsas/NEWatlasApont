@@ -1719,9 +1719,11 @@ export default function Apontamentos() {
                                   <span className="text-amber-500 font-bold block text-[10px] uppercase tracking-wider mb-1">
                                     ✉ Observação / Justificativa:
                                   </span>
-                                  <p className="font-sans italic leading-relaxed text-amber-200 font-medium">
-                                    "{item.observacao.trim()}"
-                                  </p>
+                                  <div className="font-sans italic leading-relaxed text-amber-200 font-medium space-y-1.5">
+                                    {item.observacao.split('|').map((obs: string, idx: number) => (
+                                      <p key={idx}>"{obs.trim()}"</p>
+                                    ))}
+                                  </div>
                                 </div>
                               )}
 
