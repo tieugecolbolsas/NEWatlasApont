@@ -537,7 +537,6 @@ export default function ScannerCaixas() {
       const trimmed = text.trim();
       if (trimmed) {
         setManualCodeInput(trimmed);
-        showAlert('success', `Código "${trimmed}" colado com sucesso!`);
       } else {
         showAlert('warning', 'A área de transferência está vazia.');
       }
@@ -721,6 +720,7 @@ export default function ScannerCaixas() {
       lote: activeSession.lote,
       num_maquina: activeSession.num_maquina,
       lado: cenarioBLado,
+      codigo_manual_curto: activeSession.codigo_manual_curto,
       horario_inicio: formatToTimeString(activeSession.horario_inicio),
       horario_termino: horarioTermino,
       producao_conforme: isConformeEmpty ? null : Number(prodConforme),

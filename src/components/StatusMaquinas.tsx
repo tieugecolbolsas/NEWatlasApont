@@ -103,6 +103,11 @@ export default function StatusMaquinas() {
   const [machines, setMachines] = useState<Maquina[]>([]);
   const [todayRegistros, setTodayRegistros] = useState<any[]>([]);
   const [colaboradoras, setColaboradoras] = useState<string[]>([]);
+  const [operacoes, setOperacoes] = useState<{ forracao: string[], orelha: string[], diversos: string[] }>({
+    forracao: [],
+    orelha: [],
+    diversos: []
+  });
   const [loading, setLoading] = useState(true);
   
   // Filters state
@@ -186,7 +191,54 @@ export default function StatusMaquinas() {
     } catch (err: any) {
       console.warn('[StatusMaquinas] Erro ao carregar operadoras da tabela base:', err.message || err);
     }
-  };  const fetchData = async () => {
+  };
+
+  const fetchProcessos = async () => {
+    try {
+      const { data, error } = await supabase
+        .schema('public')
+        .from('costureiras_funcoes')
+        .select('operacao_nome');
+      
+      if (error) throw error;
+      
+      if (data) {
+        const distinct = Array.from(new Set(data.map((row: any) => row.operacao_nome).filter(Boolean))) as string[];
+        const forracao: string[] = [];
+        const orelha: string[] = [];
+        const diversos: string[] = [];
+        
+        distinct.forEach(op => {
+          const name = op.toLowerCase();
+          if (name.includes('orelha')) {
+            orelha.push(op);
+          } else if (
+            name.includes('forração') ||
+            name.includes('forracao') ||
+            name.includes('city') ||
+            name.includes('tiras') ||
+            name.includes('alma') ||
+            name.includes('lapela') ||
+            name.includes('borda')
+          ) {
+            forracao.push(op);
+          } else {
+            diversos.push(op);
+          }
+        });
+        
+        setOperacoes({
+          forracao: forracao.sort(),
+          orelha: orelha.sort(),
+          diversos: diversos.sort()
+        });
+      }
+    } catch (err: any) {
+      console.warn('[StatusMaquinas] Erro ao carregar processos:', err.message || err);
+    }
+  };
+
+  const fetchData = async () => {
     try {
       // 1. Fetch master machines list from SupervisorProd (MQ-01 to MQ-53)
       const { data: baseData, error: baseError } = await supabase
@@ -319,6 +371,7 @@ export default function StatusMaquinas() {
   useEffect(() => {
     fetchData();
     fetchColaboradoras();
+    fetchProcessos();
 
     // Setup Realtime Subscriptions to sessoes_ativas_terminal and registros_producao_terminal
     const statusChannel = supabase
@@ -663,9 +716,62 @@ export default function StatusMaquinas() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-[10px] text-zinc-400 bg-zinc-950/80 border border-zinc-900 rounded-lg px-3.5 py-1.5 self-start sm:self-auto">
-          <Activity size={12} className="text-emerald-500 animate-pulse shrink-0" />
-          <span className="uppercase tracking-wider font-bold">TELEMETRIA ATIVA // 53 MÁQUINAS</span>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Botão PRODUZINDO */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === 'produzindo' ? '' : 'produzindo')}
+            className={`flex items-center gap-2 px-3 py-1 border rounded-lg text-[10px] font-mono font-bold uppercase cursor-pointer transition-all ${
+              filterStatus === 'produzindo'
+                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-500/10 font-black'
+                : 'bg-zinc-950/80 border-zinc-900 text-zinc-400 hover:border-emerald-500/50 hover:text-emerald-400'
+            }`}
+            title="Filtrar por Produzindo"
+          >
+            <Activity size={12} className={filterStatus === 'produzindo' ? 'text-emerald-400' : 'text-zinc-500'} />
+            <span>PRODUZINDO</span>
+          </button>
+
+          {/* Botão PAUSADA */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === 'pausada' ? '' : 'pausada')}
+            className={`flex items-center gap-2 px-3 py-1 border rounded-lg text-[10px] font-mono font-bold uppercase cursor-pointer transition-all ${
+              filterStatus === 'pausada'
+                ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg shadow-amber-500/10 font-black'
+                : 'bg-zinc-950/80 border-zinc-900 text-zinc-400 hover:border-amber-500/50 hover:text-amber-400'
+            }`}
+            title="Filtrar por Pausada"
+          >
+            <PauseCircle size={12} className={filterStatus === 'pausada' ? 'text-amber-400' : 'text-zinc-500'} />
+            <span>PAUSADA</span>
+          </button>
+
+          {/* Botão MANUTENÇÃO */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === 'manutencao' ? '' : 'manutencao')}
+            className={`flex items-center gap-2 px-3 py-1 border rounded-lg text-[10px] font-mono font-bold uppercase cursor-pointer transition-all ${
+              filterStatus === 'manutencao'
+                ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-lg shadow-rose-500/10 font-black'
+                : 'bg-zinc-950/80 border-zinc-900 text-zinc-400 hover:border-rose-500/50 hover:text-rose-400'
+            }`}
+            title="Filtrar por Manutenção"
+          >
+            <Wrench size={12} className={filterStatus === 'manutencao' ? 'text-rose-400' : 'text-zinc-500'} />
+            <span>MANUTENÇÃO</span>
+          </button>
+
+          {/* Botão OFFLINE */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === 'offline' ? '' : 'offline')}
+            className={`flex items-center gap-2 px-3 py-1 border rounded-lg text-[10px] font-mono font-bold uppercase cursor-pointer transition-all ${
+              filterStatus === 'offline'
+                ? 'bg-zinc-800/40 border-zinc-600 text-zinc-200 shadow-lg font-black'
+                : 'bg-zinc-950/80 border-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+            }`}
+            title="Filtrar por Offline"
+          >
+            <PowerOff size={12} className={filterStatus === 'offline' ? 'text-zinc-200' : 'text-zinc-500'} />
+            <span>OFFLINE</span>
+          </button>
         </div>
       </div>
 
@@ -692,13 +798,30 @@ export default function StatusMaquinas() {
             <select
               value={filterProcess}
               onChange={(e) => setFilterProcess(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-xs font-sans text-zinc-300 focus:outline-none focus:border-[#00624C] uppercase tracking-wider"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-xs font-sans text-zinc-300 focus:outline-none focus:border-[#00624C] uppercase tracking-wider font-bold"
             >
               <option value="">TODOS OS PROCESSOS</option>
-              <option value="CADÊNCIA">CADÊNCIA</option>
-              <option value="EMBALAGEM">EMBALAGEM</option>
-              <option value="REVISÃO">REVISÃO</option>
-              <option value="DIVERSOS">DIVERSOS</option>
+              {operacoes.forracao.length > 0 && (
+                <optgroup label="[FORRAÇÃO CITY]">
+                  {operacoes.forracao.map(op => (
+                    <option key={op} value={op}>{op.toUpperCase()}</option>
+                  ))}
+                </optgroup>
+              )}
+              {operacoes.orelha.length > 0 && (
+                <optgroup label="[ORELHA CITY]">
+                  {operacoes.orelha.map(op => (
+                    <option key={op} value={op}>{op.toUpperCase()}</option>
+                  ))}
+                </optgroup>
+              )}
+              {operacoes.diversos.length > 0 && (
+                <optgroup label="[DIVERSOS]">
+                  {operacoes.diversos.map(op => (
+                    <option key={op} value={op}>{op.toUpperCase()}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
 
