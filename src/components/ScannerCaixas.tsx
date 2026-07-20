@@ -732,6 +732,9 @@ export default function ScannerCaixas() {
         .schema('AtlasApontamento')
         .from('ocorrencias_terminal')
         .insert([{
+          num_maquina: activeSession?.num_maquina,
+          operadora_nome: activeSession?.operadora_nome,
+          operacao_nome: activeSession?.operacao_nome,
           tipo_ocorrencia: 'manutencao',
           descricao: manutencaoDesc.trim() || 'Chamado de manutenção solicitado',
           horario_inicio: horarioInicio,
@@ -807,6 +810,9 @@ export default function ScannerCaixas() {
         .schema('AtlasApontamento')
         .from('ocorrencias_terminal')
         .insert([{
+          num_maquina: activeSession?.num_maquina,
+          operadora_nome: activeSession?.operadora_nome,
+          operacao_nome: activeSession?.operacao_nome,
           tipo_ocorrencia: 'finalizacao_antecipada',
           descricao: justificativaMotivo.trim(),
           horario_inicio: horarioInicio,
