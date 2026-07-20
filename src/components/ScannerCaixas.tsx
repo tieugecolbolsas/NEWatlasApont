@@ -1078,7 +1078,7 @@ export default function ScannerCaixas() {
                   <Layers className="text-[#00624C]" size={20} />
                   <div>
                     <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
-                      Inicializar Terminal (Cenário A)
+                      Inicializar Terminal
                     </h3>
                     <p className="text-zinc-500 text-[9px] font-mono uppercase tracking-widest mt-0.5">
                       Nova sessão para a Máquina {formMaquina}
@@ -1430,9 +1430,6 @@ export default function ScannerCaixas() {
         )}
       </AnimatePresence>
 
-      {/* ======================================================= */}
-      // CENÁRIO B: APONTAMENTO DE PRODUÇÃO - APONTADORA DIGITA
-      {/* ======================================================= */}
       <AnimatePresence>
         {activeSession && (
           <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
@@ -1448,7 +1445,7 @@ export default function ScannerCaixas() {
                   <ClipboardList className="text-[#00624C]" size={20} />
                   <div>
                     <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
-                      Apontar Lote de Produção (Cenário B)
+                      Apontar Lote de Produção
                     </h3>
                     <p className="text-zinc-500 text-[9px] font-mono uppercase tracking-widest mt-0.5">
                       Contagem de peças para a Máquina {activeSession.num_maquina} | COD: {activeSession.codigo_manual_curto}

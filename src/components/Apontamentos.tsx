@@ -643,12 +643,6 @@ export default function Apontamentos() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 py-2 px-4 bg-[#00624C] hover:bg-[#004838] text-white rounded text-xs font-mono font-bold uppercase cursor-pointer shadow-lg shadow-[#00624C]/15 transition-all"
-          >
-            <Plus size={13} /> Novo Apontamento
-          </button>
         </div>
       </div>
 
@@ -1513,7 +1507,7 @@ export default function Apontamentos() {
                             >
                               {/* Registro de Contagem - Nova Organização das Contagens em Duas Linhas para Tablet */}
                               <div className="flex flex-col gap-2.5 w-full">
-                                {/* Linha 1 (Superior): Horário e duração na esquerda, selo azul na extrema direita */}
+                                {/* Linha 1 (Superior): Horário, duração, Produção Conforme na esquerda, selo azul na extrema direita */}
                                 <div className="flex flex-wrap items-center justify-between gap-2 w-full">
                                   <div className="flex flex-wrap items-center gap-2.5">
                                     <span className="text-zinc-300 font-bold bg-zinc-900/80 px-2.5 py-1 rounded border border-zinc-800 flex items-center gap-1.5 text-xs">
@@ -1524,6 +1518,9 @@ export default function Apontamentos() {
                                         Tempo: {tempoProducaoReg}
                                       </span>
                                     )}
+                                    <span className="text-emerald-500 font-bold text-xs bg-emerald-500/5 border border-emerald-500/10 px-2 py-0.5 rounded">
+                                      Produção Conforme: {conforme} Pçs
+                                    </span>
                                     {ocorrencia && ocorrencia !== 'Produção Normal' && (
                                       <span className="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">
                                         Ocorrência: {ocorrencia}
@@ -1549,16 +1546,18 @@ export default function Apontamentos() {
                                   </div>
                                 </div>
 
-                                {/* Linha 2 (Inferior): Selo verde e bloco de Retrabalho lado a lado */}
-                                <div className="flex flex-wrap items-center gap-3 mt-0.5 border-t border-zinc-800/40 pt-2 w-full">
-                                  <span className="text-emerald-500 font-bold text-xs bg-emerald-500/5 border border-emerald-500/10 px-2 py-0.5 rounded">
-                                    Produção Conforme: {conforme} Pçs
+                                {/* Linha 2 (Inferior): Refugo (vermelho), Retrabalho Próprio (laranja), Retrabalho Terceiro (amarelo) lado a lado */}
+                                <div className="flex flex-wrap items-center gap-2.5 mt-0.5 border-t border-zinc-800/40 pt-2 w-full">
+                                  <span className="text-[10px] uppercase font-extrabold text-zinc-500 tracking-wider">Descontos de Qualidade:</span>
+                                  <span className="text-rose-400 font-bold text-xs bg-rose-500/5 border border-rose-500/15 px-2.5 py-0.5 rounded">
+                                    Refugo: {item.refugo || 0} Pçs
                                   </span>
-                                  {(rePr > 0 || reTe > 0) && (
-                                    <span className="text-amber-500 text-xs bg-amber-500/5 border border-amber-500/15 px-2.5 py-1 rounded font-semibold">
-                                      Retrabalho: Próprio {rePr} | Terceiro {reTe}
-                                    </span>
-                                  )}
+                                  <span className="text-orange-400 font-bold text-xs bg-orange-500/5 border border-orange-500/15 px-2.5 py-0.5 rounded">
+                                    Retrabalho Próprio: {rePr} Pçs
+                                  </span>
+                                  <span className="text-yellow-400 font-bold text-xs bg-yellow-500/5 border border-yellow-500/15 px-2.5 py-0.5 rounded">
+                                    Retrabalho Terceiro: {reTe} Pçs
+                                  </span>
                                 </div>
                               </div>
 
