@@ -19,7 +19,8 @@ import {
   XCircle,
   Mail,
   X,
-  Copy
+  Copy,
+  Cpu
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getLocalSessionUser } from '../lib/auth';
@@ -249,9 +250,12 @@ export default function Apontamentos() {
   const [filterProcess, setFilterProcess] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
-  // Estados de Filtros Dinâmicos do Banco
+  // Estados de Filtros Dinâmicos do Banco com Autocomplete e Categorias
   const [dinamicMaquinas, setDinamicMaquinas] = useState<string[]>([]);
   const [dinamicProcessos, setDinamicProcessos] = useState<string[]>([]);
+  const [dinamicProcessosObj, setDinamicProcessosObj] = useState<{ operacao_nome: string, categoria_nome: string }[]>([]);
+  const [searchProcessInput, setSearchProcessInput] = useState('');
+  const [showProcessDropdown, setShowProcessDropdown] = useState(false);
 
   useEffect(() => {
     async function carregarFiltrosDinamicos() {
@@ -272,9 +276,21 @@ export default function Apontamentos() {
         const { data: procData, error: procError } = await supabase
           .schema('public')
           .from('costureiras_funcoes')
-          .select('operacao_nome');
+          .select('operacao_nome, categoria_nome');
         if (!procError && procData) {
-          const distinctProcs = Array.from(new Set(procData.map((item: any) => item.operacao_nome).filter(Boolean))) as string[];
+          const opsMap = new Map();
+          procData.forEach((item: any) => {
+            if (item.operacao_nome) {
+              opsMap.set(item.operacao_nome, {
+                operacao_nome: item.operacao_nome,
+                categoria_nome: item.categoria_nome || 'DIVERSOS'
+              });
+            }
+          });
+          const uniqueOpsObj = Array.from(opsMap.values()) as { operacao_nome: string, categoria_nome: string }[];
+          setDinamicProcessosObj(uniqueOpsObj);
+
+          const distinctProcs = uniqueOpsObj.map(o => o.operacao_nome);
           setDinamicProcessos(distinctProcs.sort());
         }
       } catch (err) {
@@ -707,29 +723,101 @@ export default function Apontamentos() {
           </div>
 
           {/* Process Filter */}
-          <div className="space-y-1">
+          <div className="space-y-1 relative">
             <label className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 block font-bold">Processo / Operação</label>
             <div className="relative">
-              <select
-                value={filterProcess}
-                onChange={(e) => setFilterProcess(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 pr-8 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
-              >
-                <option value="">TODOS OS PROCESSOS</option>
-                {dinamicProcessos.map(p => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
+              <input
+                type="text"
+                placeholder={filterProcess || "TODOS OS PROCESSOS"}
+                value={searchProcessInput}
+                onChange={(e) => {
+                  setSearchProcessInput(e.target.value);
+                  setShowProcessDropdown(true);
+                }}
+                onFocus={() => setShowProcessDropdown(true)}
+                onBlur={() => {
+                  setTimeout(() => {
+                    setShowProcessDropdown(false);
+                    setSearchProcessInput('');
+                  }, 250);
+                }}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C] placeholder-zinc-500"
+              />
               {filterProcess && (
                 <button
                   type="button"
-                  onClick={() => setFilterProcess('')}
-                  className="absolute right-7 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer p-0.5 rounded-full hover:bg-zinc-800 transition-colors z-10"
+                  onClick={() => {
+                    setFilterProcess('');
+                    setSearchProcessInput('');
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer p-0.5 rounded-full hover:bg-zinc-800 transition-colors z-10"
                 >
                   <X size={12} />
                 </button>
               )}
             </div>
+
+            {showProcessDropdown && (
+              <div className="absolute left-0 right-0 mt-1 bg-zinc-950 border border-zinc-800 rounded z-50 shadow-2xl p-1 max-h-56 overflow-y-auto">
+                {(() => {
+                  const query = searchProcessInput.toLowerCase();
+                  const filtered = dinamicProcessosObj.filter(item => 
+                    item.operacao_nome.toLowerCase().includes(query) ||
+                    item.categoria_nome.toLowerCase().includes(query)
+                  );
+                  
+                  const grouped = filtered.reduce((acc, curr) => {
+                    const cat = curr.categoria_nome || 'DIVERSOS';
+                    if (!acc[cat]) acc[cat] = [];
+                    acc[cat].push(curr.operacao_nome);
+                    return acc;
+                  }, {} as Record<string, string[]>);
+                  
+                  const totalFiltered = filtered.length;
+                  if (totalFiltered === 0) {
+                    return <div className="p-2 text-zinc-500 text-xs font-mono">Nenhum processo encontrado</div>;
+                  }
+                  
+                  return (
+                    <select
+                      size={Math.min(8, totalFiltered + Object.keys(grouped).length)}
+                      className="w-full bg-transparent text-zinc-300 font-mono text-xs focus:outline-none border-none cursor-pointer"
+                      value={filterProcess}
+                      onChange={(e) => {
+                        if (e.target.value !== undefined) {
+                          setFilterProcess(e.target.value);
+                          setSearchProcessInput('');
+                          setShowProcessDropdown(false);
+                        }
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      <option value="" className="text-zinc-400 bg-zinc-950 py-1 font-bold">TODOS OS PROCESSOS</option>
+                      {(Object.entries(grouped) as [string, string[]][]).map(([category, ops]) => (
+                        <optgroup key={category} label={category.toUpperCase()} className="text-[#00624C] font-extrabold bg-zinc-950 px-2 py-1">
+                          {ops.map(op => (
+                            <option 
+                              key={op} 
+                              value={op} 
+                              className="text-zinc-300 font-mono text-xs bg-zinc-900 px-3 py-1.5 hover:bg-[#00624C] hover:text-white cursor-pointer"
+                              onClick={() => {
+                                setFilterProcess(op);
+                                setSearchProcessInput('');
+                                setShowProcessDropdown(false);
+                              }}
+                            >
+                              {op}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  );
+                })()}
+              </div>
+            )}
           </div>
 
           {/* Status Filter */}
@@ -1067,7 +1155,9 @@ export default function Apontamentos() {
                           <div className="text-xs text-zinc-400 space-y-3 mt-3">
                             <div>
                               <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">OPERAÇÃO ATRIBUÍDA</span>
-                              <span className="text-zinc-200 font-semibold text-xs leading-relaxed">{block.operacao_nome}</span>
+                              <span className="text-zinc-200 font-semibold text-xs leading-relaxed flex items-center gap-1">
+                                <Cpu size={14} className="inline mr-1 text-[#00624C]" /> {block.operacao_nome}
+                              </span>
                             </div>
                             <div>
                               <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">TIPO DE MÁQUINA</span>
@@ -1354,10 +1444,10 @@ export default function Apontamentos() {
                         return (
                           <div className="space-y-3">
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                              {/* Descontos (Qualidade) */}
+                              {/* Boletim da Qualidade */}
                               <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
                                 <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
-                                  Descontos (Qualidade)
+                                  Boletim da Qualidade
                                 </span>
                                 <div className="flex flex-col gap-0.5">
                                   <span className="text-rose-400 text-xs font-bold">
@@ -1544,20 +1634,6 @@ export default function Apontamentos() {
                                       </span>
                                     ) : null}
                                   </div>
-                                </div>
-
-                                {/* Linha 2 (Inferior): Refugo (vermelho), Retrabalho Próprio (laranja), Retrabalho Terceiro (amarelo) lado a lado */}
-                                <div className="flex flex-wrap items-center gap-2.5 mt-0.5 border-t border-zinc-800/40 pt-2 w-full">
-                                  <span className="text-[10px] uppercase font-extrabold text-zinc-500 tracking-wider">Descontos de Qualidade:</span>
-                                  <span className="text-rose-400 font-bold text-xs bg-rose-500/5 border border-rose-500/15 px-2.5 py-0.5 rounded">
-                                    Refugo: {item.refugo || 0} Pçs
-                                  </span>
-                                  <span className="text-orange-400 font-bold text-xs bg-orange-500/5 border border-orange-500/15 px-2.5 py-0.5 rounded">
-                                    Retrabalho Próprio: {rePr} Pçs
-                                  </span>
-                                  <span className="text-yellow-400 font-bold text-xs bg-yellow-500/5 border border-yellow-500/15 px-2.5 py-0.5 rounded">
-                                    Retrabalho Terceiro: {reTe} Pçs
-                                  </span>
                                 </div>
                               </div>
 

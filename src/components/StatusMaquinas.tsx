@@ -108,6 +108,9 @@ export default function StatusMaquinas() {
     orelha: [],
     diversos: []
   });
+  const [dinamicProcessosObj, setDinamicProcessosObj] = useState<{ operacao_nome: string, categoria_nome: string }[]>([]);
+  const [searchProcessInput, setSearchProcessInput] = useState('');
+  const [showProcessDropdown, setShowProcessDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
   
   // Filters state
@@ -198,11 +201,24 @@ export default function StatusMaquinas() {
       const { data, error } = await supabase
         .schema('public')
         .from('costureiras_funcoes')
-        .select('operacao_nome');
+        .select('operacao_nome, categoria_nome');
       
       if (error) throw error;
       
       if (data) {
+        // Populate autocomplete map with categories
+        const opsMap = new Map();
+        data.forEach((item: any) => {
+          if (item.operacao_nome) {
+            opsMap.set(item.operacao_nome, {
+              operacao_nome: item.operacao_nome,
+              categoria_nome: item.categoria_nome || 'DIVERSOS'
+            });
+          }
+        });
+        const uniqueOpsObj = Array.from(opsMap.values()) as { operacao_nome: string, categoria_nome: string }[];
+        setDinamicProcessosObj(uniqueOpsObj);
+
         const distinct = Array.from(new Set(data.map((row: any) => row.operacao_nome).filter(Boolean))) as string[];
         const forracao: string[] = [];
         const orelha: string[] = [];
@@ -807,35 +823,98 @@ export default function StatusMaquinas() {
             />
           </div>
 
-          <div>
-            <select
-              value={filterProcess}
-              onChange={(e) => setFilterProcess(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-xs font-sans text-zinc-300 focus:outline-none focus:border-[#00624C] uppercase tracking-wider font-bold"
-            >
-              <option value="">TODOS OS PROCESSOS</option>
-              {operacoes.forracao.length > 0 && (
-                <optgroup label="[FORRAÇÃO CITY]">
-                  {operacoes.forracao.map(op => (
-                    <option key={op} value={op}>{op.toUpperCase()}</option>
-                  ))}
-                </optgroup>
-              )}
-              {operacoes.orelha.length > 0 && (
-                <optgroup label="[ORELHA CITY]">
-                  {operacoes.orelha.map(op => (
-                    <option key={op} value={op}>{op.toUpperCase()}</option>
-                  ))}
-                </optgroup>
-              )}
-              {operacoes.diversos.length > 0 && (
-                <optgroup label="[DIVERSOS]">
-                  {operacoes.diversos.map(op => (
-                    <option key={op} value={op}>{op.toUpperCase()}</option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder={filterProcess || "TODOS OS PROCESSOS"}
+              value={searchProcessInput}
+              onChange={(e) => {
+                setSearchProcessInput(e.target.value);
+                setShowProcessDropdown(true);
+              }}
+              onFocus={() => setShowProcessDropdown(true)}
+              onBlur={() => {
+                setTimeout(() => {
+                  setShowProcessDropdown(false);
+                  setSearchProcessInput('');
+                }, 250);
+              }}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-xs font-sans text-zinc-300 focus:outline-none focus:border-[#00624C] uppercase tracking-wider font-bold placeholder-zinc-500"
+            />
+            {filterProcess && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterProcess('');
+                  setSearchProcessInput('');
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer p-0.5 rounded-full hover:bg-zinc-800 transition-colors z-10"
+              >
+                <X size={12} />
+              </button>
+            )}
+
+            {showProcessDropdown && (
+              <div className="absolute left-0 right-0 mt-1 bg-zinc-950 border border-zinc-800 rounded z-50 shadow-2xl p-1 max-h-56 overflow-y-auto">
+                {(() => {
+                  const query = searchProcessInput.toLowerCase();
+                  const filtered = dinamicProcessosObj.filter(item => 
+                    item.operacao_nome.toLowerCase().includes(query) ||
+                    item.categoria_nome.toLowerCase().includes(query)
+                  );
+                  
+                  const grouped = filtered.reduce((acc, curr) => {
+                    const cat = curr.categoria_nome || 'DIVERSOS';
+                    if (!acc[cat]) acc[cat] = [];
+                    acc[cat].push(curr.operacao_nome);
+                    return acc;
+                  }, {} as Record<string, string[]>);
+                  
+                  const totalFiltered = filtered.length;
+                  if (totalFiltered === 0) {
+                    return <div className="p-2 text-zinc-500 text-xs font-mono">Nenhum processo encontrado</div>;
+                  }
+                  
+                  return (
+                    <select
+                      size={Math.min(8, totalFiltered + Object.keys(grouped).length)}
+                      className="w-full bg-transparent text-zinc-300 font-mono text-xs focus:outline-none border-none cursor-pointer"
+                      value={filterProcess}
+                      onChange={(e) => {
+                        if (e.target.value !== undefined) {
+                          setFilterProcess(e.target.value);
+                          setSearchProcessInput('');
+                          setShowProcessDropdown(false);
+                        }
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      <option value="" className="text-zinc-400 bg-zinc-950 py-1 font-bold">TODOS OS PROCESSOS</option>
+                      {(Object.entries(grouped) as [string, string[]][]).map(([category, ops]) => (
+                        <optgroup key={category} label={category.toUpperCase()} className="text-[#00624C] font-extrabold bg-zinc-950 px-2 py-1">
+                          {ops.map(op => (
+                            <option 
+                              key={op} 
+                              value={op} 
+                              className="text-zinc-300 font-mono text-xs bg-zinc-900 px-3 py-1.5 hover:bg-[#00624C] hover:text-white cursor-pointer"
+                              onClick={() => {
+                                setFilterProcess(op);
+                                setSearchProcessInput('');
+                                setShowProcessDropdown(false);
+                              }}
+                            >
+                              {op.toUpperCase()}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  );
+                })()}
+              </div>
+            )}
           </div>
 
           <div>

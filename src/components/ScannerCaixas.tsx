@@ -194,7 +194,8 @@ export default function ScannerCaixas() {
     }
   }, [activeSession]);
   
-  // Autocomplete de Operações e Operadoras
+  // Autocomplete de Operações e Operadoras com categorias
+  const [listaOperacoesObj, setListaOperacoesObj] = useState<{ operacao_nome: string, categoria_nome: string }[]>([]);
   const [listaOperacoes, setListaOperacoes] = useState<string[]>([]);
   const [showOperacaoSuggestions, setShowOperacaoSuggestions] = useState(false);
   const [listaOperadoras, setListaOperadoras] = useState<string[]>([]);
@@ -206,9 +207,21 @@ export default function ScannerCaixas() {
         const { data, error } = await supabase
           .schema('public')
           .from('costureiras_funcoes')
-          .select('operacao_nome, operadora_nome');
+          .select('operacao_nome, operadora_nome, categoria_nome');
         if (!error && data) {
-          const distinctOps = Array.from(new Set(data.map((item: any) => item.operacao_nome).filter(Boolean)));
+          const opsMap = new Map();
+          data.forEach((item: any) => {
+            if (item.operacao_nome) {
+              opsMap.set(item.operacao_nome, {
+                operacao_nome: item.operacao_nome,
+                categoria_nome: item.categoria_nome || 'DIVERSOS'
+              });
+            }
+          });
+          const uniqueOpsObj = Array.from(opsMap.values()) as { operacao_nome: string, categoria_nome: string }[];
+          setListaOperacoesObj(uniqueOpsObj);
+
+          const distinctOps = uniqueOpsObj.map(o => o.operacao_nome);
           const distinctOpe = Array.from(new Set(data.map((item: any) => item.operadora_nome).filter(Boolean)));
           setListaOperacoes(distinctOps as string[]);
           setListaOperadoras(distinctOpe as string[]);
@@ -1207,22 +1220,63 @@ export default function ScannerCaixas() {
                         <Check size={16} className={confirmaOperacao ? "scale-110" : ""} />
                       </button>
                     </div>
-                    {showOperacaoSuggestions && listaOperacoes.filter(op => op.toLowerCase().includes(formOperacao.toLowerCase())).length > 0 && (
-                      <div className="absolute left-0 right-0 bg-zinc-950 border border-zinc-800 rounded mt-1 max-h-40 overflow-y-auto z-50 shadow-2xl">
-                        {listaOperacoes.filter(op => op.toLowerCase().includes(formOperacao.toLowerCase())).map((op, opIdx) => (
-                          <div
-                            key={opIdx}
-                            onMouseDown={() => {
-                              if (!confirmaOperacao) {
-                                setFormOperacao(op);
-                                setShowOperacaoSuggestions(false);
-                              }
-                            }}
-                            className="px-3 py-2 text-zinc-300 hover:bg-[#00624C] hover:text-white cursor-pointer transition-colors text-left font-mono text-xs"
-                          >
-                            {op}
-                          </div>
-                        ))}
+                    {showOperacaoSuggestions && (
+                      <div className="absolute left-0 right-0 bg-zinc-950 border border-zinc-800 rounded mt-1 z-50 shadow-2xl p-1">
+                        {(() => {
+                          const query = formOperacao.toLowerCase();
+                          const filtered = listaOperacoesObj.filter(item => 
+                            item.operacao_nome.toLowerCase().includes(query) ||
+                            item.categoria_nome.toLowerCase().includes(query)
+                          );
+                          
+                          // Group by category
+                          const grouped = filtered.reduce((acc, curr) => {
+                            const cat = curr.categoria_nome || 'DIVERSOS';
+                            if (!acc[cat]) acc[cat] = [];
+                            acc[cat].push(curr.operacao_nome);
+                            return acc;
+                          }, {} as Record<string, string[]>);
+                          
+                          const totalFiltered = filtered.length;
+                          
+                          if (totalFiltered === 0) {
+                            return <div className="p-2 text-zinc-500 text-xs font-mono">Nenhuma operação encontrada</div>;
+                          }
+                          
+                          return (
+                            <select
+                              size={Math.min(8, totalFiltered + Object.keys(grouped).length)}
+                              className="w-full bg-transparent text-zinc-300 font-mono text-xs focus:outline-none border-none cursor-pointer"
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  setFormOperacao(e.target.value);
+                                  setShowOperacaoSuggestions(false);
+                                }
+                              }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              {(Object.entries(grouped) as [string, string[]][]).map(([category, ops]) => (
+                                <optgroup key={category} label={category.toUpperCase()} className="text-[#00624C] font-extrabold bg-zinc-950 px-2 py-1">
+                                  {ops.map(op => (
+                                    <option 
+                                      key={op} 
+                                      value={op} 
+                                      className="text-zinc-300 font-mono text-xs bg-zinc-900 px-3 py-1.5 hover:bg-[#00624C] hover:text-white cursor-pointer"
+                                      onClick={() => {
+                                        setFormOperacao(op);
+                                        setShowOperacaoSuggestions(false);
+                                      }}
+                                    >
+                                      {op}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              ))}
+                            </select>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
