@@ -948,16 +948,13 @@ export default function ScannerCaixas() {
                   {historicoHoje.map((registro, idx) => (
                     <div 
                       key={registro.id || idx} 
-                      className="bg-zinc-950/60 border border-zinc-900 p-4 rounded-lg hover:border-zinc-800 transition-colors space-y-3"
+                      className="bg-[#af1e59]/16 border border-[#af1e59]/25 p-4 rounded-lg hover:border-[#af1e59]/40 transition-colors space-y-3"
                     >
                       {/* Header do Log */}
                       <div className="flex items-center justify-between border-b border-zinc-900/40 pb-2">
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 bg-[#00624C]/10 border border-[#00624C]/20 text-[#00624C] text-[9px] font-mono font-bold rounded">
                             {registro.num_maquina}
-                          </span>
-                          <span className="text-[10px] text-zinc-500 font-mono tracking-widest">
-                            COD: {registro.codigo_manual_curto}
                           </span>
                         </div>
                         <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1">

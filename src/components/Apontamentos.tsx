@@ -229,6 +229,41 @@ export default function Apontamentos() {
   const [filterProcess, setFilterProcess] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
+  // Estados de Filtros Dinâmicos do Banco
+  const [dinamicMaquinas, setDinamicMaquinas] = useState<string[]>([]);
+  const [dinamicProcessos, setDinamicProcessos] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function carregarFiltrosDinamicos() {
+      try {
+        const { data: maqData, error: maqError } = await supabase
+          .schema('AtlasApontamento')
+          .from('maquinas_config')
+          .select('num_maquina');
+        if (!maqError && maqData) {
+          const distinctMaqs = Array.from(new Set(maqData.map((item: any) => item.num_maquina).filter(Boolean))) as string[];
+          setDinamicMaquinas(distinctMaqs.sort());
+        }
+      } catch (err) {
+        console.error('Erro ao carregar maquinas para filtros:', err);
+      }
+
+      try {
+        const { data: procData, error: procError } = await supabase
+          .schema('public')
+          .from('costureiras_funcoes')
+          .select('operacao_nome');
+        if (!procError && procData) {
+          const distinctProcs = Array.from(new Set(procData.map((item: any) => item.operacao_nome).filter(Boolean))) as string[];
+          setDinamicProcessos(distinctProcs.sort());
+        }
+      } catch (err) {
+        console.error('Erro ao carregar processos para filtros:', err);
+      }
+    }
+    carregarFiltrosDinamicos();
+  }, []);
+
   // Form state for new simulated apuntamento
   const [showForm, setShowForm] = useState(false);
   const [newMaquina, setNewMaquina] = useState('MQ-01');
@@ -336,9 +371,19 @@ export default function Apontamentos() {
         processed = processed.filter(item => (item.operacao_nome || item.processo) === filterProcess);
       }
 
-      // 4. Status Filter
+      // 4. Status Filter (Qualidade / Status)
       if (filterStatus) {
-        processed = processed.filter(item => (item.status || 'validado') === filterStatus);
+        if (filterStatus === 'VALIDADO') {
+          processed = processed.filter(item => Number(item.producao_conforme || item.quantidade || 0) > 0);
+        } else if (filterStatus === 'REFUGO') {
+          processed = processed.filter(item => Number(item.refugo || 0) > 0);
+        } else if (filterStatus === 'RETRABALHO PRÓPRIO') {
+          processed = processed.filter(item => Number(item.retrabalho_proprio || 0) > 0);
+        } else if (filterStatus === 'RETRABALHO TERCEIRO') {
+          processed = processed.filter(item => Number(item.retrabalho_terceiro || 0) > 0);
+        } else {
+          processed = processed.filter(item => (item.status || 'validado') === filterStatus);
+        }
       }
 
       // 5. Sort by time descending (Most recent first)
@@ -534,7 +579,28 @@ export default function Apontamentos() {
     groups[key].itens.push(reg);
   });
 
-  const groupedBlocks = Object.values(groups);
+  const groupedBlocks = Object.values(groups).sort((a: any, b: any) => {
+    const isSessionActiveA = activeSessions.some(
+      s => {
+        const sMaq = (s.num_maquina || '').split('|')[0].trim().toLowerCase();
+        const bMaq = (a.num_maquina || '').split('|')[0].trim().toLowerCase();
+        return sMaq === bMaq && 
+               s.operacao_nome?.trim().toLowerCase() === a.operacao_nome?.trim().toLowerCase();
+      }
+    );
+    const isSessionActiveB = activeSessions.some(
+      s => {
+        const sMaq = (s.num_maquina || '').split('|')[0].trim().toLowerCase();
+        const bMaq = (b.num_maquina || '').split('|')[0].trim().toLowerCase();
+        return sMaq === bMaq && 
+               s.operacao_nome?.trim().toLowerCase() === b.operacao_nome?.trim().toLowerCase();
+      }
+    );
+    
+    if (isSessionActiveA && !isSessionActiveB) return -1;
+    if (!isSessionActiveA && isSessionActiveB) return 1;
+    return 0;
+  });
 
   const toggleGroup = (key: string) => {
     setExpandedKeys(prev => 
@@ -614,8 +680,8 @@ export default function Apontamentos() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
             >
               <option value="">TODAS AS MÁQUINAS</option>
-              {machines.map(m => (
-                <option key={m.id} value={m.numero}>{m.numero}</option>
+              {dinamicMaquinas.map(m => (
+                <option key={m} value={m}>{m}</option>
               ))}
             </select>
           </div>
@@ -629,10 +695,9 @@ export default function Apontamentos() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
             >
               <option value="">TODOS OS PROCESSOS</option>
-              <option value="CADÊNCIA">CADÊNCIA</option>
-              <option value="EMBALAGEM">EMBALAGEM</option>
-              <option value="REVISÃO">REVISÃO</option>
-              <option value="DIVERSOS">DIVERSOS</option>
+              {dinamicProcessos.map(p => (
+                <option key={p} value={p}>{p}</option>
+              ))}
             </select>
           </div>
 
@@ -645,9 +710,10 @@ export default function Apontamentos() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
             >
               <option value="">TODOS OS STATUS</option>
-              <option value="validado">VALIDADO</option>
-              <option value="rejeitado">REJEITADO (REFUGO)</option>
-              <option value="analise">EM ANÁLISE</option>
+              <option value="VALIDADO">VALIDADO</option>
+              <option value="REFUGO">REFUGO</option>
+              <option value="RETRABALHO PRÓPRIO">RETRABALHO PRÓPRIO</option>
+              <option value="RETRABALHO TERCEIRO">RETRABALHO TERCEIRO</option>
             </select>
           </div>
         </div>
@@ -867,11 +933,11 @@ export default function Apontamentos() {
                             <div className="flex items-center gap-1.5">
                               {isSessionActive ? (
                                 <span className="text-[9px] font-black uppercase tracking-wider text-blue-400 bg-blue-950/40 border border-blue-500/30 px-2 py-0.5 rounded">
-                                  ● PRODUZINDO AGORA
+                                  ● PROCESSO EM ANDAMENTO
                                 </span>
                               ) : (
                                 <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 bg-rose-950/40 border border-rose-500/30 px-2 py-0.5 rounded">
-                                  ● SESSÃO ENCERRADA
+                                  ● PROCESSO ENCERRADO
                                 </span>
                               )}
 

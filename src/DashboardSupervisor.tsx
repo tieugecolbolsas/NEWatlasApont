@@ -19,7 +19,7 @@ interface DashboardProps {
 
 export default function Dashboard({ userEmail, onLogout, addToast, mode }: DashboardProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [activePath, setActivePath] = useState<string>('/apontamentos');
 
   const renderContent = () => {
