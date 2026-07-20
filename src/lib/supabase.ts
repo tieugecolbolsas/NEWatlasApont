@@ -34,6 +34,19 @@ if (useDirectClient) {
 
   activeClient = {
     auth: {
+      getSession: async () => {
+        try {
+          const sessionStr = localStorage.getItem('atlas_supervisor_session');
+          if (sessionStr) {
+            const sessionObj = JSON.parse(sessionStr);
+            // Validar token/data se necessário
+            return { data: { session: sessionObj }, error: null };
+          }
+          return { data: { session: null }, error: null };
+        } catch (err: any) {
+          return { data: { session: null }, error: { message: err.message } };
+        }
+      },
       signInWithPassword: async ({ email, password }: any) => {
         try {
           const response = await fetch('/api/auth/login', {

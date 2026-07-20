@@ -105,6 +105,31 @@ const calcularDuracao = (inicio: string, fim: string) => {
   }
 };
 
+const sanitizeInput = (text: string, maxLength: number) => {
+  if (!text) return '';
+  return text
+    .trim()
+    .replace(/[<>]/g, '') // Basic XSS prevention
+    .substring(0, maxLength);
+};
+
+const getSafeErrorMessage = (err: any) => {
+  const msg = err?.message || String(err);
+  if (msg.includes('violates NOT NULL') || msg.includes('null value in column')) {
+    return 'Erro de validação: Campos obrigatórios não foram preenchidos.';
+  }
+  if (msg.includes('foreign key constraint') || msg.includes('violates foreign key')) {
+    return 'Erro de validação: Referência a um registro inexistente no sistema.';
+  }
+  if (msg.includes('unique constraint') || msg.includes('duplicate key')) {
+    return 'Erro de validação: Um registro com estas informações já existe.';
+  }
+  if (msg.includes('Failed to fetch') || msg.includes('network') || msg.includes('fetch')) {
+    return 'Erro de conexão: Não foi possível sincronizar com o banco de dados no momento.';
+  }
+  return 'Ocorreu um erro interno ao processar a operação. Os dados foram salvos offline se possível.';
+};
+
 export default function ScannerCaixas() {
   // Estados do Banco e Histórico de registros
   const [historicoHoje, setHistoricoHoje] = useState<any[]>([]);
@@ -618,19 +643,21 @@ export default function ScannerCaixas() {
     const userObj = getLocalSessionUser() as any;
     const userId = userObj?.id || userObj?.uid;
 
+    const obsFormatada = formObservacao.trim() ? `[${horarioInicio.slice(0,5)}] ${formObservacao.trim()}` : '';
+
     const novaSessao = {
-      num_maquina: formMaquina.toUpperCase(),
-      codigo_manual_curto: formCodigoCurto,
-      operadora_nome: formOperadora.trim().toUpperCase(),
-      operacao_nome: formOperacao.trim().toUpperCase(),
-      lote: formLote.trim().toUpperCase(),
+      num_maquina: sanitizeInput(formMaquina, 50).toUpperCase(),
+      codigo_manual_curto: sanitizeInput(formCodigoCurto, 50),
+      operadora_nome: sanitizeInput(formOperadora, 100).toUpperCase(),
+      operacao_nome: sanitizeInput(formOperacao, 100).toUpperCase(),
+      lote: sanitizeInput(formLote, 100).toUpperCase(),
       lado: formLado,
-      tipo_maquina: formTipoMaquina.trim().toUpperCase(),
+      tipo_maquina: sanitizeInput(formTipoMaquina, 100).toUpperCase(),
       hora_extra: formHoraExtra ? 's' : 'n',
       horario_inicio: horarioInicio,
       user_id: userId,
       materia_prima_inicial: Number(formMateriaPrima) || 0,
-      observacao: formObservacao.trim() ? `[${horarioInicio.slice(0,5)}] ${formObservacao.trim()}` : ''
+      observacao: sanitizeInput(obsFormatada, 150)
     };
 
     try {
@@ -647,6 +674,7 @@ export default function ScannerCaixas() {
       window.dispatchEvent(new CustomEvent('refresh-apontamentos'));
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao criar sessão ativa:', err);
+      const safeErrorMsg = getSafeErrorMessage(err);
       // Fallback in-memory session activation
       const fallbackSessao = {
         ...novaSessao,
@@ -654,7 +682,7 @@ export default function ScannerCaixas() {
         offline: true
       };
       setOfflineSessoes(prev => [...prev, fallbackSessao]);
-      showAlert('warning', `Erro de conexão! Sessão iniciada temporariamente offline (em memória) para a máquina ${novaSessao.num_maquina}.`);
+      showAlert('warning', safeErrorMsg + ` Sessão iniciada temporariamente offline para a máquina ${novaSessao.num_maquina}.`);
       retomarScanner();
     } finally {
       setIsSaving(false);
@@ -704,6 +732,7 @@ export default function ScannerCaixas() {
       window.dispatchEvent(new CustomEvent('refresh-apontamentos'));
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao gravar ajuste de qualidade:', err);
+      const safeErrorMsg = getSafeErrorMessage(err);
       // Fallback in-memory record saving
       const fallbackQualidade = {
         ...novaQualidadeRegistro,
@@ -711,7 +740,7 @@ export default function ScannerCaixas() {
         offline: true
       };
       setHistoricoHoje(prev => [fallbackQualidade, ...prev]);
-      showAlert('warning', `Erro de conexão! Ajuste de qualidade lançado offline na máquina ${activeSession.num_maquina}.`);
+      showAlert('warning', safeErrorMsg + ` Ajuste de qualidade lançado offline na máquina ${activeSession.num_maquina}.`);
       retomarScanner();
     } finally {
       setIsSaving(false);
@@ -883,7 +912,7 @@ export default function ScannerCaixas() {
       motivo_ocorrencia: 'Produção Normal',
       user_id: userId,
       materia_prima_inicial: Number(activeSession.materia_prima_inicial) || 0,
-      observacao: [activeSession.observacao, cenarioBObservacao.trim() ? `[${horarioTermino.slice(0,5)}] ${cenarioBObservacao.trim()}` : ''].filter(Boolean).join(" | ")
+      observacao: sanitizeInput([activeSession.observacao, cenarioBObservacao.trim() ? `[${horarioTermino.slice(0,5)}] ${cenarioBObservacao.trim()}` : ''].filter(Boolean).join(" | "), 150)
     };
 
     try {
@@ -959,6 +988,7 @@ export default function ScannerCaixas() {
       window.dispatchEvent(new CustomEvent('refresh-apontamentos'));
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao processar apontamento:', err);
+      const safeErrorMsg = getSafeErrorMessage(err);
       
       // Fallback in-memory record saving
       const fallbackRegistro = {
@@ -972,7 +1002,7 @@ export default function ScannerCaixas() {
       setOfflineSessoes(prev => prev.filter(s => s.id !== activeSession.id));
 
       if (finalizarProcessoCompleto) {
-        showAlert('warning', `Erro de conexão! Apontamento finalizado offline (em memória) na máquina ${activeSession.num_maquina}.`);
+        showAlert('warning', safeErrorMsg + ` Apontamento finalizado offline (em memória) na máquina ${activeSession.num_maquina}.`);
         retomarScanner();
       } else if (!mudarProcesso) {
         // Recria sessão ativa offline na memória
@@ -992,7 +1022,7 @@ export default function ScannerCaixas() {
           offline: true
         };
         setOfflineSessoes(prev => [...prev, novaSessaoRecriada]);
-        showAlert('warning', `Erro de conexão! Apontamento salvo offline (em memória). Próximo ciclo iniciado na máquina ${activeSession.num_maquina}.`);
+        showAlert('warning', safeErrorMsg + ` Apontamento salvo offline (em memória). Próximo ciclo iniciado na máquina ${activeSession.num_maquina}.`);
         retomarScanner();
       } else {
         // Salva e Mudar Processo
@@ -1010,7 +1040,7 @@ export default function ScannerCaixas() {
         setFormTipoMaquina(activeSession.tipo_maquina);
         setFormHoraExtra(activeSession.hora_extra === 's');
 
-        showAlert('warning', `Erro de conexão! Apontamento salvo offline. Prossiga configurando o novo processo para a máquina ${maquinaAtual}.`);
+        showAlert('warning', safeErrorMsg + ` Apontamento salvo offline. Prossiga configurando o novo processo para a máquina ${maquinaAtual}.`);
         setShowScenarioA(true);
       }
     } finally {

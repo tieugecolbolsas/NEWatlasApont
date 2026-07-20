@@ -9,6 +9,7 @@ import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 import LoginScreen from './components/LoginScreen';
 import DashboardSupervisor from './DashboardSupervisor';
 import { getLocalSessionUser, setLocalSessionUser, UserSession } from './lib/auth';
+import { supabase } from './lib/supabase';
 
 interface Toast {
   id: string;
@@ -22,10 +23,19 @@ export default function App() {
 
   // Sincronização automática em segundo plano para restaurar a sessão ativa sem flickeio
   useEffect(() => {
-    const savedUser = getLocalSessionUser();
-    if (savedUser) {
-      setUser(savedUser);
-    }
+    const checkActiveSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session) {
+          handleLogout();
+        } else {
+          setUser(session as UserSession);
+        }
+      } catch (err) {
+        handleLogout();
+      }
+    };
+    checkActiveSession();
   }, []);
 
   const handleLoginSuccess = (userObj: UserSession) => {
