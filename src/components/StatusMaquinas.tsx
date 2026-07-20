@@ -744,23 +744,10 @@ export default function StatusMaquinas() {
                 </th>
                 <th className="py-4 px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('operadora')}>
                   <div className="flex items-center gap-1">
-                    <span>COLABORADORA</span>
+                    <span>OPERADORA</span>
                     {sortField === 'operadora' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
                   </div>
                 </th>
-                <th className="py-4 px-6 cursor-pointer hover:text-white transition-colors text-right" onClick={() => handleSort('eficiencia')}>
-                  <div className="flex items-center justify-end gap-1">
-                    <span>OEE %</span>
-                    {sortField === 'eficiencia' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
-                  </div>
-                </th>
-                <th className="py-4 px-6 cursor-pointer hover:text-white transition-colors text-right" onClick={() => handleSort('pecas_produzidas')}>
-                  <div className="flex items-center justify-end gap-1">
-                    <span>PEÇAS ACUMULADAS</span>
-                    {sortField === 'pecas_produzidas' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
-                  </div>
-                </th>
-                <th className="py-4 px-6 text-right">AÇÕES</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-900/40 text-xs">
@@ -768,15 +755,12 @@ export default function StatusMaquinas() {
                 const isProducing = m.status === 'produzindo';
                 const isPaused = m.status === 'pausada';
                 const isMaintenance = m.status === 'manutencao';
-                const isSelected = selectedMachineId === m.id;
+                const isOffline = m.status === 'offline';
 
                 return (
                   <tr
                     key={m.id}
-                    onClick={() => handleSelectMachine(m)}
-                    className={`cursor-pointer transition-all duration-150 hover:bg-zinc-900/30 group ${
-                      isSelected ? 'bg-purple-950/10 hover:bg-purple-950/15' : ''
-                    }`}
+                    className="transition-all duration-150 hover:bg-zinc-900/10 group"
                   >
                     {/* Status Dot */}
                     <td className="py-3 px-6 whitespace-nowrap">
@@ -793,7 +777,7 @@ export default function StatusMaquinas() {
                           }`} />
                         </span>
                         <span className="text-[8px] font-mono font-bold uppercase tracking-widest text-zinc-500">
-                          {m.status === 'offline' ? 'DESLIGADA' : m.status.toUpperCase()}
+                          {isOffline ? 'DESLIGADA' : m.status.toUpperCase()}
                         </span>
                       </div>
                     </td>
@@ -808,39 +792,12 @@ export default function StatusMaquinas() {
 
                     {/* Process */}
                     <td className="py-3 px-6 whitespace-nowrap uppercase tracking-wider font-sans text-[10px] text-zinc-400 font-bold">
-                      {m.processo}
+                      {isOffline ? '-' : m.processo}
                     </td>
 
                     {/* Operator */}
                     <td className="py-3 px-6 whitespace-nowrap font-sans font-bold text-zinc-200 uppercase tracking-wide">
-                      {m.operadora || 'NÃO DESIGNADA'}
-                    </td>
-
-                    {/* Efficiency (OEE) */}
-                    <td className={`py-3 px-6 whitespace-nowrap text-right font-mono font-bold ${
-                      m.status === 'offline' ? 'text-zinc-600' :
-                      m.eficiencia >= 85 ? 'text-emerald-400' :
-                      m.eficiencia >= 70 ? 'text-amber-400' : 'text-rose-400'
-                    }`}>
-                      {m.status === 'offline' ? '0.0%' : `${m.eficiencia.toFixed(1)}%`}
-                    </td>
-
-                    {/* Total Pieces */}
-                    <td className="py-3 px-6 whitespace-nowrap text-right font-mono font-black text-zinc-100">
-                      {m.status === 'offline' ? 0 : m.pecas_produzidas.toLocaleString('pt-BR')} Pçs
-                    </td>
-
-                    {/* Trigger Actions Icon */}
-                    <td className="py-3 px-6 whitespace-nowrap text-right text-purple-400">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectMachine(m);
-                        }}
-                        className="text-[10px] font-sans font-black uppercase tracking-wider text-[#00624C] hover:text-[#ec76a2] px-2.5 py-1 transition-colors"
-                      >
-                        + DETALHES
-                      </button>
+                      {isOffline ? '-' : (m.operadora || 'NÃO DESIGNADA')}
                     </td>
                   </tr>
                 );
@@ -848,7 +805,7 @@ export default function StatusMaquinas() {
 
               {sortedAndFilteredMachines.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-zinc-500 font-sans uppercase tracking-widest text-xs">
+                  <td colSpan={4} className="py-12 text-center text-zinc-500 font-sans uppercase tracking-widest text-xs">
                     Nenhum registro de produção ativo para os filtros selecionados
                   </td>
                 </tr>
@@ -896,428 +853,6 @@ export default function StatusMaquinas() {
           </div>
         </div>
       )}
-
-      {/* SIDEBAR DETAILED TELEMETRY DRAWER (SLIDE-OVER PANEL) */}
-      <AnimatePresence>
-        {selectedMachine && (
-          <>
-            {/* Dark Backdrop Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.6 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedMachineId(null)}
-              className="fixed inset-0 bg-black z-40 cursor-pointer"
-            />
-
-            {/* Sliding Drawer Body */}
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="fixed top-0 right-0 h-screen w-full sm:w-[540px] md:w-[600px] bg-zinc-950 border-l border-zinc-900 z-50 flex flex-col shadow-2xl shadow-purple-900/20"
-            >
-              {/* Drawer Header */}
-              <div className="p-5 md:p-6 border-b border-zinc-900 flex items-center justify-between shrink-0 bg-zinc-950/90 backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-purple-950/30 border border-purple-500/20 rounded-lg flex items-center justify-center text-purple-400">
-                    <Cpu className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-sans text-base font-black uppercase tracking-widest text-white flex items-center gap-2">
-                      {selectedMachine.numero}
-                      <span className="text-[10px] text-zinc-500 font-mono font-normal">
-                        ({selectedMachine.processo})
-                      </span>
-                    </h3>
-                    <p className="text-[10px] font-sans font-bold uppercase tracking-wider text-zinc-400 mt-0.5">
-                      OPERADORA: {selectedMachine.operadora || 'NÃO DESIGNADA'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {/* Status indicator on header */}
-                  <span className={`px-2.5 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-widest flex items-center gap-1.5 ${
-                    selectedMachine.status === 'produzindo' ? 'bg-emerald-500/10 text-emerald-400' :
-                    selectedMachine.status === 'pausada' ? 'bg-amber-500/10 text-amber-400' :
-                    selectedMachine.status === 'manutencao' ? 'bg-rose-500/10 text-rose-400' :
-                    'bg-zinc-800 text-zinc-400'
-                  }`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${
-                      selectedMachine.status === 'produzindo' ? 'bg-emerald-500' :
-                      selectedMachine.status === 'pausada' ? 'bg-amber-500' :
-                      selectedMachine.status === 'manutencao' ? 'bg-rose-500' :
-                      'bg-zinc-500'
-                    }`} />
-                    {selectedMachine.status === 'offline' ? 'DESLIGADA' : selectedMachine.status.toUpperCase()}
-                  </span>
-
-                  <button
-                    onClick={() => setSelectedMachineId(null)}
-                    className="p-1.5 border border-zinc-800 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
-                  >
-                    <X size={15} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Drawer Content Area (Scrollable) */}
-              <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-6 md:space-y-8 min-h-0">
-                
-                {/* 1. Dynamic Stopwatch (Active production time today) */}
-                <div className="border border-zinc-900 bg-zinc-950 p-5 rounded-xl text-center flex flex-col justify-center items-center relative overflow-hidden group">
-                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-60" />
-                  
-                  <span className="text-[8px] font-sans uppercase tracking-[0.2em] text-zinc-500 font-black flex items-center gap-1.5">
-                    <Clock size={10} className="text-purple-400 animate-pulse" />
-                    TEMPO DE PRODUÇÃO ATIVO HOJE
-                  </span>
-
-                  <h1 className="text-3xl md:text-4xl font-mono font-black text-white tracking-widest mt-2 bg-gradient-to-b from-white to-zinc-300 bg-clip-text text-transparent">
-                    {elapsedTimeStr}
-                  </h1>
-
-                  <span className="text-[8px] font-mono text-zinc-500 mt-1 uppercase">
-                    {selectedMachine.status === 'produzindo' 
-                      ? 'CRONÔMETRO DE OPERAÇÃO ATIVO DESDE O PRIMEIRO REGISTRO DE PRODUÇÃO HOJE' 
-                      : 'CONTAGEM DE TEMPO PAUSADA - TELEMETRIA AGUARDANDO STATUS OPERACIONAL'}
-                  </span>
-                </div>
-
-                {/* 2. Recharts Daily Evolution Chart */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-sans uppercase tracking-widest text-zinc-400 font-black flex items-center gap-1.5">
-                      <Activity size={12} className="text-purple-500" />
-                      GRÁFICO DE EVOLUÇÃO DIÁRIA (HORA A HORA)
-                    </span>
-                    <span className="text-[9px] font-mono text-zinc-500 uppercase font-semibold">
-                      Metas Acumulativas
-                    </span>
-                  </div>
-
-                  <div className="h-[210px] w-full border border-zinc-900/80 bg-zinc-950 p-2.5 rounded-xl">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={chartData}
-                        margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#18181b" />
-                        <XAxis 
-                          dataKey="name" 
-                          stroke="#52525b" 
-                          fontSize={9} 
-                          fontFamily="JetBrains Mono, SFMono-Regular, monospace" 
-                        />
-                        <YAxis 
-                          stroke="#52525b" 
-                          fontSize={9} 
-                          fontFamily="JetBrains Mono, SFMono-Regular, monospace" 
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#09090b',
-                            border: '1px solid #27272a',
-                            borderRadius: '6px',
-                            fontSize: '10px',
-                            fontFamily: 'JetBrains Mono, monospace'
-                          }}
-                        />
-                        <Legend 
-                          iconSize={8}
-                          wrapperStyle={{
-                            fontSize: '8px',
-                            fontFamily: 'Inter, sans-serif',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            fontWeight: '600',
-                            paddingTop: '6px'
-                          }}
-                        />
-                        {/* 4 Trend Lines with explicit colors */}
-                        <Line
-                          type="monotone"
-                          dataKey="Conformes (Boas)"
-                          stroke="#10b981"
-                          strokeWidth={2}
-                          dot={{ r: 2 }}
-                          activeDot={{ r: 4 }}
-                          isAnimationActive={false} // Prevent animation flickering on update
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="Refugo (Sucata)"
-                          stroke="#ef4444"
-                          strokeWidth={1.5}
-                          dot={{ r: 1 }}
-                          isAnimationActive={false}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="Retrabalho Próprio"
-                          stroke="#eab308"
-                          strokeWidth={1.5}
-                          dot={{ r: 1 }}
-                          isAnimationActive={false}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="Retrabalho Terceiros"
-                          stroke="#f97316"
-                          strokeWidth={1.5}
-                          dot={{ r: 1 }}
-                          isAnimationActive={false}
-                        />
-                        
-                        {/* 3 Blue Reference Target Lines */}
-                        <ReferenceLine 
-                          y={1000} 
-                          stroke="#3b82f6" 
-                          strokeDasharray="4 4" 
-                          label={{ 
-                            value: 'Meta Mín: 1000', 
-                            fill: '#3b82f6', 
-                            fontSize: 7, 
-                            position: 'insideLeft',
-                            fontFamily: 'JetBrains Mono'
-                          }} 
-                        />
-                        <ReferenceLine 
-                          y={1200} 
-                          stroke="#2563eb" 
-                          strokeDasharray="4 4" 
-                          label={{ 
-                            value: 'Meta Nom: 1200', 
-                            fill: '#2563eb', 
-                            fontSize: 7, 
-                            position: 'insideLeft',
-                            fontFamily: 'JetBrains Mono'
-                          }} 
-                        />
-                        <ReferenceLine 
-                          y={1500} 
-                          stroke="#1d4ed8" 
-                          strokeDasharray="4 4" 
-                          label={{ 
-                            value: 'Meta Max: 1500', 
-                            fill: '#1d4ed8', 
-                            fontSize: 7, 
-                            position: 'insideLeft',
-                            fontFamily: 'JetBrains Mono'
-                          }} 
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* 3. Status Switcher Actions */}
-                <div className="space-y-2.5">
-                  <span className="text-[9px] font-sans uppercase tracking-widest text-zinc-400 font-black block">
-                    MUDAR STATUS OPERACIONAL DA MÁQUINA
-                  </span>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => handleUpdateStatus(selectedMachine.id, selectedMachine.numero, 'produzindo')}
-                      className={`py-2.5 px-3 rounded flex items-center justify-center gap-2 font-sans text-[9px] font-black tracking-widest uppercase cursor-pointer border transition-colors ${
-                        selectedMachine.status === 'produzindo'
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      <PlayCircle size={12} /> Produzindo
-                    </button>
-
-                    <button
-                      onClick={() => handleUpdateStatus(selectedMachine.id, selectedMachine.numero, 'pausada')}
-                      className={`py-2.5 px-3 rounded flex items-center justify-center gap-2 font-sans text-[9px] font-black tracking-widest uppercase cursor-pointer border transition-colors ${
-                        selectedMachine.status === 'pausada'
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      <PauseCircle size={12} /> Pausada
-                    </button>
-
-                    <button
-                      onClick={() => handleUpdateStatus(selectedMachine.id, selectedMachine.numero, 'manutencao')}
-                      className={`py-2.5 px-3 rounded flex items-center justify-center gap-2 font-sans text-[9px] font-black tracking-widest uppercase cursor-pointer border transition-colors ${
-                        selectedMachine.status === 'manutencao'
-                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      <Wrench size={12} /> Manutenção
-                    </button>
-
-                    <button
-                      onClick={() => handleUpdateStatus(selectedMachine.id, selectedMachine.numero, 'offline')}
-                      className={`py-2.5 px-3 rounded flex items-center justify-center gap-2 font-sans text-[9px] font-black tracking-widest uppercase cursor-pointer border transition-colors ${
-                        selectedMachine.status === 'offline'
-                          ? 'bg-zinc-800 text-zinc-300 border-zinc-700'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      <PowerOff size={12} /> Offline
-                    </button>
-                  </div>
-                </div>
-
-                {/* 4. Edit details parameters */}
-                <form onSubmit={handleUpdateMachineDetails} className="space-y-4 pt-4 border-t border-zinc-900/60">
-                  <span className="text-[9px] font-sans uppercase tracking-widest text-zinc-400 font-black block">
-                    ATUALIZAR PARÂMETROS DA MÁQUINA
-                  </span>
-
-                  {/* Operator dropdown field */}
-                  <div className="space-y-1.5 relative">
-                    <label className="text-[9px] font-sans uppercase tracking-widest text-zinc-400 font-bold block">
-                      Colaboradora Alocada
-                    </label>
-                    <div className="relative">
-                      <User size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 z-10" />
-                      <input
-                        type="text"
-                        required
-                        value={terminalOperator}
-                        onChange={(e) => {
-                          setTerminalOperator(e.target.value);
-                          setTerminalDropdownOpen(true);
-                        }}
-                        onFocus={() => setTerminalDropdownOpen(true)}
-                        onBlur={() => {
-                          setTimeout(() => {
-                            setTerminalDropdownOpen(false);
-                          }, 250);
-                        }}
-                        placeholder="BUSCAR COLABORADORA..."
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded pl-9 pr-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-[#00624C] uppercase"
-                      />
-                      {terminalDropdownOpen && (
-                        <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-zinc-950 border border-zinc-800 rounded shadow-2xl z-50">
-                          {colaboradoras
-                            .filter(name => name.toLowerCase().includes(terminalOperator.toLowerCase()))
-                            .map(name => (
-                              <div
-                                key={name}
-                                onMouseDown={(e) => {
-                                  e.preventDefault();
-                                }}
-                                onClick={() => {
-                                  setTerminalOperator(name);
-                                  setTerminalDropdownOpen(false);
-                                }}
-                                className="px-3 py-2 hover:bg-purple-950/40 text-xs font-mono text-zinc-100 cursor-pointer uppercase transition-colors"
-                              >
-                                {name}
-                              </div>
-                            ))}
-                          {colaboradoras.filter(name => name.toLowerCase().includes(terminalOperator.toLowerCase())).length === 0 && (
-                            <div className="px-3 py-2 text-[10px] text-zinc-500 font-mono uppercase">
-                              Sem resultados para "{terminalOperator}"
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-sans uppercase tracking-widest text-zinc-400 font-bold block">
-                        Processo Ativo
-                      </label>
-                      <select
-                        value={terminalProcess}
-                        onChange={(e) => setTerminalProcess(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded px-2.5 py-2 text-xs font-sans text-white focus:outline-none focus:border-[#00624C]"
-                      >
-                        <option value="CADÊNCIA">CADÊNCIA</option>
-                        <option value="EMBALAGEM">EMBALAGEM</option>
-                        <option value="REVISÃO">REVISÃO</option>
-                        <option value="DIVERSOS">DIVERSOS</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-sans uppercase tracking-widest text-zinc-500 font-bold block">
-                        Eficiência (%) [Automático]
-                      </label>
-                      <input
-                        type="number"
-                        readOnly
-                        value={terminalEfficiency}
-                        className="w-full bg-zinc-900/60 border border-zinc-800/50 rounded px-3 py-2 text-xs font-mono text-zinc-500 cursor-not-allowed focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-sans uppercase tracking-widest text-zinc-500 font-bold block">
-                      Peças Produzidas Acumuladas [Automático]
-                    </label>
-                    <input
-                      type="number"
-                      readOnly
-                      value={terminalPecas}
-                      className="w-full bg-zinc-900/60 border border-zinc-800/50 rounded px-3 py-2 text-xs font-mono text-zinc-500 cursor-not-allowed focus:outline-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 bg-[#00624C] hover:bg-[#004838] text-white rounded text-[10px] font-sans font-black tracking-widest uppercase transition-colors cursor-pointer"
-                  >
-                    Salvar Configurações
-                  </button>
-                </form>
-
-                {/* 5. Chronological pointer history */}
-                <div className="pt-4 border-t border-zinc-900">
-                  <div className="flex items-center gap-2 mb-3">
-                    <History size={12} className="text-zinc-500" />
-                    <span className="text-[9px] font-sans uppercase tracking-widest text-zinc-400 font-black">
-                      HISTÓRICO INDIVIDUAL DE APONTAMENTOS
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                    {machineApontamentos.slice(0, 5).map((ap) => (
-                      <div 
-                        key={ap.id}
-                        className="p-2 border border-zinc-900 bg-zinc-900/10 rounded flex items-center justify-between text-[9px] font-mono"
-                      >
-                        <div>
-                          <span className="text-zinc-500 font-bold">
-                            {new Date(ap.timestamp).toLocaleTimeString()}
-                          </span>
-                          <p className="text-zinc-300 font-bold mt-0.5">
-                            +{ap.quantidade} Peças ({ap.processo})
-                          </p>
-                        </div>
-                        <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold ${
-                          ap.status === 'validado' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
-                        }`}>
-                          {ap.status}
-                        </span>
-                      </div>
-                    ))}
-                    {machineApontamentos.length === 0 && (
-                      <p className="text-center py-4 text-zinc-600 text-[9px] font-mono uppercase">
-                        Sem apontamentos para esta máquina hoje
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
     </div>
   );
