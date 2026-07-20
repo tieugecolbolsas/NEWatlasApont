@@ -341,6 +341,13 @@ export default function Apontamentos() {
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
   const [ocorrencias, setOcorrencias] = useState<any[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  useEffect(() => {
+    const handleRefresh = () => setRefreshTrigger(prev => prev + 1);
+    window.addEventListener('refresh-apontamentos', handleRefresh);
+    return () => window.removeEventListener('refresh-apontamentos', handleRefresh);
+  }, []);
 
   // Carregar histórico do Supabase
   const fetchHistSupabase = async () => {
@@ -463,10 +470,10 @@ export default function Apontamentos() {
     }
   }, [searchTerm, filterMachine, filterProcess, filterStatus]);
 
-  // Carregar dados quando a página muda
+  // Carregar dados quando a página ou refreshTrigger muda
   useEffect(() => {
     fetchHistSupabase();
-  }, [page]);
+  }, [page, refreshTrigger]);
 
   // Lógica de criação de apontamento manual
   const handleCreateApontamento = async (e: React.FormEvent) => {
@@ -1044,7 +1051,7 @@ export default function Apontamentos() {
                   const d = parseTimeToDateToday(hIni, item.data);
                   if (d && (!earliestStart || d < earliestStart)) earliestStart = d;
                 }
-                const hTerm = item.horario_termino || item.created_at || item.timestamp;
+                const hTerm = item.horario_termino;
                 if (hTerm) {
                   const d = parseTimeToDateToday(hTerm, item.data);
                   if (d && (!latestEnd || d > latestEnd)) latestEnd = d;
@@ -1616,7 +1623,7 @@ export default function Apontamentos() {
                               return t.slice(0, 5); // display "HH:MM"
                             };
 
-                            const hTermino = item.horario_termino || item.created_at || item.timestamp;
+                            const hTermino = item.horario_termino;
                             const formattedTime = formatTimeStr(hTermino);
                             const hInicio = item.horario_inicio || '';
                             const formattedTimeInicio = hInicio ? formatTimeStr(hInicio) : '';

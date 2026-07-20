@@ -644,6 +644,7 @@ export default function ScannerCaixas() {
       showAlert('success', `Sessão do terminal iniciada com sucesso real para a máquina ${novaSessao.num_maquina}!`);
       retomarScanner();
       await carregarBaseDeDados();
+      window.dispatchEvent(new CustomEvent('refresh-apontamentos'));
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao criar sessão ativa:', err);
       // Fallback in-memory session activation
@@ -700,6 +701,7 @@ export default function ScannerCaixas() {
       showAlert('success', `Ajuste de Qualidade lançado com sucesso na máquina ${activeSession.num_maquina}!`);
       retomarScanner();
       await carregarBaseDeDados();
+      window.dispatchEvent(new CustomEvent('refresh-apontamentos'));
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao gravar ajuste de qualidade:', err);
       // Fallback in-memory record saving
@@ -953,6 +955,7 @@ export default function ScannerCaixas() {
 
       // Recarrega o histórico
       await carregarBaseDeDados();
+      window.dispatchEvent(new CustomEvent('refresh-apontamentos'));
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao processar apontamento:', err);
       
