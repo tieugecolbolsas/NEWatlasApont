@@ -204,13 +204,14 @@ export default function ScannerCaixas() {
   useEffect(() => {
     async function carregarAuxiliares() {
       try {
-        const { data, error } = await supabase
-          .schema('public')
-          .from('costureiras_funcoes')
-          .select('operacao_nome, operadora_nome, categoria_nome');
-        if (!error && data) {
+        const { data: procData, error: procError } = await supabase
+          .schema('AtlasApontamento')
+          .from('processos_disponiveis')
+          .select('operacao_nome, categoria_nome');
+        
+        if (!procError && procData) {
           const opsMap = new Map();
-          data.forEach((item: any) => {
+          procData.forEach((item: any) => {
             if (item.operacao_nome) {
               opsMap.set(item.operacao_nome, {
                 operacao_nome: item.operacao_nome,
@@ -222,8 +223,15 @@ export default function ScannerCaixas() {
           setListaOperacoesObj(uniqueOpsObj);
 
           const distinctOps = uniqueOpsObj.map(o => o.operacao_nome);
-          const distinctOpe = Array.from(new Set(data.map((item: any) => item.operadora_nome).filter(Boolean)));
           setListaOperacoes(distinctOps as string[]);
+        }
+
+        const { data: opeData, error: opeError } = await supabase
+          .schema('public')
+          .from('costureiras_funcoes')
+          .select('operadora_nome');
+        if (!opeError && opeData) {
+          const distinctOpe = Array.from(new Set(opeData.map((item: any) => item.operadora_nome).filter(Boolean)));
           setListaOperadoras(distinctOpe as string[]);
         }
       } catch (err) {
@@ -1243,6 +1251,19 @@ export default function ScannerCaixas() {
                             return <div className="p-2 text-zinc-500 text-xs font-mono">Nenhuma operação encontrada</div>;
                           }
                           
+                          const sortedEntries = (Object.entries(grouped) as [string, string[]][]).sort(([catA], [catB]) => {
+                            const getWeight = (cat: string) => {
+                              const norm = cat.toUpperCase().trim();
+                              if (norm === 'FORRAÇÃO CITY' || norm === 'FORRACAO CITY') return 1;
+                              if (norm === 'ORELHA CITY') return 2;
+                              return 3;
+                            };
+                            const weightA = getWeight(catA);
+                            const weightB = getWeight(catB);
+                            if (weightA !== weightB) return weightA - weightB;
+                            return catA.toUpperCase().localeCompare(catB.toUpperCase());
+                          });
+                          
                           return (
                             <select
                               size={Math.min(8, totalFiltered + Object.keys(grouped).length)}
@@ -1257,7 +1278,7 @@ export default function ScannerCaixas() {
                                 e.stopPropagation();
                               }}
                             >
-                              {(Object.entries(grouped) as [string, string[]][]).map(([category, ops]) => (
+                              {sortedEntries.map(([category, ops]) => (
                                 <optgroup key={category} label={category.toUpperCase()} className="text-[#00624C] font-extrabold bg-zinc-950 px-2 py-1">
                                   {ops.map(op => (
                                     <option 

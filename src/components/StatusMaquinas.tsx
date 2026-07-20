@@ -199,8 +199,8 @@ export default function StatusMaquinas() {
   const fetchProcessos = async () => {
     try {
       const { data, error } = await supabase
-        .schema('public')
-        .from('costureiras_funcoes')
+        .schema('AtlasApontamento')
+        .from('processos_disponiveis')
         .select('operacao_nome, categoria_nome');
       
       if (error) throw error;
@@ -875,6 +875,19 @@ export default function StatusMaquinas() {
                     return <div className="p-2 text-zinc-500 text-xs font-mono">Nenhum processo encontrado</div>;
                   }
                   
+                  const sortedEntries = (Object.entries(grouped) as [string, string[]][]).sort(([catA], [catB]) => {
+                    const getWeight = (cat: string) => {
+                      const norm = cat.toUpperCase().trim();
+                      if (norm === 'FORRAÇÃO CITY' || norm === 'FORRACAO CITY') return 1;
+                      if (norm === 'ORELHA CITY') return 2;
+                      return 3;
+                    };
+                    const weightA = getWeight(catA);
+                    const weightB = getWeight(catB);
+                    if (weightA !== weightB) return weightA - weightB;
+                    return catA.toUpperCase().localeCompare(catB.toUpperCase());
+                  });
+                  
                   return (
                     <select
                       size={Math.min(8, totalFiltered + Object.keys(grouped).length)}
@@ -892,7 +905,7 @@ export default function StatusMaquinas() {
                       }}
                     >
                       <option value="" className="text-zinc-400 bg-zinc-950 py-1 font-bold">TODOS OS PROCESSOS</option>
-                      {(Object.entries(grouped) as [string, string[]][]).map(([category, ops]) => (
+                      {sortedEntries.map(([category, ops]) => (
                         <optgroup key={category} label={category.toUpperCase()} className="text-[#00624C] font-extrabold bg-zinc-950 px-2 py-1">
                           {ops.map(op => (
                             <option 
