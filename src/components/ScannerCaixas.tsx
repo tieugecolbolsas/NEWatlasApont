@@ -174,11 +174,11 @@ export default function ScannerCaixas() {
       setConfirmaOperacao(false);
       setConfirmaLote(false);
       setConfirmaLado(false);
-      setConfirmaTipoMaquina(false);
+      setConfirmaTipoMaquina(!!formTipoMaquina);
       setConfirmaMateriaPrima(false);
       setFormObservacao('');
     }
-  }, [showScenarioA]);
+  }, [showScenarioA, formTipoMaquina]);
 
   // Sincronizar lado da sessão ativa para o estado editável do Cenário B e resetar confirmações
   useEffect(() => {
@@ -948,7 +948,7 @@ export default function ScannerCaixas() {
                   {historicoHoje.map((registro, idx) => (
                     <div 
                       key={registro.id || idx} 
-                      className="bg-[#af1e59]/16 border border-[#af1e59]/25 p-4 rounded-lg hover:border-[#af1e59]/40 transition-colors space-y-3"
+                      className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg hover:border-[#00624C]/40 transition-colors space-y-3"
                     >
                       {/* Header do Log */}
                       <div className="flex items-center justify-between border-b border-zinc-900/40 pb-2">
@@ -1263,7 +1263,8 @@ export default function ScannerCaixas() {
                       <input 
                         type="text"
                         required
-                        disabled={confirmaTipoMaquina}
+                        disabled={confirmaTipoMaquina || !!formTipoMaquina}
+                        readOnly={!!formTipoMaquina}
                         placeholder="Ex: RETALHADORA"
                         value={formTipoMaquina}
                         onChange={(e) => setFormTipoMaquina(e.target.value)}
@@ -1271,6 +1272,7 @@ export default function ScannerCaixas() {
                       />
                       <button
                         type="button"
+                        disabled={!!formTipoMaquina}
                         onClick={() => {
                           if (!formTipoMaquina.trim()) {
                             showAlert('warning', "Por favor, preencha o Tipo de Máquina antes de confirmar.");
@@ -1282,7 +1284,7 @@ export default function ScannerCaixas() {
                           confirmaTipoMaquina 
                             ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                             : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                        }`}
+                        } ${formTipoMaquina ? 'opacity-50 cursor-not-allowed bg-emerald-600 border-emerald-500 text-white' : ''}`}
                         title={confirmaTipoMaquina ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
                       >
                         <Check size={16} className={confirmaTipoMaquina ? "scale-110" : ""} />

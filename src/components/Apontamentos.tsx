@@ -17,7 +17,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Mail
+  Mail,
+  X,
+  Copy
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getLocalSessionUser } from '../lib/auth';
@@ -666,55 +668,97 @@ export default function Apontamentos() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Operadora, Apontadora, Máquina..."
-                className="w-full bg-zinc-900 border border-zinc-800 rounded pl-8 pr-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-[#00624C] transition-colors"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded pl-8 pr-8 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-[#00624C] transition-colors"
               />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer p-0.5 rounded-full hover:bg-zinc-800 transition-colors"
+                >
+                  <X size={12} />
+                </button>
+              )}
             </div>
           </div>
 
           {/* Machine Filter */}
           <div className="space-y-1">
             <label className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 block font-bold">Máquina</label>
-            <select
-              value={filterMachine}
-              onChange={(e) => setFilterMachine(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
-            >
-              <option value="">TODAS AS MÁQUINAS</option>
-              {dinamicMaquinas.map(m => (
-                <option key={m} value={m}>{m}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={filterMachine}
+                onChange={(e) => setFilterMachine(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 pr-8 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
+              >
+                <option value="">TODAS AS MÁQUINAS</option>
+                {dinamicMaquinas.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              {filterMachine && (
+                <button
+                  type="button"
+                  onClick={() => setFilterMachine('')}
+                  className="absolute right-7 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer p-0.5 rounded-full hover:bg-zinc-800 transition-colors z-10"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Process Filter */}
           <div className="space-y-1">
             <label className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 block font-bold">Processo / Operação</label>
-            <select
-              value={filterProcess}
-              onChange={(e) => setFilterProcess(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
-            >
-              <option value="">TODOS OS PROCESSOS</option>
-              {dinamicProcessos.map(p => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={filterProcess}
+                onChange={(e) => setFilterProcess(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 pr-8 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
+              >
+                <option value="">TODOS OS PROCESSOS</option>
+                {dinamicProcessos.map(p => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+              {filterProcess && (
+                <button
+                  type="button"
+                  onClick={() => setFilterProcess('')}
+                  className="absolute right-7 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer p-0.5 rounded-full hover:bg-zinc-800 transition-colors z-10"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Status Filter */}
           <div className="space-y-1">
             <label className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 block font-bold">Qualidade / Status</label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
-            >
-              <option value="">TODOS OS STATUS</option>
-              <option value="VALIDADO">VALIDADO</option>
-              <option value="REFUGO">REFUGO</option>
-              <option value="RETRABALHO PRÓPRIO">RETRABALHO PRÓPRIO</option>
-              <option value="RETRABALHO TERCEIRO">RETRABALHO TERCEIRO</option>
-            </select>
+            <div className="relative">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 pr-8 text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#00624C]"
+              >
+                <option value="">TODOS OS STATUS</option>
+                <option value="VALIDADO">VALIDADO</option>
+                <option value="REFUGO">REFUGO</option>
+                <option value="RETRABALHO PRÓPRIO">RETRABALHO PRÓPRIO</option>
+                <option value="RETRABALHO TERCEIRO">RETRABALHO TERCEIRO</option>
+              </select>
+              {filterStatus && (
+                <button
+                  type="button"
+                  onClick={() => setFilterStatus('')}
+                  className="absolute right-7 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer p-0.5 rounded-full hover:bg-zinc-800 transition-colors z-10"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -956,9 +1000,30 @@ export default function Apontamentos() {
                             </div>
                           </div>
                           <span className="inline-flex px-3 py-1 bg-[#00624C]/15 border border-[#00624C]/35 text-[#00624C] text-base font-extrabold rounded-lg shadow-sm shadow-[#00624C]/10">
-                            {block.num_maquina} {block.codigo_manual_curto ? ` | COD: ${block.codigo_manual_curto}` : ''}
+                            {block.num_maquina}
                           </span>
                         </div>
+
+                        {block.codigo_manual_curto && (
+                          <div className="space-y-1">
+                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block">Código Curto</span>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#00624C] text-white font-mono text-xs font-black rounded shadow-md shadow-[#00624C]/25 border border-emerald-400/30">
+                              <span>COD: {block.codigo_manual_curto}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(block.codigo_manual_curto);
+                                  addToast(`Código ${block.codigo_manual_curto} copiado para a área de transferência!`, 'success');
+                                }}
+                                className="p-1 hover:bg-white/10 rounded transition-colors text-white cursor-pointer"
+                                title="Copiar Código"
+                              >
+                                <Copy size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        )}
                         
                         <div className="space-y-1">
                           <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block">DATA DO PROCESSO</span>

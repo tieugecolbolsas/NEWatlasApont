@@ -26,7 +26,7 @@ interface SidebarProps {
 export const menuItems = [
   { id: 'apontamentos', label: 'Apontamentos', icon: History, path: '/apontamentos' },
   { id: 'status-maquinas', label: 'Status de Máquinas', icon: Cpu, path: '/status-maquinas' },
-  { id: 'scanner-caixas', label: 'Scanner de Caixas', icon: Scan, path: '/scanner-caixas' },
+  { id: 'scanner-caixas', label: 'Scan QR Code', icon: Scan, path: '/scanner-caixas' },
 ] as const;
 
 export default function Sidebar({
