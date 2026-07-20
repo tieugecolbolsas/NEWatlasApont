@@ -129,11 +129,11 @@ export default function ScannerCaixas() {
   const isProcessingScan = useRef(false);
 
   // Estados dos Modais / Fluxo
-  const [activeSession, setActiveSession] = useState<any | null>(null); // Se houver, abre Cenário B
-  const [showScenarioA, setShowScenarioA] = useState(false); // Abre Cenário A (Formulário Completo)
+  const [activeSession, setActiveSession] = useState<any | null>(null); // Se houver, abre Apontamento de Contagem
+  const [showScenarioA, setShowScenarioA] = useState(false); // Abre Novo Processo (Formulário Completo)
   const [scannedTarget, setScannedTarget] = useState(''); // num_maquina ou código escaneado
 
-  // Campos do Formulário - Cenário A (Novo Início de Processo)
+  // Campos do Formulário - Novo Processo (Novo Início de Processo)
   const [formMaquina, setFormMaquina] = useState('');
   const [formCodigoCurto, setFormCodigoCurto] = useState('');
   const [formOperadora, setFormOperadora] = useState('');
@@ -144,7 +144,7 @@ export default function ScannerCaixas() {
   const [formHoraExtra, setFormHoraExtra] = useState<boolean>(false); // toggle que salva 's' ou 'n'
   const [formMateriaPrima, setFormMateriaPrima] = useState<number | ''>(0);
 
-  // Estados de Confirmação Individual de Segurança (Cenário A)
+  // Estados de Confirmação Individual de Segurança (Novo Processo)
   const [confirmaOperadora, setConfirmaOperadora] = useState(false);
   const [confirmaOperacao, setConfirmaOperacao] = useState(false);
   const [confirmaLote, setConfirmaLote] = useState(false);
@@ -152,14 +152,20 @@ export default function ScannerCaixas() {
   const [confirmaTipoMaquina, setConfirmaTipoMaquina] = useState(false);
   const [confirmaMateriaPrima, setConfirmaMateriaPrima] = useState(false);
 
-  // Estado do Lado no Apontamento (Cenário B - Editável)
+  // Estado do Lado no Apontamento (Apontamento de Contagem - Editável)
   const [cenarioBLado, setCenarioBLado] = useState<'Esquerdo' | 'Direito' | 'Único'>('Único');
 
   // Campo Observação em ambos os modais (limite de 150 caracteres)
   const [formObservacao, setFormObservacao] = useState('');
   const [cenarioBObservacao, setCenarioBObservacao] = useState('');
 
-  // Estados de Confirmação Individual de Segurança (Cenário B)
+  // Estados adicionais para chamado de manutenção e finalização antecipada de turno
+  const [showManutencaoForm, setShowManutencaoForm] = useState(false);
+  const [manutencaoDesc, setManutencaoDesc] = useState('');
+  const [showJustificativaModal, setShowJustificativaModal] = useState(false);
+  const [justificativaMotivo, setJustificativaMotivo] = useState('');
+
+  // Estados de Confirmação Individual de Segurança (Apontamento de Contagem)
   const [confirmaBProdConforme, setConfirmaBProdConforme] = useState(false);
   const [confirmaBLado, setConfirmaBLado] = useState(false);
   const [confirmaBRetrabalhoProprio, setConfirmaBRetrabalhoProprio] = useState(false);
@@ -167,7 +173,7 @@ export default function ScannerCaixas() {
   const [confirmaBMotivoOcorrencia, setConfirmaBMotivoOcorrencia] = useState(false);
   const [confirmaBObservacao, setConfirmaBObservacao] = useState(false);
 
-  // Resetar confirmações ao carregar formulário Cenário A
+  // Resetar confirmações ao carregar formulário Novo Processo
   useEffect(() => {
     if (showScenarioA) {
       setConfirmaOperadora(false);
@@ -180,7 +186,7 @@ export default function ScannerCaixas() {
     }
   }, [showScenarioA, formTipoMaquina]);
 
-  // Sincronizar lado da sessão ativa para o estado editável do Cenário B e resetar confirmações
+  // Sincronizar lado da sessão ativa para o estado editável do Apontamento de Contagem e resetar confirmações
   useEffect(() => {
     if (activeSession) {
       setCenarioBLado(activeSession.lado || 'Único');
@@ -241,7 +247,7 @@ export default function ScannerCaixas() {
     carregarAuxiliares();
   }, []);
   
-  // Campos do Formulário - Cenário B (Apontamento de Produção de Sessão Ativa)
+  // Campos do Formulário - Apontamento de Contagem (Apontamento de Produção de Sessão Ativa)
   const [prodConforme, setProdConforme] = useState<number | ''>('');
   const [retrabalhoProprio, setRetrabalhoProprio] = useState<number>(0);
   const [retrabalhoTerceiro, setRetrabalhoTerceiro] = useState<number>(0);
@@ -336,7 +342,7 @@ export default function ScannerCaixas() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Busca histórico de registros de produção teste salvos hoje
+  // Busca histórico de registros de produção salvos hoje
   async function carregarBaseDeDados() {
     setIsLoadingHistory(true);
     try {
@@ -428,7 +434,7 @@ export default function ScannerCaixas() {
         }
 
         if (sessaoEncontrada) {
-          // Se o código estiver ativo, abre o Modal de Contagem (Cenário B)
+          // Se o código estiver ativo, abre o Modal de Contagem (Apontamento de Contagem)
           setActiveSession(sessaoEncontrada);
           setProdConforme('');
           setRetrabalhoProprio(0);
@@ -476,7 +482,7 @@ export default function ScannerCaixas() {
         }
 
         if (sessaoEncontrada) {
-          // Abre o Modal do Cenário B (Contagem)
+          // Abre o Modal do Apontamento de Contagem (Contagem)
           setActiveSession(sessaoEncontrada);
           setProdConforme('');
           setRetrabalhoProprio(0);
@@ -485,7 +491,7 @@ export default function ScannerCaixas() {
           setShowQualidadeForm(false);
           setMotivoOcorrencia('Produção Normal');
         } else {
-          // Abre o Modal do Cenário A (Inicialização)
+          // Abre o Modal do Novo Processo (Inicialização)
           let tipoMaquinaEncontrado = tipoMaquinaPadrao;
           let operadoraRecente = '';
 
@@ -575,6 +581,10 @@ export default function ScannerCaixas() {
     setActiveSession(null);
     setShowScenarioA(false);
     setShowQualidadeForm(false);
+    setShowManutencaoForm(false);
+    setManutencaoDesc('');
+    setShowJustificativaModal(false);
+    setJustificativaMotivo('');
     setIsScanning(true);
     isProcessingScan.current = false;
     if (scannerRef.current && scannerRef.current.getState() === 3) {
@@ -583,7 +593,7 @@ export default function ScannerCaixas() {
   };
 
   // ==========================================
-  // SALVAR CENÁRIO A: INÍCIO DE NOVO PROCESSO
+  // SALVAR Novo Processo: INÍCIO DE NOVO PROCESSO
   // ==========================================
   const handleSalvarCenarioA = async () => {
     if (!formOperadora.trim()) {
@@ -707,9 +717,119 @@ export default function ScannerCaixas() {
   };
 
   // ==========================================
-  // SALVAR CENÁRIO B: APONTAMENTO DE PRODUÇÃO
+  // FUNÇÕES DE MANUTENÇÃO E JUSTIFICATIVA DE ENCERRAMENTO ANTECIPADO
   // ==========================================
-  const handleSalvarCenarioB = async (mudarProcesso: boolean = false) => {
+  const handleConfirmarManutencao = async () => {
+    setIsSaving(true);
+    try {
+      const userObj = getLocalSessionUser() as any;
+      const userId = userObj?.id || userObj?.uid;
+      
+      const agora = new Date();
+      const horarioInicio = agora.toTimeString().split(' ')[0]; // HH:MM:SS
+      
+      const { error } = await supabase
+        .schema('AtlasApontamento')
+        .from('ocorrencias_terminal')
+        .insert([{
+          tipo_ocorrencia: 'manutencao',
+          descricao: manutencaoDesc.trim() || 'Chamado de manutenção solicitado',
+          horario_inicio: horarioInicio,
+          status: 'pendente',
+          user_id: userId
+        }]);
+        
+      if (error) throw error;
+      
+      showAlert('success', 'Chamado de manutenção registrado com sucesso!');
+      setShowManutencaoForm(false);
+      setManutencaoDesc('');
+    } catch (err: any) {
+      console.error('[Terminal] Erro ao salvar chamado de manutenção:', err);
+      showAlert('error', `Falha ao registrar manutenção: ${err.message || err}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const verificarSeExigeJustificativa = () => {
+    const agora = new Date();
+    const diaSemana = agora.getDay(); // 0: Dom, 1: Seg, 2: Ter, 3: Qua, 4: Qui, 5: Sex, 6: Sáb
+    const horas = agora.getHours();
+    const minutos = agora.getMinutes();
+    const tempoAtualEmMinutos = horas * 60 + minutos;
+
+    const thresholdDate = new Date('2026-11-29T23:59:59');
+    
+    if (diaSemana === 5) { // Sexta-feira
+      if (agora <= thresholdDate) {
+        // Até 29 de Novembro de 2026: antes de 16h44 exige justificativa (16 * 60 + 44 = 1004 minutos)
+        const limiteMinutos = 16 * 60 + 44;
+        return tempoAtualEmMinutos < limiteMinutos;
+      } else {
+        // Após 29 de Novembro de 2026: antes de 15h44 exige justificativa (15 * 60 + 44 = 944 minutos)
+        const limiteMinutos = 15 * 60 + 44;
+        return tempoAtualEmMinutos < limiteMinutos;
+      }
+    } else if (diaSemana >= 1 && diaSemana <= 4) { // Segunda a Quinta
+      // Antes de 17h00 exige justificativa (17 * 60 = 1020 minutos)
+      const limiteMinutos = 17 * 60;
+      return tempoAtualEmMinutos < limiteMinutos;
+    }
+    
+    return false;
+  };
+
+  const handleFinalizarProcessoClick = () => {
+    const exigeJustificativa = verificarSeExigeJustificativa();
+    if (exigeJustificativa) {
+      setJustificativaMotivo('');
+      setShowJustificativaModal(true);
+    } else {
+      handleSalvarCenarioB(false, true);
+    }
+  };
+
+  const handleConfirmarFinalizacaoAntecipada = async () => {
+    if (!justificativaMotivo.trim()) {
+      showAlert('warning', 'Por favor, descreva o motivo da finalização antecipada.');
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const userObj = getLocalSessionUser() as any;
+      const userId = userObj?.id || userObj?.uid;
+      
+      const agora = new Date();
+      const horarioInicio = agora.toTimeString().split(' ')[0]; // HH:MM:SS
+      
+      const { error } = await supabase
+        .schema('AtlasApontamento')
+        .from('ocorrencias_terminal')
+        .insert([{
+          tipo_ocorrencia: 'finalizacao_antecipada',
+          descricao: justificativaMotivo.trim(),
+          horario_inicio: horarioInicio,
+          status: 'pendente',
+          user_id: userId
+        }]);
+        
+      if (error) throw error;
+      
+      setShowJustificativaModal(false);
+      await handleSalvarCenarioB(false, true);
+    } catch (err: any) {
+      console.error('[Terminal] Erro ao registrar finalização antecipada:', err);
+      showAlert('error', `Falha ao registrar justificativa: ${err.message || err}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ==========================================
+  // SALVAR Apontamento de Contagem: APONTAMENTO DE PRODUÇÃO
+  // ==========================================
+  const handleSalvarCenarioB = async (mudarProcesso: boolean = false, finalizarProcessoCompleto: boolean = false) => {
     const isConformeEmpty = prodConforme === '';
     const hasRetrabalho = (Number(retrabalhoProprio) > 0 || Number(retrabalhoTerceiro) > 0);
 
@@ -776,8 +896,11 @@ export default function ScannerCaixas() {
 
       if (errDelete) throw errDelete;
 
-      // 3. Verifica fluxo: Mudar Processo ou Recriação Automática
-      if (!mudarProcesso) {
+      // 3. Verifica fluxo: Mudar Processo, Finalizar Processo Completo ou Recriação Automática
+      if (finalizarProcessoCompleto) {
+        showAlert('success', `Apontamento finalizado e encerrado com sucesso na máquina ${activeSession.num_maquina}!`);
+        retomarScanner();
+      } else if (!mudarProcesso) {
         // Recria sessão ativa com mesmos parâmetros e novo horario_inicio
         const novaSessaoRecriada = {
           num_maquina: activeSession.num_maquina,
@@ -838,7 +961,10 @@ export default function ScannerCaixas() {
       // Remove from offlineSessoes in-memory if it was an offline session
       setOfflineSessoes(prev => prev.filter(s => s.id !== activeSession.id));
 
-      if (!mudarProcesso) {
+      if (finalizarProcessoCompleto) {
+        showAlert('warning', `Erro de conexão! Apontamento finalizado offline (em memória) na máquina ${activeSession.num_maquina}.`);
+        retomarScanner();
+      } else if (!mudarProcesso) {
         // Recria sessão ativa offline na memória
         const novaSessaoRecriada = {
           num_maquina: activeSession.num_maquina,
@@ -1539,14 +1665,22 @@ export default function ScannerCaixas() {
               <div className="space-y-3 bg-zinc-900/40 p-4 rounded-lg border border-zinc-900/60 font-mono text-[11px] text-zinc-400">
                 <div className="flex justify-between items-center border-b border-zinc-900/40 pb-2 mb-2">
                   <span className="text-[#00624C] text-[9px] font-bold uppercase tracking-widest">Processo Ativo Atualmente</span>
-                  <div className="flex gap-2">
-                    {!showQualidadeForm && (
-                      <button 
-                        onClick={() => setShowQualidadeForm(true)}
-                        className="text-[9px] font-bold uppercase tracking-widest text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 transition-colors"
-                      >
-                        Lançar Ajuste (Qualidade)
-                      </button>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    {!showQualidadeForm && !showManutencaoForm && (
+                      <>
+                        <button 
+                          onClick={() => setShowQualidadeForm(true)}
+                          className="text-[9px] font-bold uppercase tracking-widest text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 transition-colors cursor-pointer"
+                        >
+                          Lançar Ajuste (Qualidade)
+                        </button>
+                        <button 
+                          onClick={() => setShowManutencaoForm(true)}
+                          className="text-[9px] font-bold uppercase tracking-widest text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30 transition-colors cursor-pointer"
+                        >
+                          Solicitar Manutenção
+                        </button>
+                      </>
                     )}
                     <span className="text-zinc-500 text-[9px] font-bold ml-1">CÓD: {activeSession.codigo_manual_curto}</span>
                   </div>
@@ -1632,6 +1766,44 @@ export default function ScannerCaixas() {
                     >
                       {isSaving ? <Loader2 className="animate-spin" size={14} /> : <AlertCircle size={14} />}
                       Salvar Ajuste de Qualidade
+                    </button>
+                  </div>
+                </div>
+              ) : showManutencaoForm ? (
+                // FORMULÁRIO DE MANUTENÇÃO
+                <div className="space-y-4 font-mono text-xs">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label className="text-rose-400 font-bold block">Descrever Problema da Máquina (Opcional)</label>
+                      <span className="text-[10px] text-zinc-500 font-mono">{manutencaoDesc.length}/150</span>
+                    </div>
+                    <textarea 
+                      maxLength={150}
+                      rows={3}
+                      placeholder="Descreva o problema ou ruído da máquina (máx 150 caracteres)..."
+                      value={manutencaoDesc}
+                      onChange={(e) => setManutencaoDesc(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 text-white rounded p-3 focus:outline-none focus:border-rose-500 placeholder-zinc-600 resize-none"
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-zinc-900">
+                    <button 
+                      onClick={() => {
+                        setShowManutencaoForm(false);
+                        setManutencaoDesc('');
+                      }}
+                      className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white font-bold h-12 md:h-10 px-4 rounded text-[10px] font-mono uppercase tracking-widest transition-colors flex justify-center items-center gap-2 cursor-pointer w-full sm:w-auto"
+                    >
+                      Voltar
+                    </button>
+                    <button 
+                      onClick={handleConfirmarManutencao}
+                      disabled={isSaving}
+                      className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-black h-12 md:h-10 px-3 rounded text-[10px] font-mono uppercase tracking-widest shadow-lg shadow-rose-600/15 transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
+                    >
+                      {isSaving ? <Loader2 className="animate-spin" size={14} /> : <AlertCircle size={14} />}
+                      Confirmar Chamado de Manutenção
                     </button>
                   </div>
                 </div>
@@ -1786,6 +1958,16 @@ export default function ScannerCaixas() {
                     </button>
 
                     <div className="flex-1 flex flex-col sm:flex-row gap-3">
+                      {/* Botão Finalizar Processo */}
+                      <button 
+                        onClick={handleFinalizarProcessoClick}
+                        disabled={isSaving || !(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro)}
+                        className="flex-1 bg-rose-950/40 hover:bg-rose-900/60 text-rose-200 hover:text-white border border-rose-800/40 font-bold h-12 md:h-10 px-3 rounded text-[10px] font-mono uppercase tracking-widest transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
+                        title="Finaliza o lote atual gravando a contagem e encerra o processo de vez nesta máquina"
+                      >
+                        Finalizar Processo
+                      </button>
+
                       {/* Botão Salvar e Mudar Processo */}
                       <button 
                         onClick={() => handleSalvarCenarioB(true)}
@@ -1805,7 +1987,7 @@ export default function ScannerCaixas() {
                         {isSaving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
                         {!(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro)
                           ? "CONFIRME TODOS"
-                          : "Salvar e Continuar"}
+                          : "SALVAR LOTE"}
                       </button>
                     </div>
 
@@ -1863,6 +2045,68 @@ export default function ScannerCaixas() {
               >
                 Ok, Entendido
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL DE JUSTIFICATIVA PARA ENCERRAMENTO ANTECIPADO */}
+      <AnimatePresence>
+        {showJustificativaModal && (
+          <div className="fixed inset-0 bg-black/80 z-[110] flex items-center justify-center p-4 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-zinc-950 border border-rose-900 rounded-xl w-full max-w-md p-6 space-y-4 shadow-2xl text-center"
+            >
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/30 rounded-full flex items-center justify-center text-rose-500">
+                  <AlertCircle size={28} />
+                </div>
+                
+                <h4 className="font-mono text-sm uppercase tracking-widest font-black text-rose-500">
+                  ATENÇÃO: ALERTA DE TURNO ATIVO
+                </h4>
+                
+                <p className="text-zinc-300 font-mono text-xs leading-relaxed uppercase">
+                  Atenção: O turno ainda não encerrou. Descreva o motivo da finalização antecipada:
+                </p>
+
+                <div className="w-full text-left space-y-1">
+                  <div className="flex justify-between items-center text-[10px] text-zinc-500 font-mono">
+                    <span>Justificativa</span>
+                    <span>{justificativaMotivo.length}/150</span>
+                  </div>
+                  <textarea
+                    maxLength={150}
+                    rows={3}
+                    placeholder="Descreva aqui o motivo detalhado (máx 150 caracteres)..."
+                    value={justificativaMotivo}
+                    onChange={(e) => setJustificativaMotivo(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 text-white rounded p-3 text-xs focus:outline-none focus:border-rose-500 placeholder-zinc-600 resize-none font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowJustificativaModal(false);
+                    setJustificativaMotivo('');
+                  }}
+                  className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white rounded text-[10px] font-mono font-bold uppercase tracking-widest transition-colors cursor-pointer"
+                >
+                  Voltar
+                </button>
+                <button
+                  onClick={handleConfirmarFinalizacaoAntecipada}
+                  disabled={isSaving || !justificativaMotivo.trim()}
+                  className="flex-1 py-2.5 bg-rose-700 hover:bg-rose-800 text-white rounded text-[10px] font-mono font-black uppercase tracking-widest transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Confirmar Finalização
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

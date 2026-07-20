@@ -341,35 +341,6 @@ export default function Apontamentos() {
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
 
-  const handleInjectTestData = () => {
-    const formatToTimeString = (date: Date) => {
-      return date.toTimeString().split(' ')[0];
-    };
-    const nowTime = new Date();
-    const twoHoursAgoTime = new Date(nowTime.getTime() - 2 * 60 * 60 * 1000);
-
-    const testObject = {
-      id: 'debug-test-' + Date.now(),
-      data: new Date().toISOString().split('T')[0].split('-').reverse().join('/'),
-      materia_prima_inicial: 500,
-      producao_conforme: 150,
-      horario_inicio: formatToTimeString(twoHoursAgoTime),
-      horario_termino: formatToTimeString(nowTime),
-      num_maquina: "MQ-03",
-      operadora_nome: "OPERADORA TESTE",
-      operacao_nome: "OPERACAO TESTE",
-      lote: "L-TESTE",
-      lado: "Único",
-      tipo_maquina: "TESTE",
-      hora_extra: "n",
-      status: "validado"
-    };
-
-    setRegistros(prev => [testObject, ...prev]);
-    setTotalCount(prev => prev + 1);
-    addToast('Dados de teste injetados com sucesso!', 'success');
-  };
-
   // Carregar histórico do Supabase
   const fetchHistSupabase = async () => {
     setIsLoading(true);
