@@ -883,7 +883,7 @@ export default function ScannerCaixas() {
       motivo_ocorrencia: 'Produção Normal',
       user_id: userId,
       materia_prima_inicial: Number(activeSession.materia_prima_inicial) || 0,
-      observacao: cenarioBObservacao.trim()
+      observacao: [activeSession.observacao, cenarioBObservacao.trim()].filter(Boolean).join(" | ")
     };
 
     try {
@@ -921,7 +921,8 @@ export default function ScannerCaixas() {
           hora_extra: activeSession.hora_extra,
           horario_inicio: horarioTermino, // O tempo reinicia na hora exata do término anterior
           user_id: userId,
-          materia_prima_inicial: Number(activeSession.materia_prima_inicial) || 0
+          materia_prima_inicial: Number(activeSession.materia_prima_inicial) || 0,
+          observacao: activeSession.observacao || ''
         };
 
         const { error: errRecreate } = await supabase
