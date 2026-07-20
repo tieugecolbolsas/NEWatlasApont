@@ -531,6 +531,22 @@ export default function ScannerCaixas() {
     processarTextoQR(manualCodeInput.trim());
   };
 
+  const handlePasteShortCode = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const trimmed = text.trim();
+      if (trimmed) {
+        setManualCodeInput(trimmed);
+        showAlert('success', `Código "${trimmed}" colado com sucesso!`);
+      } else {
+        showAlert('warning', 'A área de transferência está vazia.');
+      }
+    } catch (err) {
+      console.error('Erro ao ler área de transferência:', err);
+      showAlert('error', 'Sem permissão para ler a área de transferência.');
+    }
+  };
+
   const retomarScanner = () => {
     setActiveSession(null);
     setShowScenarioA(false);
@@ -926,6 +942,14 @@ export default function ScannerCaixas() {
                     onChange={(e) => setManualCodeInput(e.target.value)}
                     className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-[#00624C]"
                   />
+                  <button
+                    type="button"
+                    onClick={handlePasteShortCode}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded text-[10px] font-mono uppercase cursor-pointer transition-colors"
+                    title="Colar da área de transferência"
+                  >
+                    COLAR
+                  </button>
                   <button
                     type="submit"
                     disabled={isSearchingSessao}
