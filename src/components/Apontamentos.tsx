@@ -1024,23 +1024,38 @@ export default function Apontamentos() {
 
                         {(() => {
                           const shortCode = getShortCode(block);
+                          const statusDoCard = isSessionActive ? '● PROCESSO EM ANDAMENTO' : '● PROCESSO ENCERRADO';
+                          const codigo = shortCode;
+                          const handleCopyCode = (cod: string) => {
+                            navigator.clipboard.writeText(cod);
+                            addToast(`Código ${cod} copiado para a área de transferência!`, 'success');
+                          };
                           return (
                             <div className="space-y-1">
                               <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block">CÓDIGO CURTO</span>
-                              <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900 border border-emerald-500/40 text-emerald-400 font-mono text-xs font-black rounded-md shadow-md shadow-emerald-950/10 hover:border-emerald-500/80 transition-colors group">
+                              <div className={`inline-flex items-center gap-2 px-3 py-1 bg-zinc-900 border text-xs font-mono font-black rounded-md shadow-md shadow-emerald-950/10 transition-colors ${
+                                isSessionActive 
+                                  ? 'border-emerald-500/40 text-emerald-400 hover:border-emerald-500/80 group' 
+                                  : 'border-zinc-800 text-zinc-500'
+                              }`}>
                                 <span>COD: {shortCode}</span>
-                                <button
-                                  type="button"
+                                <span
+                                  role="button"
                                   onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigator.clipboard.writeText(shortCode);
-                                    addToast(`Código ${shortCode} copiado para a área de transferência!`, 'success');
+                                    e.stopPropagation(); // Evita que o clique abra/feche o card de histórico ao tentar copiar o código
+                                    if (statusDoCard !== '● PROCESSO ENCERRADO') {
+                                      handleCopyCode(codigo);
+                                    }
                                   }}
-                                  className="p-1 hover:bg-emerald-500/10 rounded transition-colors text-zinc-400 hover:text-emerald-400 cursor-pointer flex items-center justify-center"
-                                  title="Copiar Código"
+                                  className={`p-1 flex items-center justify-center transition-colors ${
+                                    isSessionActive 
+                                      ? 'hover:bg-emerald-500/10 text-zinc-400 hover:text-emerald-400 cursor-pointer' 
+                                      : 'opacity-30 cursor-not-allowed text-zinc-600'
+                                  }`}
+                                  title={isSessionActive ? "Copiar Código" : "Cópia Desabilitada (Processo Encerrado)"}
                                 >
-                                  <Copy size={12} className="group-hover:scale-110 transition-transform" />
-                                </button>
+                                  <Copy size={12} className={isSessionActive ? "group-hover:scale-110 transition-transform" : ""} />
+                                </span>
                               </div>
                             </div>
                           );

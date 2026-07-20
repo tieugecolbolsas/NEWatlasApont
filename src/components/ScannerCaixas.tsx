@@ -382,98 +382,138 @@ export default function ScannerCaixas() {
     setIsScanning(false);
 
     try {
-      // 0. Consulta as sessões offline salvas em memória
-      let sessaoEncontrada = offlineSessoes.find(s => s.num_maquina === codigo || s.codigo_manual_curto === codigo);
+      let sessaoEncontrada = null;
 
-      if (!sessaoEncontrada) {
-        // 1. Consulta a tabela de sessões ativas procurando por num_maquina ou codigo_manual_curto
-        const { data: sessoes, error } = await supabase
-          .schema('AtlasApontamento')
-          .from('sessoes_ativas_terminal')
-          .select('*')
-          .eq('num_maquina', codigo);
-
-        if (error) throw error;
-
-        sessaoEncontrada = sessoes && sessoes.length > 0 ? sessoes[0] : null;
+      // 0. Se for um código curto de 6 caracteres
+      if (codigo.length === 6) {
+        // Primeiro, procure na tabela sessoes_ativas_terminal (ou em offlineSessoes se for offline)
+        sessaoEncontrada = offlineSessoes.find(s => s.codigo_manual_curto === codigo);
 
         if (!sessaoEncontrada) {
-          // Tenta buscar por codigo_manual_curto se não achar por num_maquina
-          const { data: sessoesCurto, error: errCurto } = await supabase
+          const { data: sessoes, error } = await supabase
             .schema('AtlasApontamento')
             .from('sessoes_ativas_terminal')
             .select('*')
             .eq('codigo_manual_curto', codigo);
-          
-          if (!errCurto && sessoesCurto && sessoesCurto.length > 0) {
-            sessaoEncontrada = sessoesCurto[0];
+
+          if (error) throw error;
+          if (sessoes && sessoes.length > 0) {
+            sessaoEncontrada = sessoes[0];
           }
         }
-      }
 
-      if (sessaoEncontrada) {
-        // CASO JÁ EXISTA UMA SESSÃO ATIVA (Cenário B)
-        setActiveSession(sessaoEncontrada);
-        setProdConforme('');
-        setRetrabalhoProprio(0);
-        setRetrabalhoTerceiro(0);
-        setQualidadeRefugo(0);
-        setShowQualidadeForm(false);
-        setMotivoOcorrencia('Produção Normal');
+        if (sessaoEncontrada) {
+          // Se o código estiver ativo, abre o Modal de Contagem (Cenário B)
+          setActiveSession(sessaoEncontrada);
+          setProdConforme('');
+          setRetrabalhoProprio(0);
+          setRetrabalhoTerceiro(0);
+          setQualidadeRefugo(0);
+          setShowQualidadeForm(false);
+          setMotivoOcorrencia('Produção Normal');
+        } else {
+          // Se não estiver lá, faça uma busca secundária na tabela definitiva registros_producao_terminal
+          const { data: registros, error: errRegistros } = await supabase
+            .schema('AtlasApontamento')
+            .from('registros_producao_terminal')
+            .select('*')
+            .eq('codigo_manual_curto', codigo);
+
+          if (errRegistros) throw errRegistros;
+
+          if (registros && registros.length > 0) {
+            // Se for localizado lá, processo já encerrado
+            showAlert('warning', "Este processo já foi encerrado. Para iniciar um novo, escaneie o QR Code ou digite o número da máquina.");
+            retomarScanner();
+            return;
+          } else {
+            // Se o código não existir em nenhuma das duas tabelas
+            showAlert('error', "Código inválido. Verifique o código e tente novamente.");
+            retomarScanner();
+            return;
+          }
+        }
       } else {
-        // CASO NÃO EXISTA SESSÃO ATIVA (Cenário A)
-        let tipoMaquinaEncontrado = tipoMaquinaPadrao;
-        let operadoraRecente = '';
+        // Se for digitado um Número de Máquina (comprimento diferente de 6)
+        sessaoEncontrada = offlineSessoes.find(s => s.num_maquina === codigo);
 
-        try {
-          const { data: recenteData } = await supabase
-            .schema('public')
-            .from('vw_maquinas_operadoras_recentes')
-            .select('operadora_nome, tipo_maquina')
-            .eq('num_maquina', codigo)
-            .maybeSingle();
-          
-          if (recenteData) {
-            operadoraRecente = recenteData.operadora_nome || '';
-            if (!tipoMaquinaEncontrado) {
-              tipoMaquinaEncontrado = recenteData.tipo_maquina || '';
-            }
+        if (!sessaoEncontrada) {
+          const { data: sessoes, error } = await supabase
+            .schema('AtlasApontamento')
+            .from('sessoes_ativas_terminal')
+            .select('*')
+            .eq('num_maquina', codigo);
+
+          if (error) throw error;
+          if (sessoes && sessoes.length > 0) {
+            sessaoEncontrada = sessoes[0];
           }
-        } catch (err) {
-          console.log('[Terminal Supabase] Erro ao buscar operadora recente:', err);
         }
 
-        if (!tipoMaquinaEncontrado) {
+        if (sessaoEncontrada) {
+          // Abre o Modal do Cenário B (Contagem)
+          setActiveSession(sessaoEncontrada);
+          setProdConforme('');
+          setRetrabalhoProprio(0);
+          setRetrabalhoTerceiro(0);
+          setQualidadeRefugo(0);
+          setShowQualidadeForm(false);
+          setMotivoOcorrencia('Produção Normal');
+        } else {
+          // Abre o Modal do Cenário A (Inicialização)
+          let tipoMaquinaEncontrado = tipoMaquinaPadrao;
+          let operadoraRecente = '';
+
           try {
-            const query = supabase
-              .schema('AtlasApontamento')
-              .from('maquinas_config')
-              .select('tipo_maquina')
-              .eq('num_maquina', codigo);
+            const { data: recenteData } = await supabase
+              .schema('public')
+              .from('vw_maquinas_operadoras_recentes')
+              .select('operadora_nome, tipo_maquina')
+              .eq('num_maquina', codigo)
+              .maybeSingle();
             
-            const { data: resData } = typeof query.single === 'function' ? await query.single() : await query;
-            
-            if (resData) {
-              const singleItem = Array.isArray(resData) ? resData[0] : resData;
-              tipoMaquinaEncontrado = singleItem?.tipo_maquina || '';
+            if (recenteData) {
+              operadoraRecente = recenteData.operadora_nome || '';
+              if (!tipoMaquinaEncontrado) {
+                tipoMaquinaEncontrado = recenteData.tipo_maquina || '';
+              }
             }
-          } catch (maqErr) {
-            console.log('[Terminal Supabase] Nenhuma configuração de máquina encontrada para', codigo, maqErr);
+          } catch (err) {
+            console.log('[Terminal Supabase] Erro ao buscar operadora recente:', err);
           }
-        }
 
-        setScannedTarget(codigo);
-        setFormMaquina(codigo);
-        setFormCodigoCurto(gerarCodigoManualCurto());
-        setFormOperadora(operadoraRecente);
-        setFormOperacao('');
-        setFormLote('');
-        setFormLado('Único');
-        setFormTipoMaquina(tipoMaquinaEncontrado);
-        setFormHoraExtra(false);
-        setFormMateriaPrima(0);
-        
-        setShowScenarioA(true);
+          if (!tipoMaquinaEncontrado) {
+            try {
+              const query = supabase
+                .schema('AtlasApontamento')
+                .from('maquinas_config')
+                .select('tipo_maquina')
+                .eq('num_maquina', codigo);
+              
+              const { data: resData } = typeof query.single === 'function' ? await query.single() : await query;
+              
+              if (resData) {
+                const singleItem = Array.isArray(resData) ? resData[0] : resData;
+                tipoMaquinaEncontrado = singleItem?.tipo_maquina || '';
+              }
+            } catch (maqErr) {
+              console.log('[Terminal Supabase] Nenhuma configuração de máquina encontrada para', codigo, maqErr);
+            }
+          }
+
+          setScannedTarget(codigo);
+          setFormMaquina(codigo);
+          setFormCodigoCurto(gerarCodigoManualCurto());
+          setFormOperadora(operadoraRecente);
+          setFormOperacao('');
+          setFormLote('');
+          setFormLado('Único');
+          setFormTipoMaquina(tipoMaquinaEncontrado);
+          setFormHoraExtra(false);
+          setFormMateriaPrima(0);
+          
+          setShowScenarioA(true);
+        }
       }
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao buscar sessões ativas:', err);
@@ -875,13 +915,13 @@ export default function ScannerCaixas() {
               {/* PAINEL DE SIMULAÇÃO RÁPIDA */}
               <div className="pt-4 border-t border-zinc-900 mt-2 space-y-3">
                 <span className="text-[9px] font-mono uppercase tracking-widest font-bold text-zinc-500 block">
-                  PAINEL DE SIMULAÇÃO: INSERIR MÁQUINA / SESSÃO
+                  Número da Máquina ou Código Curto
                 </span>
                 
                 <form onSubmit={simularCodigoManual} className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Número da Máquina ou Código Curto (ex: MQ-01)"
+                    placeholder="Número da Máquina ou Código Curto"
                     value={manualCodeInput}
                     onChange={(e) => setManualCodeInput(e.target.value)}
                     className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-[#00624C]"
@@ -891,33 +931,9 @@ export default function ScannerCaixas() {
                     disabled={isSearchingSessao}
                     className="px-4 py-1.5 bg-[#00624C] hover:bg-[#004838] text-white rounded text-[10px] font-mono font-bold uppercase cursor-pointer transition-colors"
                   >
-                    {isSearchingSessao ? <Loader2 className="animate-spin" size={12} /> : 'Processar'}
+                    {isSearchingSessao ? <Loader2 className="animate-spin" size={12} /> : 'PROCESSAR'}
                   </button>
                 </form>
-
-                <div className="flex flex-col gap-2 bg-zinc-900/30 p-2.5 border border-zinc-900 rounded">
-                  <span className="text-[9px] text-zinc-500 font-mono font-bold uppercase">Simular com Atalhos Rápidos:</span>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => processarTextoQR('MQ-01')}
-                      className="px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[9px] font-mono rounded cursor-pointer text-zinc-300"
-                    >
-                      Sessão MQ-01 (Cenário B)
-                    </button>
-                    <button
-                      onClick={() => processarTextoQR('MQ-02')}
-                      className="px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[9px] font-mono rounded cursor-pointer text-zinc-300"
-                    >
-                      Sessão MQ-02 (Cenário B)
-                    </button>
-                    <button
-                      onClick={() => processarTextoQR('MQ-03')}
-                      className="px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[9px] font-mono rounded cursor-pointer text-zinc-300"
-                    >
-                      Nova Máquina MQ-03 (Cenário A)
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
