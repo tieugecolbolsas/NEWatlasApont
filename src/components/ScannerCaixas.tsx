@@ -327,8 +327,12 @@ export default function ScannerCaixas() {
       if (error) throw error;
 
       if (data) {
-        // Ordena para exibir o mais recente no topo
-        const sorted = [...data].sort((a: any, b: any) => new Date(b.horario_termino).getTime() - new Date(a.horario_termino).getTime());
+        // Ordena para exibir o mais recente no topo usando parseToDate
+        const sorted = [...data].sort((a: any, b: any) => {
+          const dateA = parseToDate(a.horario_termino || a.created_at);
+          const dateB = parseToDate(b.horario_termino || b.created_at);
+          return dateB.getTime() - dateA.getTime();
+        });
         setHistoricoHoje(sorted);
       } else {
         setHistoricoHoje([]);
@@ -870,13 +874,6 @@ export default function ScannerCaixas() {
             LEITURA DE QR CODE DE MÁQUINAS E APONTAMENTOS DE PRODUÇÃO EM TEMPO REAL
           </p>
         </div>
-
-        <button
-          onClick={carregarBaseDeDados}
-          className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded text-[10px] font-mono font-bold uppercase cursor-pointer transition-colors"
-        >
-          <RefreshCw size={12} /> Sincronizar Logs
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -1065,7 +1062,6 @@ export default function ScannerCaixas() {
       </div>
 
       {/* ======================================================= */}
-      // CENÁRIO A: FORMULÁRIO COMPLETO - NOVO PROCESSO
       {/* ======================================================= */}
       <AnimatePresence>
         {showScenarioA && (
