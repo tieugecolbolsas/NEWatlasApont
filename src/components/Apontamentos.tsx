@@ -1454,7 +1454,7 @@ export default function Apontamentos() {
                       })()}
 
                       <div className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider mb-2 flex items-center gap-1.5 pt-1">
-                        <Layers size={11} className="text-[#00624C]" /> Contagens Individuais no Bloco ({block.itens.length})
+                        <Layers size={11} className="text-[#00624C]" /> Contagens Individuais no Bloco ({block.itens.filter((item: any) => Number(item.producao_conforme || item.quantidade || 0) > 0).length})
                       </div>
                       <div className="pt-2">
                         {(() => {
@@ -1474,7 +1474,10 @@ export default function Apontamentos() {
                             };
                             return getTimeString(b).localeCompare(getTimeString(a));
                           });
-                          const displayItens = [...sortedBlockItens];
+                          const displayItens = sortedBlockItens.filter((item: any) => {
+                            const conforme = Number(item.producao_conforme || item.quantidade || 0);
+                            return conforme > 0;
+                          });
 
                           if (displayItens.length === 0) {
                             return (
