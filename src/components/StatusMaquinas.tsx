@@ -1000,7 +1000,12 @@ export default function StatusMaquinas() {
                     {/* Machine Number */}
                     <td className="py-3 px-6 whitespace-nowrap font-mono font-black text-white">
                       <div className="flex items-center gap-1.5">
-                        <Cpu className="w-3.5 h-3.5 text-zinc-600" />
+                        <Cpu className={`w-3.5 h-3.5 transition-colors duration-150 ${
+                          isProducing ? 'text-emerald-400 drop-shadow-[0_0_3px_rgba(16,185,129,0.4)]' :
+                          isPaused ? 'text-amber-400 drop-shadow-[0_0_3px_rgba(245,158,11,0.4)]' :
+                          isMaintenance ? 'text-rose-400 drop-shadow-[0_0_3px_rgba(239,68,68,0.4)]' :
+                          'text-zinc-600'
+                        }`} />
                         <span>{m.numero}</span>
                       </div>
                     </td>
