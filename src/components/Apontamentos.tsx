@@ -19,11 +19,33 @@ import {
   XCircle,
   Mail,
   X,
-  Copy,
-  Cpu
+  Copy
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getLocalSessionUser } from '../lib/auth';
+
+const SewingMachineIcon = ({ size = 16, className = "" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={`inline mr-2 ${className}`}
+  >
+    <rect x="1" y="18" width="22" height="3" rx="1.5" />
+    <rect x="3" y="3" width="2" height="11" rx="1" />
+    <line x1="4" y1="14" x2="4" y2="17" />
+    <path d="M 4.5 5 h 11 c 2 0, 3.5 1, 3.5 3 v 10" />
+    <path d="M 4.5 10 c 4 0, 7 1, 10 3.5 c 1 0.8, 1.5 2, 1.5 4.5" />
+    <rect x="20" y="6" width="1" height="5" rx="0.5" />
+    <line x1="16" y1="5" x2="16" y2="2" />
+  </svg>
+);
 
 const getShortCode = (block: any) => {
   if (block.codigo_manual_curto) return block.codigo_manual_curto;
@@ -1156,7 +1178,7 @@ export default function Apontamentos() {
                             <div>
                               <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">OPERAÇÃO ATRIBUÍDA</span>
                               <span className="text-zinc-200 font-semibold text-xs leading-relaxed flex items-center gap-1">
-                                <Cpu size={14} className="inline mr-1 text-[#00624C]" /> {block.operacao_nome}
+                                <SewingMachineIcon size={14} className="text-[#00624C]" /> {block.operacao_nome}
                               </span>
                             </div>
                             <div>
