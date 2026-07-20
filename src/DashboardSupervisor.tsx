@@ -37,7 +37,7 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
 
   return (
     <RealtimeProvider addToast={addToast}>
-      <div className="w-full min-h-screen flex flex-col md:flex-row relative z-10 overflow-hidden bg-transparent">
+      <div className="w-full min-h-screen flex flex-col md:flex-row relative z-10 overflow-x-hidden md:overflow-hidden bg-transparent">
         
         {/* MOBILE BAR (Hidden on Desktop) */}
         <div 
@@ -90,7 +90,7 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
           </button>
         </div>
 
-        <main className="flex-1 flex flex-col h-screen min-h-0 overflow-y-auto relative" id="dashboard-viewport">
+        <main className="flex-1 flex flex-col min-h-screen md:h-screen overflow-y-auto relative" id="dashboard-viewport">
           
           {/* TOP SUSPENDED NAVIGATION PILL HEADER (Only visible on desktop when sidebar is collapsed) */}
           <AnimatePresence>

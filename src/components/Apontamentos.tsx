@@ -644,20 +644,6 @@ export default function Apontamentos() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={handleInjectTestData}
-            className="flex items-center gap-1.5 py-2 px-3 border border-red-900/30 bg-red-950/25 hover:bg-red-950/45 text-red-400 rounded text-xs font-mono font-bold uppercase cursor-pointer transition-colors"
-          >
-            [DEBUG] Injetar Dados de Teste
-          </button>
-
-          <button
-            onClick={exportToCSV}
-            className="flex items-center gap-2 py-2 px-3 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded text-xs font-mono font-bold uppercase cursor-pointer transition-colors"
-          >
-            <Download size={13} /> Exportar CSV
-          </button>
-          
-          <button
             onClick={() => setShowForm(!showForm)}
             className="flex items-center gap-2 py-2 px-4 bg-[#00624C] hover:bg-[#004838] text-white rounded text-xs font-mono font-bold uppercase cursor-pointer shadow-lg shadow-[#00624C]/15 transition-all"
           >
@@ -1017,8 +1003,12 @@ export default function Apontamentos() {
                               })()}
                             </div>
                           </div>
-                          <span className="inline-flex px-3 py-1 bg-[#00624C]/15 border border-[#00624C]/35 text-[#00624C] text-base font-extrabold rounded-lg shadow-sm shadow-[#00624C]/10">
-                            {block.num_maquina}
+                          <span className="inline-flex px-3 py-1 bg-[#00624C]/15 border border-[#00624C]/35 text-[#00624C] text-base font-extrabold rounded-lg shadow-sm shadow-[#00624C]/10 font-mono">
+                            {(() => {
+                              const num = String(block.num_maquina || '');
+                              const cleanNum = num.replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '');
+                              return `MÁQ: ${cleanNum}`;
+                            })()}
                           </span>
                         </div>
 
@@ -1369,15 +1359,6 @@ export default function Apontamentos() {
 
                         return (
                           <div className="space-y-3">
-                            <div className="bg-transparent border border-zinc-900 rounded-lg p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                              <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">
-                                Tempo de produção:
-                              </span>
-                              <span className="text-[#00624C] text-sm font-black tracking-wide bg-[#00624C]/10 px-3 py-1.5 rounded-md border border-[#00624C]/20">
-                                {tempoProducaoStr}
-                              </span>
-                            </div>
-
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                               {/* Descontos (Qualidade) */}
                               <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
@@ -1530,47 +1511,52 @@ export default function Apontamentos() {
                               key={item.id || itemIdx} 
                               className="p-4 bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg mb-3 last:mb-0 space-y-3"
                             >
-                              {/* Registro de Contagem */}
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                <div className="flex flex-wrap items-center gap-3">
-                                  <span className="text-zinc-300 font-bold bg-zinc-900/80 px-2.5 py-1 rounded border border-zinc-800 flex items-center gap-1.5 text-xs">
-                                    <Clock size={11} /> {formattedTimeInicio ? `${formattedTimeInicio} - ${formattedTime}` : formattedTime}
-                                  </span>
-                                  {tempoProducaoReg && (
-                                    <span className="text-[#00624C] font-bold text-xs bg-[#00624C]/5 border border-[#00624C]/10 px-2 py-0.5 rounded">
-                                      Tempo de Produção: {tempoProducaoReg}
+                              {/* Registro de Contagem - Nova Organização das Contagens em Duas Linhas para Tablet */}
+                              <div className="flex flex-col gap-2.5 w-full">
+                                {/* Linha 1 (Superior): Horário e duração na esquerda, selo azul na extrema direita */}
+                                <div className="flex flex-wrap items-center justify-between gap-2 w-full">
+                                  <div className="flex flex-wrap items-center gap-2.5">
+                                    <span className="text-zinc-300 font-bold bg-zinc-900/80 px-2.5 py-1 rounded border border-zinc-800 flex items-center gap-1.5 text-xs">
+                                      <Clock size={11} /> {formattedTimeInicio ? `${formattedTimeInicio} - ${formattedTime}` : formattedTime}
                                     </span>
-                                  )}
+                                    {tempoProducaoReg && (
+                                      <span className="text-[#00624C] font-bold text-xs bg-[#00624C]/5 border border-[#00624C]/10 px-2 py-0.5 rounded">
+                                        Tempo: {tempoProducaoReg}
+                                      </span>
+                                    )}
+                                    {ocorrencia && ocorrencia !== 'Produção Normal' && (
+                                      <span className="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">
+                                        Ocorrência: {ocorrencia}
+                                      </span>
+                                    )}
+                                    {!isLegacyRealtime && status !== 'validado' && (
+                                      <span className={`text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded border ${
+                                        status === 'rejeitado'
+                                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                          : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                      }`}>
+                                        {status}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    {isSessionActive && itemIdx === 0 ? (
+                                      <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider">
+                                        ÚLTIMO REGISTRO
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </div>
+
+                                {/* Linha 2 (Inferior): Selo verde e bloco de Retrabalho lado a lado */}
+                                <div className="flex flex-wrap items-center gap-3 mt-0.5 border-t border-zinc-800/40 pt-2 w-full">
                                   <span className="text-emerald-500 font-bold text-xs bg-emerald-500/5 border border-emerald-500/10 px-2 py-0.5 rounded">
                                     Produção Conforme: {conforme} Pçs
                                   </span>
                                   {(rePr > 0 || reTe > 0) && (
                                     <span className="text-amber-500 text-xs bg-amber-500/5 border border-amber-500/15 px-2.5 py-1 rounded font-semibold">
                                       Retrabalho: Próprio {rePr} | Terceiro {reTe}
-                                    </span>
-                                  )}
-                                </div>
-
-                                <div className="flex items-center gap-2 self-end sm:self-auto">
-                                  {isSessionActive && itemIdx === 0 ? (
-                                    <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider">
-                                      ÚLTIMO REGISTRO
-                                    </span>
-                                  ) : null}
-                                  {ocorrencia && ocorrencia !== 'Produção Normal' && (
-                                    <span className="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">
-                                      Ocorrência: {ocorrencia}
-                                    </span>
-                                  )}
-                                  {!isLegacyRealtime && (
-                                    <span className={`text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded border ${
-                                      status === 'validado'
-                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                        : status === 'rejeitado'
-                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                    }`}>
-                                      {status}
                                     </span>
                                   )}
                                 </div>

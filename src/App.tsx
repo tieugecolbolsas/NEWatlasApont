@@ -54,7 +54,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col items-center justify-center relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col items-center justify-center relative overflow-x-hidden md:overflow-hidden font-sans">
       
       {/* Background radial glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-950/10 rounded-full blur-[120px] pointer-events-none z-0" />
@@ -85,7 +85,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="w-full h-screen"
+              className="w-full min-h-screen md:h-screen"
             >
               <DashboardSupervisor 
                 userEmail={user.email}
