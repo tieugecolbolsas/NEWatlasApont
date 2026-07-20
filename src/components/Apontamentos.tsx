@@ -1475,27 +1475,15 @@ export default function Apontamentos() {
                             return getTimeString(b).localeCompare(getTimeString(a));
                           });
                           const displayItens = [...sortedBlockItens];
-                          if (isSessionActive && activeSessionForBlock) {
-                            const alreadyHasVirtual = displayItens.some(it => it.isVirtualActive);
-                            if (!alreadyHasVirtual) {
-                              displayItens.unshift({
-                                id: `active-${activeSessionForBlock.id}`,
-                                isVirtualActive: true,
-                                horario_inicio: activeSessionForBlock.horario_inicio,
-                                horario_termino: null,
-                                data: block.data,
-                                producao_conforme: 0,
-                                status: 'PRODUZINDO AGORA',
-                                retrabalho_proprio: 0,
-                                retrabalho_terceiro: 0,
-                                motivo_ocorrencia: 'Produção em Andamento',
-                                lote: activeSessionForBlock.lote || 'N/A',
-                                lado: activeSessionForBlock.lado || 'Único',
-                                tipo_maquina: activeSessionForBlock.tipo_maquina || 'Manual',
-                                hora_extra: activeSessionForBlock.hora_extra || 'n',
-                                observacao: activeSessionForBlock.observacao || ''
-                              });
-                            }
+
+                          if (displayItens.length === 0) {
+                            return (
+                              <div key="empty-counts" className="flex flex-col items-center justify-center p-8 bg-zinc-900/20 border border-dashed border-zinc-800 rounded-lg text-zinc-500 text-center gap-2">
+                                <span className="text-xs font-bold font-sans tracking-wide">
+                                  Aguardando primeira contagem do processo...
+                                </span>
+                              </div>
+                            );
                           }
 
                           return displayItens.map((item: any, itemIdx: number) => {
@@ -1511,12 +1499,8 @@ export default function Apontamentos() {
                               return t.slice(0, 5); // display "HH:MM"
                             };
 
-                            const hTermino = item.isVirtualActive 
-                              ? now.toTimeString().split(' ')[0] 
-                              : (item.horario_termino || item.created_at || item.timestamp);
-                            const formattedTime = item.isVirtualActive 
-                              ? 'AGORA' 
-                              : formatTimeStr(hTermino);
+                            const hTermino = item.horario_termino || item.created_at || item.timestamp;
+                            const formattedTime = formatTimeStr(hTermino);
                             const hInicio = item.horario_inicio || '';
                             const formattedTimeInicio = hInicio ? formatTimeStr(hInicio) : '';
                             
@@ -1565,29 +1549,26 @@ export default function Apontamentos() {
                                 </div>
 
                                 <div className="flex items-center gap-2 self-end sm:self-auto">
-                                  {item.isVirtualActive ? (
+                                  {isSessionActive && itemIdx === 0 ? (
                                     <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider">
                                       ÚLTIMO REGISTRO
                                     </span>
-                                  ) : (
-                                    <>
-                                      {ocorrencia && ocorrencia !== 'Produção Normal' && (
-                                        <span className="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">
-                                          Ocorrência: {ocorrencia}
-                                        </span>
-                                      )}
-                                      {!isLegacyRealtime && (
-                                        <span className={`text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded border ${
-                                          status === 'validado'
-                                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                            : status === 'rejeitado'
-                                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                            : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                        }`}>
-                                          {status}
-                                        </span>
-                                      )}
-                                    </>
+                                  ) : null}
+                                  {ocorrencia && ocorrencia !== 'Produção Normal' && (
+                                    <span className="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">
+                                      Ocorrência: {ocorrencia}
+                                    </span>
+                                  )}
+                                  {!isLegacyRealtime && (
+                                    <span className={`text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded border ${
+                                      status === 'validado'
+                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                        : status === 'rejeitado'
+                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                    }`}>
+                                      {status}
+                                    </span>
                                   )}
                                 </div>
                               </div>
