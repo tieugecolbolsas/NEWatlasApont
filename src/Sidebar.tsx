@@ -10,11 +10,11 @@ import { motion } from 'motion/react';
 import Logo from './Logo';
 
 interface User {
-  email: string;
+  email?: string;
 }
 
 interface SidebarProps {
-  user: User;
+  user?: User;
   onLogout: () => void;
   isDark: boolean;
   isMobileMenuOpen: boolean;
@@ -172,14 +172,14 @@ export default function Sidebar({
       <div className="p-4 border-t border-neutral-900 bg-neutral-950/20">
         <div className="flex items-center gap-3 mb-4" id="sidebar-user-block">
           <div className="w-9 h-9 rounded-full bg-[#00624C]/10 border-2 border-[#00624C] flex items-center justify-center font-sans font-black text-xs text-[#00624C]">
-            {user.email.charAt(0).toUpperCase()}
+            {user?.email?.charAt(0).toUpperCase() || 'U'}
           </div>
           <div className="overflow-hidden min-w-0 flex-1">
             <div className="text-[10px] font-bold text-neutral-500 font-mono tracking-wider uppercase">
               OPERADOR CONECTADO
             </div>
-            <p className="text-xs font-bold font-mono text-neutral-200 truncate" title={user.email}>
-              {user.email}
+            <p className="text-xs font-bold font-mono text-neutral-200 truncate" title={user?.email || ''}>
+              {user?.email || 'Usuário'}
             </p>
           </div>
         </div>

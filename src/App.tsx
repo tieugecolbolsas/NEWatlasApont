@@ -27,12 +27,24 @@ export default function App() {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
-          handleLogout();
+          handleLogout(false);
         } else {
-          setUser(session as UserSession);
+          // Mapeia tanto a sessão local customizada quanto o formato padrão do Supabase
+          const sessionUser = (session as any).user || session;
+          if (sessionUser && (sessionUser.email || sessionUser.uid)) {
+            setUser({
+              uid: sessionUser.id || sessionUser.uid || 'local-user',
+              email: sessionUser.email || 'operator@eugecol.com',
+              role: sessionUser.role || 'colaboradora',
+              createdAt: sessionUser.created_at || sessionUser.createdAt || new Date().toISOString(),
+              ...sessionUser
+            } as UserSession);
+          } else {
+            handleLogout(false);
+          }
         }
       } catch (err) {
-        handleLogout();
+        handleLogout(false);
       }
     };
     checkActiveSession();
@@ -43,10 +55,12 @@ export default function App() {
     setLocalSessionUser(userObj);
   };
 
-  const handleLogout = () => {
+  const handleLogout = (showToast = true) => {
     setUser(null);
     setLocalSessionUser(null);
-    addToast('Sessão encerrada com sucesso.', 'info');
+    if (showToast) {
+      addToast('Sessão encerrada com sucesso.', 'info');
+    }
   };
 
   const addToast = (text: string, type: 'success' | 'error' | 'info') => {
