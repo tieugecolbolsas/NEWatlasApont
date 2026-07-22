@@ -362,6 +362,102 @@ export default function Apontamentos() {
         return;
       }
 
+      // 1. Auto-cleanup check for forgotten active sessions
+      try {
+        const { data: activeSessData, error: activeSessError } = await supabase
+          .schema('AtlasApontamento')
+          .from('sessoes_ativas_terminal')
+          .select('*');
+
+        if (!activeSessError && activeSessData && activeSessData.length > 0) {
+          const agora = new Date();
+          const hojeDataStr = agora.toISOString().split('T')[0];
+
+          for (const session of activeSessData) {
+            const sessaoDataStr = session.created_at ? session.created_at.split('T')[0] : hojeDataStr;
+            let isForgotten = false;
+
+            if (sessaoDataStr < hojeDataStr) {
+              isForgotten = true;
+            } else if (sessaoDataStr === hojeDataStr) {
+              const diaSemana = agora.getDay();
+              const horas = agora.getHours();
+              const minutos = agora.getMinutes();
+              const tempoAtualEmMinutos = horas * 60 + minutos;
+
+              let limiteMinutos = 17 * 60; // 17:00
+              if (diaSemana === 5) {
+                const thresholdDate = new Date('2026-11-29T23:59:59');
+                if (agora <= thresholdDate) {
+                  limiteMinutos = 16 * 60 + 44; // 16h44
+                } else {
+                  limiteMinutos = 15 * 60 + 44; // 15h44
+                }
+              } else if (diaSemana >= 1 && diaSemana <= 4) {
+                limiteMinutos = 17 * 60; // 17h00
+              }
+
+              if (tempoAtualEmMinutos >= limiteMinutos) {
+                isForgotten = true;
+              }
+            }
+
+            if (isForgotten) {
+              // Determina o horário de término com base no dia da semana do registro
+              let horarioTermino = "17:00:00";
+              try {
+                const dateObj = new Date(sessaoDataStr + 'T12:00:00');
+                if (dateObj.getDay() === 5) {
+                  const thresholdDate = new Date('2026-11-29T23:59:59');
+                  horarioTermino = dateObj <= thresholdDate ? "16:44:00" : "15:44:00";
+                }
+              } catch (e) {}
+
+              const novoRegistroDefinitivo = {
+                data: sessaoDataStr,
+                operadora_nome: session.operadora_nome,
+                hora_extra: session.hora_extra || 'n',
+                operacao_nome: session.operacao_nome,
+                tipo_maquina: session.tipo_maquina,
+                lote: session.lote,
+                num_maquina: session.num_maquina,
+                lado: session.lado || 'Único',
+                codigo_manual_curto: session.codigo_manual_curto,
+                horario_inicio: session.horario_inicio,
+                horario_termino: horarioTermino,
+                producao_conforme: 0,
+                retrabalho_proprio: 0,
+                retrabalho_terceiro: 0,
+                refugo: 0,
+                motivo_ocorrencia: 'Finalização Automática',
+                user_id: session.user_id || userId,
+                materia_prima_inicial: Number(session.materia_prima_inicial) || 0,
+                observacao: 'Finalizado automaticamente pelo sistema (sessão esquecida)'
+              };
+
+              // Insere na tabela definitiva
+              const { error: errInsert } = await supabase
+                .schema('AtlasApontamento')
+                .from('registros_producao_terminal')
+                .insert([novoRegistroDefinitivo]);
+
+              if (!errInsert) {
+                // Delete from active sessions
+                await supabase
+                  .schema('AtlasApontamento')
+                  .from('sessoes_ativas_terminal')
+                  .delete()
+                  .eq('id', session.id);
+              } else {
+                console.error('[Auto-Cleanup] Erro ao inserir registro finalizado:', errInsert);
+              }
+            }
+          }
+        }
+      } catch (errCleanup) {
+        console.error('[Auto-Cleanup] Erro durante o processo de encerramento automático:', errCleanup);
+      }
+
       // Query standard supported fields
       const { data, error } = await supabase
         .schema('AtlasApontamento')
@@ -1220,6 +1316,11 @@ export default function Apontamentos() {
                               <span className="text-zinc-300 uppercase text-xs bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-md w-fit block mt-1 font-bold leading-relaxed tracking-wide">
                                 {block.processo}
                               </span>
+                              {block.itens?.some((item: any) => item.motivo_ocorrencia === 'Finalização Automática') && (
+                                <div className="text-rose-400 bg-rose-950/20 border border-rose-500/20 text-[9px] px-2 py-0.5 mt-2 rounded font-bold uppercase tracking-wider flex items-center gap-1 w-fit">
+                                  ⚠ FINALIZAÇÃO AUTOMÁTICA
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>

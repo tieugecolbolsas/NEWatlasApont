@@ -42,7 +42,7 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
         {/* MOBILE BAR (Hidden on Desktop) */}
         <div 
           id="dashboard-mobile-bar"
-          className="md:hidden w-full h-14 px-4 flex items-center justify-between border-b transition-colors duration-300 relative z-50 bg-black/80 backdrop-blur-md border-neutral-900 text-white"
+          className="md:hidden w-full h-14 px-4 flex items-center justify-between transition-colors duration-300 sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 text-white shrink-0"
         >
           <div className="flex items-center gap-2">
             <Logo className="w-7 h-7 text-[#00624C]" />
