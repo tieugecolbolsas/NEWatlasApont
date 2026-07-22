@@ -429,6 +429,124 @@ export default function ScannerCaixas() {
       tipoMaquinaPadrao = partes[1] ? partes[1].trim() : '';
     }
 
+    if (codigo === 'Y7') {
+      try {
+        await supabase.schema('AtlasApontamento').from('sessoes_ativas_terminal').delete().eq('lote', 'L-TESTE-Y6');
+        await supabase.schema('AtlasApontamento').from('registros_producao_terminal').delete().eq('lote', 'L-TESTE-Y6');
+        showAlert('success', 'SUCESSO: Simulação Y6 limpa do banco de dados com sucesso!');
+      } catch (e: any) {
+        showAlert('error', `Erro ao limpar Y7: ${e.message}`);
+      } finally {
+        if (scannerRef.current && scannerRef.current.getState() === 2) {
+          scannerRef.current.resume();
+        }
+        setIsScanning(true);
+        isProcessingScan.current = false;
+        setIsSearchingSessao(false);
+        setManualCodeInput('');
+      }
+      return;
+    }
+
+    if (codigo === 'Y6') {
+      try {
+        const { data: sessoesTestes, error: errSessoes } = await supabase
+          .schema('AtlasApontamento')
+          .from('sessoes_ativas_terminal')
+          .select('*')
+          .eq('lote', 'L-TESTE-Y6');
+
+        if (errSessoes) throw errSessoes;
+
+        if (!sessoesTestes || sessoesTestes.length === 0) {
+          const maquinasFakes = [];
+          const tipos = ['RETA', 'OVERLOCK', 'GALONEIRA', 'TRANSPORTE', 'FECHADEIRA'];
+          const operadoras = ['Maria', 'Ana', 'Josefa', 'Lucia', 'Rosangela', 'Silvia', 'Carla', 'Joana', 'Marta', 'Helena'];
+          const operacoes = ['Pesponto', 'Fechamento', 'Bainha', 'Etiqueta', 'Gola', 'Manga', 'Costura Lateral'];
+
+          for (let i = 1; i <= 30; i++) {
+            const num_maq = String(i).padStart(3, '0');
+            maquinasFakes.push({
+              codigo_manual_curto: `T${num_maq}XX`,
+              num_maquina: num_maq,
+              operadora_nome: operadoras[Math.floor(Math.random() * operadoras.length)],
+              hora_extra: 'n',
+              tipo_maquina: tipos[Math.floor(Math.random() * tipos.length)],
+              lado: 'Único',
+              lote: 'L-TESTE-Y6',
+              operacao_nome: operacoes[Math.floor(Math.random() * operacoes.length)],
+              materia_prima_inicial: 1000,
+              horario_inicio: '07:00:00',
+              observacao: 'Sessão simulada (Y6)'
+            });
+          }
+
+          const { error: errInsert } = await supabase
+            .schema('AtlasApontamento')
+            .from('sessoes_ativas_terminal')
+            .insert(maquinasFakes);
+
+          if (errInsert) throw errInsert;
+          showAlert('success', 'SUCESSO: 30 Máquinas Ativas de Teste iniciadas com sucesso!');
+        } else {
+          const numApontamentos = Math.floor(Math.random() * 6) + 5;
+          const shuffled = [...sessoesTestes].sort(() => 0.5 - Math.random());
+          const selecionadas = shuffled.slice(0, numApontamentos);
+
+          const agora = new Date();
+          const horaStr = agora.toLocaleTimeString('pt-BR', { hour12: false });
+          const diaStr = agora.toISOString().split('T')[0];
+
+          const userObj = getLocalSessionUser() as any;
+          const currentUserId = userObj?.id || userObj?.uid || null;
+
+          const producoes = selecionadas.map(sessao => {
+            const prodRand = Math.floor(Math.random() * 41) + 10;
+            return {
+              data: diaStr,
+              operadora_nome: sessao.operadora_nome,
+              hora_extra: sessao.hora_extra || 'n',
+              operacao_nome: sessao.operacao_nome,
+              tipo_maquina: sessao.tipo_maquina,
+              lote: sessao.lote,
+              num_maquina: sessao.num_maquina,
+              lado: sessao.lado,
+              codigo_manual_curto: sessao.codigo_manual_curto,
+              horario_inicio: '07:00:00',
+              horario_termino: horaStr,
+              producao_conforme: prodRand,
+              retrabalho_proprio: 0,
+              retrabalho_terceiro: 0,
+              refugo: 0,
+              motivo_ocorrencia: 'Produção Normal',
+              user_id: currentUserId,
+              materia_prima_inicial: 1000,
+              observacao: 'Apontamento simulado'
+            };
+          });
+
+          const { error: errProd } = await supabase
+            .schema('AtlasApontamento')
+            .from('registros_producao_terminal')
+            .insert(producoes);
+            
+          if (errProd) throw errProd;
+          showAlert('success', 'SUCESSO: Produção aleatória simulada e salva com sucesso!');
+        }
+      } catch (e: any) {
+        showAlert('error', `Erro na simulação Y6: ${e.message}`);
+      } finally {
+        if (scannerRef.current && scannerRef.current.getState() === 2) {
+          scannerRef.current.resume();
+        }
+        setIsScanning(true);
+        isProcessingScan.current = false;
+        setIsSearchingSessao(false);
+        setManualCodeInput('');
+      }
+      return;
+    }
+
     playBeep();
 
     // Pausa a câmera durante o fluxo de modais
