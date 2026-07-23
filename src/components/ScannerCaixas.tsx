@@ -458,25 +458,107 @@ export default function ScannerCaixas() {
 
         if (errSessoes) throw errSessoes;
 
-        if (!sessoesTestes || sessoesTestes.length === 0) {
-          const maquinasFakes = [];
-          const tipos = ['RETA', 'OVERLOCK', 'GALONEIRA', 'TRANSPORTE', 'FECHADEIRA'];
-          const operadoras = ['Maria', 'Ana', 'Josefa', 'Lucia', 'Rosangela', 'Silvia', 'Carla', 'Joana', 'Marta', 'Helena'];
-          const operacoes = ['Pesponto', 'Fechamento', 'Bainha', 'Etiqueta', 'Gola', 'Manga', 'Costura Lateral'];
+        // Obter user_id válido para o banco de dados
+        const userObj = getLocalSessionUser() as any;
+        let userId = userObj?.id || userObj?.uid;
+        if (!userId) {
+          const { data: authData } = await supabase.auth.getUser();
+          userId = authData?.user?.id;
+        }
+        if (!userId) {
+          const { data: existingSess } = await supabase.schema('AtlasApontamento').from('sessoes_ativas_terminal').select('user_id').not('user_id', 'is', null).limit(1);
+          userId = existingSess?.[0]?.user_id;
+        }
+        if (!userId) {
+          const { data: existingProd } = await supabase.schema('AtlasApontamento').from('registros_producao_terminal').select('user_id').not('user_id', 'is', null).limit(1);
+          userId = existingProd?.[0]?.user_id;
+        }
 
-          for (let i = 1; i <= 30; i++) {
-            const num_maq = String(i).padStart(3, '0');
+        if (!sessoesTestes || sessoesTestes.length === 0) {
+          // Busca máquinas reais cadastradas na tabela base do Supervisor ou em tabelas de configuração
+          let realMachines: any[] = [];
+          const { data: baseData } = await supabase
+            .schema('SupervisorProd')
+            .from('maquinas_operadoras_base')
+            .select('*');
+
+          if (baseData && baseData.length > 0) {
+            realMachines = baseData;
+          } else {
+            const { data: cfgData } = await supabase
+              .schema('AtlasApontamento')
+              .from('maquinas_config')
+              .select('*');
+            if (cfgData && cfgData.length > 0) {
+              realMachines = cfgData;
+            } else {
+              const { data: recData } = await supabase
+                .schema('AtlasApontamento')
+                .from('vw_maquinas_operadoras_recentes')
+                .select('*');
+              if (recData && recData.length > 0) {
+                realMachines = recData;
+              }
+            }
+          }
+
+          // Busca processos reais disponíveis no schema AtlasApontamento
+          const { data: procData } = await supabase
+            .schema('AtlasApontamento')
+            .from('processos_disponiveis')
+            .select('operacao_nome');
+          
+          const realProcessos = procData?.map((p: any) => p.operacao_nome).filter(Boolean) || [
+            'CADÊNCIA', 'PRESPONTO TECIDO FRONTAL', 'FECHAMENTO', 'BAINHA', 'COSTURA LATERAL'
+          ];
+
+          const maquinasFakes = [];
+          const totalCriar = 30;
+          const usedOperadoras = new Set<string>();
+
+          for (let i = 0; i < totalCriar; i++) {
+            const realRow = realMachines[i % Math.max(1, realMachines.length)] || {};
+            
+            // Garantir número real de máquina ou sequência
+            const num_maq = String(realRow.num_maquina || realRow.numero || (i + 1)).trim();
+            let baseOperadora = String(realRow.operadora_nome || realRow.operadora_padrao || realRow.operadora || '').trim().toUpperCase();
+
+            // Garantir operadoras 100% únicas para cada uma das 30 máquinas de teste de simulação
+            if (!baseOperadora || usedOperadoras.has(baseOperadora)) {
+              const candidate = listaOperadoras.find(op => op && !usedOperadoras.has(op.toUpperCase()));
+              if (candidate) {
+                baseOperadora = candidate.toUpperCase();
+              } else if (baseOperadora) {
+                baseOperadora = `${baseOperadora} (${i + 1})`;
+              } else {
+                baseOperadora = `OPERADORA SIMULADA ${i + 1}`;
+              }
+            }
+
+            let finalOperadora = baseOperadora;
+            let counter = 1;
+            while (usedOperadoras.has(finalOperadora)) {
+              finalOperadora = `${baseOperadora} ${counter}`;
+              counter++;
+            }
+            usedOperadoras.add(finalOperadora);
+
+            const tipo = String(realRow.tipo_maquina || 'RETA').trim().toUpperCase();
+            const operacao = String(realRow.operacao_nome || realProcessos[i % realProcessos.length] || 'CADÊNCIA').trim().toUpperCase();
+            const codCurto = realRow.codigo_manual_curto || realRow.codigo_curto || `C${num_maq.padStart(2, '0')}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+
             maquinasFakes.push({
-              codigo_manual_curto: `T${num_maq}XX`,
+              codigo_manual_curto: codCurto,
               num_maquina: num_maq,
-              operadora_nome: operadoras[Math.floor(Math.random() * operadoras.length)],
+              operadora_nome: finalOperadora,
               hora_extra: 'n',
-              tipo_maquina: tipos[Math.floor(Math.random() * tipos.length)],
+              tipo_maquina: tipo,
               lado: 'Único',
               lote: 'L-TESTE-Y6',
-              operacao_nome: operacoes[Math.floor(Math.random() * operacoes.length)],
+              operacao_nome: operacao,
               materia_prima_inicial: 1000,
               horario_inicio: '07:00:00',
+              user_id: userId,
               observacao: 'Sessão simulada (Y6)'
             });
           }
@@ -487,7 +569,7 @@ export default function ScannerCaixas() {
             .insert(maquinasFakes);
 
           if (errInsert) throw errInsert;
-          showAlert('success', 'SUCESSO: 30 Máquinas Ativas de Teste iniciadas com sucesso!');
+          showAlert('success', 'SUCESSO: 30 Máquinas Ativas de Teste com dados reais iniciadas com sucesso!');
         } else {
           const numApontamentos = Math.floor(Math.random() * 6) + 5;
           const shuffled = [...sessoesTestes].sort(() => 0.5 - Math.random());
@@ -496,9 +578,6 @@ export default function ScannerCaixas() {
           const agora = new Date();
           const horaStr = agora.toLocaleTimeString('pt-BR', { hour12: false });
           const diaStr = agora.toISOString().split('T')[0];
-
-          const userObj = getLocalSessionUser() as any;
-          const currentUserId = userObj?.id || userObj?.uid || null;
 
           const producoes = selecionadas.map(sessao => {
             const prodRand = Math.floor(Math.random() * 41) + 10;
@@ -519,7 +598,7 @@ export default function ScannerCaixas() {
               retrabalho_terceiro: 0,
               refugo: 0,
               motivo_ocorrencia: 'Produção Normal',
-              user_id: currentUserId,
+              user_id: userId,
               materia_prima_inicial: 1000,
               observacao: 'Apontamento simulado'
             };
@@ -757,6 +836,51 @@ export default function ScannerCaixas() {
     }
 
     setIsSaving(true);
+    const nomeOperadoraSanitizado = sanitizeInput(formOperadora, 100).toUpperCase();
+
+    // TRAVA DE OPERADORA ATIVA DUPLICADA (CENÁRIO A)
+    try {
+      const { data: sessoesExistentes, error: checkError } = await supabase
+        .schema('AtlasApontamento')
+        .from('sessoes_ativas_terminal')
+        .select('*')
+        .ilike('operadora_nome', nomeOperadoraSanitizado);
+
+      if (checkError) {
+        console.error('[Terminal Supabase] Erro ao verificar operadora ativa no banco:', checkError);
+      }
+
+      const sessaoAtivaExistente = sessoesExistentes?.find(
+        (s: any) => String(s.operadora_nome || '').trim().toUpperCase() === nomeOperadoraSanitizado
+      ) || offlineSessoes.find(
+        (s: any) => String(s.operadora_nome || '').trim().toUpperCase() === nomeOperadoraSanitizado
+      );
+
+      if (sessaoAtivaExistente) {
+        setIsSaving(false);
+        const maquinaAlocada = sessaoAtivaExistente.num_maquina || 'desconhecida';
+        showAlert(
+          'error',
+          `FALHA DE ALOCAÇÃO: A operadora ${nomeOperadoraSanitizado} já está trabalhando ativamente na Máquina ${maquinaAlocada}. Você deve encerrar o processo dela na Máquina ${maquinaAlocada} antes de alocá-la nesta nova máquina!`
+        );
+        return;
+      }
+    } catch (checkErr: any) {
+      console.error('[Terminal Supabase] Exceção ao verificar operadora ativa:', checkErr);
+      const sessaoOffline = offlineSessoes.find(
+        (s: any) => String(s.operadora_nome || '').trim().toUpperCase() === nomeOperadoraSanitizado
+      );
+      if (sessaoOffline) {
+        setIsSaving(false);
+        const maquinaAlocada = sessaoOffline.num_maquina || 'desconhecida';
+        showAlert(
+          'error',
+          `FALHA DE ALOCAÇÃO: A operadora ${nomeOperadoraSanitizado} já está trabalhando ativamente na Máquina ${maquinaAlocada}. Você deve encerrar o processo dela na Máquina ${maquinaAlocada} antes de alocá-la nesta nova máquina!`
+        );
+        return;
+      }
+    }
+
     const horarioInicio = new Date().toTimeString().split(' ')[0];
     const userObj = getLocalSessionUser() as any;
     const userId = userObj?.id || userObj?.uid;
@@ -766,7 +890,7 @@ export default function ScannerCaixas() {
     const novaSessao = {
       num_maquina: sanitizeInput(formMaquina, 50).toUpperCase(),
       codigo_manual_curto: sanitizeInput(formCodigoCurto, 50),
-      operadora_nome: sanitizeInput(formOperadora, 100).toUpperCase(),
+      operadora_nome: nomeOperadoraSanitizado,
       operacao_nome: sanitizeInput(formOperacao, 100).toUpperCase(),
       lote: sanitizeInput(formLote, 100).toUpperCase(),
       lado: formLado,
