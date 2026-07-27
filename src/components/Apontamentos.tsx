@@ -975,13 +975,13 @@ export default function Apontamentos() {
 
       {/* POINTING REGISTRATION DRAWER (COLLAPSIBLE FORM) */}
       {showForm && (
-        <div className="border border-zinc-900 bg-zinc-950/20 p-5 rounded-xl max-w-2xl">
+        <div className="border border-zinc-900 bg-zinc-950/20 p-4 sm:p-5 rounded-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto scrollbar-thin">
           <span className="text-[10px] font-mono uppercase tracking-widest font-black text-white block mb-4">
             REGISTRAR APONTAMENTO MANUAL NO TERMINAL
           </span>
 
           <form onSubmit={handleCreateApontamento} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 min-w-0">
               <label className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 block font-bold">Responsável Coleta</label>
               <input
                 type="text"
@@ -991,7 +991,7 @@ export default function Apontamentos() {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 min-w-0">
               <label className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 block font-bold">Máquina Destino</label>
               <select
                 value={newMaquina}
@@ -1004,7 +1004,7 @@ export default function Apontamentos() {
               </select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 min-w-0">
               <label className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 block font-bold">
                 {newRegistroTipo === 'MATERIA_PRIMA' ? 'Qtd Matéria Prima Entregue' : 'Qtd Peças (Volume)'}
               </label>
@@ -1018,8 +1018,8 @@ export default function Apontamentos() {
               />
             </div>
 
-            <div className="sm:col-span-3 flex items-center justify-between pt-3 border-t border-zinc-900/40">
-              <div className="flex gap-4">
+            <div className="sm:col-span-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-zinc-900/40">
+              <div className="flex flex-wrap gap-3">
                 <label className="flex items-center gap-1.5 text-xs text-zinc-300 font-mono cursor-pointer">
                   <input
                     type="radio"
@@ -1046,14 +1046,14 @@ export default function Apontamentos() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="py-1.5 px-3 rounded text-[10px] font-mono font-bold uppercase text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                  className="flex-1 sm:flex-none py-2 px-3 rounded text-[10px] font-mono font-bold uppercase text-zinc-400 hover:text-white transition-colors cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="py-1.5 px-4 bg-[#00624C] hover:bg-[#004838] rounded text-[10px] font-mono font-bold uppercase text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="flex-1 sm:flex-none py-2 px-4 bg-[#00624C] hover:bg-[#004838] rounded text-[10px] font-mono font-bold uppercase text-white transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   {isSaving && <Loader2 className="animate-spin" size={12} />}
                   Confirmar Apontamento

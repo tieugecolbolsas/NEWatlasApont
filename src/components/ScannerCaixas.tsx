@@ -1494,12 +1494,12 @@ export default function ScannerCaixas() {
       {/* ======================================================= */}
       <AnimatePresence>
         {showScenarioA && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-zinc-950 border border-zinc-900 rounded-xl w-full max-w-lg p-5 md:p-6 space-y-6 shadow-2xl"
+              className="bg-zinc-950 border border-zinc-900 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 md:p-6 space-y-4 md:space-y-5 shadow-2xl scrollbar-thin my-auto"
             >
               {/* Header do Form */}
               <div className="flex justify-between items-center border-b border-zinc-900 pb-4">
@@ -1915,12 +1915,12 @@ export default function ScannerCaixas() {
 
       <AnimatePresence>
         {activeSession && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-zinc-950 border border-zinc-900 rounded-xl w-full max-w-xl p-5 md:p-6 space-y-6 shadow-2xl"
+              className="bg-zinc-950 border border-zinc-900 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 md:p-6 space-y-4 md:space-y-5 shadow-2xl scrollbar-thin my-auto"
             >
               {/* Header do Form */}
               <div className="flex justify-between items-center border-b border-zinc-900 pb-4">
