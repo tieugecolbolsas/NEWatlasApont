@@ -1187,19 +1187,58 @@ export default function Apontamentos() {
                 );
               }
 
+              const obsCount = block.itens.filter((item: any) => item.observacao && item.observacao.trim().length > 0).length;
+              const finCount = blockFinalizacoes.length;
+              const hasObs = obsCount > 0;
+              const hasFin = finCount > 0;
+
               return (
                 <div 
                   key={block.key} 
-                  className={`border rounded-xl overflow-hidden transition-all duration-200 border-[#00624C]/25 bg-transparent`}
+                  className={`border rounded-xl overflow-hidden transition-all duration-200 bg-transparent ${
+                    hasObs 
+                      ? "border-amber-500 shadow-sm shadow-amber-500/20" 
+                      : (hasFin ? "border-rose-500 shadow-sm shadow-rose-500/20" : "border-[#00624C]/25")
+                  }`}
                 >
                   {/* Linha principal fechada */}
                   <button
                     onClick={() => toggleGroup(block.key)}
-                    className="w-full p-5 hover:bg-[#00624C]/20 transition-colors font-mono focus:outline-none cursor-pointer border-b border-[#00624C]/25 text-left bg-[#00624C]/16 relative"
+                    className="w-full p-5 pt-8 md:pt-6 hover:bg-[#00624C]/20 transition-colors font-mono focus:outline-none cursor-pointer border-b border-[#00624C]/25 text-left bg-[#00624C]/16 relative"
                   >
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                       {/* Coluna 1: Identificação de Máquina e Data */}
-                      <div className="flex flex-col justify-between space-y-4 md:space-y-3">
+                      <div className="flex flex-col justify-between space-y-4 md:space-y-3 relative z-0">
+                        {/* DATA E STATUS NO TOPO */}
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm text-zinc-200 flex items-center gap-1.5 font-bold bg-zinc-900 border border-zinc-800/80 px-2 py-1 rounded-md">
+                            <Calendar size={13} className="text-[#00624C]" /> {block.data}
+                          </span>
+                          {isSessionActive ? (
+                            <span className="text-[9px] font-black uppercase tracking-wider text-blue-400 bg-blue-950/40 border border-blue-500/30 px-2 py-0.5 rounded">
+                              ● ANDAMENTO
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 bg-rose-950/40 border border-rose-500/30 px-2 py-0.5 rounded">
+                              ● ENCERRADO
+                            </span>
+                          )}
+                        </div>
+
+                        {/* GRAVATAS (Ultrafinas e Delicadas) */}
+                        <div className="absolute -top-8 md:-top-6 right-0 flex gap-1 z-10 items-start">
+                          {hasObs && (
+                            <div className="bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950 text-[9px] font-black w-3.5 pt-0.5 pb-2 shadow-sm flex flex-col items-center justify-center tracking-tighter" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)' }}>
+                              <span className="leading-none">{obsCount}</span>
+                            </div>
+                          )}
+                          {hasFin && (
+                            <div className="bg-gradient-to-b from-rose-500 to-rose-600 text-rose-950 text-[9px] font-black w-3.5 pt-0.5 pb-2 shadow-sm flex flex-col items-center justify-center tracking-tighter" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)' }}>
+                              <span className="leading-none">{finCount}</span>
+                            </div>
+                          )}
+                        </div>
+
                         <div className="flex flex-row justify-between items-start md:flex-col md:space-y-3">
                           <div className="space-y-1.5">
                             <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block">POSTO / MÁQUINA</span>
@@ -1213,37 +1252,9 @@ export default function Apontamentos() {
                           </div>
 
                           <div className="flex flex-col items-end md:items-start space-y-1.5 md:space-y-3">
-                            {/* Selos de Status */}
-                            <div className="flex flex-col md:flex-row items-end md:items-center gap-1.5">
-                              {isSessionActive ? (
-                                <span className="text-[9px] font-black uppercase tracking-wider text-blue-400 bg-blue-950/40 border border-blue-500/30 px-2 py-0.5 rounded">
-                                  ● ANDAMENTO
-                                </span>
-                              ) : (
-                                <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 bg-rose-950/40 border border-rose-500/30 px-2 py-0.5 rounded">
-                                  ● ENCERRADO
-                                </span>
-                              )}
-
-                              <div className="flex items-center gap-1.5">
-                                {(() => {
-                                  const obsCount = block.itens.filter((item: any) => item.observacao && item.observacao.trim().length > 0).length;
-                                  if (obsCount > 0) {
-                                    return (
-                                      <span className="text-[9px] font-black uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded flex items-center gap-1" title={`${obsCount} observações registradas`}>
-                                        <Mail size={10} /> +{obsCount}
-                                      </span>
-                                    );
-                                  }
-                                  return null;
-                                })()}
-                                {blockFinalizacoes.length > 0 && (
-                                  <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 bg-rose-950/40 border border-rose-500/30 px-2 py-0.5 rounded flex items-center gap-1" title={`${blockFinalizacoes.length} finalizações antecipadas`}>
-                                    <Mail size={10} /> +{blockFinalizacoes.length}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
+                            <span className="text-zinc-300 uppercase text-xs bg-zinc-900 border border-zinc-800 px-2 py-1 rounded w-fit font-bold tracking-wide">
+                              {block.processo}
+                            </span>
                           </div>
                         </div>
 
@@ -1288,13 +1299,6 @@ export default function Apontamentos() {
                               </div>
                             );
                           })()}
-                          
-                          <div className="space-y-1 text-right md:text-left">
-                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block">DATA DO PROCESSO</span>
-                            <span className="text-sm text-zinc-200 flex items-center justify-end md:justify-start gap-1.5 font-bold bg-zinc-900 border border-zinc-800/80 px-2 py-1 rounded-md w-fit ml-auto md:ml-0">
-                              <Calendar size={13} className="text-[#00624C]" /> {block.data}
-                            </span>
-                          </div>
                         </div>
                       </div>
 
@@ -1309,23 +1313,17 @@ export default function Apontamentos() {
                           </div>
                           <div>
                             <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">OPERAÇÃO ATRIBUÍDA</span>
-                            <span className="text-zinc-200 font-semibold text-xs leading-relaxed flex items-center gap-1 truncate" title={block.operacao_nome}>
-                              <SewingMachineIcon size={14} className="text-[#00624C] shrink-0" /> <span className="truncate">{block.operacao_nome}</span>
+                            <span className="text-zinc-200 font-semibold text-xs leading-snug flex items-start gap-1.5 mt-0.5 break-words whitespace-normal" title={block.operacao_nome}>
+                              <SewingMachineIcon size={14} className="text-[#00624C] shrink-0 mt-0.5" /> <span className="break-words whitespace-normal">{block.operacao_nome}</span>
                             </span>
                           </div>
-                          <div className="col-span-2 md:col-span-1">
-                            <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">TIPO DE MÁQUINA</span>
-                            <div className="flex flex-wrap items-center gap-2 mt-1">
-                              <span className="text-zinc-300 uppercase text-xs bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-md w-fit font-bold leading-relaxed tracking-wide">
-                                {block.processo}
-                              </span>
-                              {block.itens?.some((item: any) => item.motivo_ocorrencia === 'Finalização Automática') && (
-                                <div className="text-rose-400 bg-rose-950/20 border border-rose-500/20 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1 w-fit">
-                                  ⚠ FINALIZAÇÃO AUTOMÁTICA
-                                </div>
-                              )}
+                          {block.itens?.some((item: any) => item.motivo_ocorrencia === 'Finalização Automática') && (
+                            <div className="col-span-2 md:col-span-1">
+                              <div className="text-rose-400 bg-rose-950/20 border border-rose-500/20 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1 w-fit mt-1">
+                                ⚠ FINALIZAÇÃO AUTOMÁTICA
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
 
                         {/* Monitoramento de Matéria Prima Restante e Tempo Estimado */}

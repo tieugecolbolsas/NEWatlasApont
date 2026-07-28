@@ -1,1 +1,8 @@
 v1.1,Tue Jul 28 11:42:05 AM UTC 2026,Apontamentos,Otimização de layout mobile dos cards,Otimizar layout mobile das colunas do card,Sucesso
+v1.2,Tue Jul 28 12:00:34 PM UTC 2026,Painel Geral,Otimização mobile - layout e gravatas de observação/finalização,Implementar regra de gravata (ribbons) amarela/vermelha para mensagens, data no topo e reorganizar campos,Sucesso
+v1.3,Tue Jul 28 12:16:51 PM UTC 2026,Apontamentos,Ajuste das gravatas e unificação dos dados entre mobile e desktop,Implementar as gravatas no topo da primeira coluna (desktop e mobile), unificar a exibição da data no topo e substituir os ícones de cartas pelo TIPO,Sucesso
+v1.4,Tue Jul 28 12:20:07 PM UTC 2026,Apontamentos,Ajuste das gravatas (remover perninha e alinhar topo),Remover o triângulo que criava o efeito de dobra externa e alinhar o topo corretamente no mobile/desktop,Sucesso
+v1.5,Tue Jul 28 12:21:26 PM UTC 2026,Apontamentos,Redimensionamento dos selos/gravatas de observação e finalização,Ajustar a largura para w-5, ícone tamanho 9px e tipografia 9px com leading-none para um aspecto mais delicado e compacto,Sucesso
+v1.6,Tue Jul 28 12:34:59 PM UTC 2026,Apontamentos,Remoção do ícone de carta e refinamento das gravatas,Remover ícone Mail e ajustar largura das gravatas para w-3.5 de forma ultrafina e delicada,Sucesso
+v1.7,Tue Jul 28 12:37:08 PM UTC 2026,Apontamentos,Ajuste visual no rótulo TIPO e quebra de linha da Operação,Remoção do rótulo 'TIPO' e remoção do truncate na Operação Atribuída permitindo quebra de linha fluida,Sucesso
+v1.8,Tue Jul 28 12:39:02 PM UTC 2026,Apontamentos,Ajuste no topo do card - data e status,Substituir o texto 'DATA DO PROCESSO' pela própria data e posicionar o selo de status (ANDAMENTO/ENCERRADO) no lado direito no lugar da data,Sucesso
