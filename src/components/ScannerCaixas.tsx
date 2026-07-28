@@ -1499,10 +1499,10 @@ export default function ScannerCaixas() {
               initial={{ opacity: 0, scale: 0.95, y: 15 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-zinc-950 border border-zinc-900 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 md:p-6 space-y-4 md:space-y-5 shadow-2xl scrollbar-thin my-auto"
+              className="bg-zinc-950 border border-zinc-900 rounded-xl w-full max-w-md max-h-[92vh] overflow-y-auto p-3.5 sm:p-5 space-y-3 sm:space-y-4 shadow-2xl scrollbar-thin my-auto"
             >
               {/* Header do Form */}
-              <div className="flex justify-between items-center border-b border-zinc-900 pb-4">
+              <div className="flex justify-between items-center border-b border-zinc-900 pb-3">
                 <div className="flex items-center gap-2">
                   <Layers className="text-[#00624C]" size={20} />
                   <div>
@@ -1523,23 +1523,16 @@ export default function ScannerCaixas() {
               </div>
 
               {/* Formulário */}
-              <div className="space-y-4 font-mono text-xs">
+              <div className="space-y-3 font-mono text-xs">
                 
-                {/* ID de Máquina e Código Curto */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-900/50 p-3.5 rounded border border-zinc-900">
-                  <div>
-                    <label className="text-zinc-500 text-[8px] uppercase tracking-widest font-bold block mb-1">Máquina Alvo</label>
-                    <strong className="text-white text-sm font-bold block">{formMaquina}</strong>
-                  </div>
-                  <div>
-                    <label className="text-[#00624C] text-[8px] uppercase tracking-widest font-bold block mb-1">Cód. Curto Gerado</label>
-                    <strong className="text-zinc-300 text-sm font-black tracking-widest block">{formCodigoCurto}</strong>
-                  </div>
+                {/* 2. Display Bar de Leitura Travada (Substitui Máquina Alvo / Cód. Curto Gerado) */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-center text-sm font-bold font-mono text-zinc-300">
+                  N.º {formMaquina} | {formTipoMaquina}
                 </div>
 
                 {/* Nome da Operadora */}
                 <div className="space-y-1 relative">
-                  <label className="text-zinc-400 font-bold block">Nome da Operadora <span className="text-[#00624C]">*</span></label>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operadora *</label>
                   <div className="flex gap-2">
                     <input 
                       type="text"
@@ -1555,7 +1548,7 @@ export default function ScannerCaixas() {
                       onBlur={() => {
                         setTimeout(() => setShowOperadoraSuggestions(false), 200);
                       }}
-                      className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-bold"
+                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-bold font-mono text-xs"
                     />
                     <button
                       type="button"
@@ -1566,7 +1559,7 @@ export default function ScannerCaixas() {
                         }
                         setConfirmaOperadora(!confirmaOperadora);
                       }}
-                      className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                      className={`p-2.5 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                         confirmaOperadora 
                           ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                           : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
@@ -1596,132 +1589,135 @@ export default function ScannerCaixas() {
                   )}
                 </div>
 
-                {/* Nome da Operação e Lote */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1 relative">
-                    <label className="text-zinc-400 font-bold block">Nome da Operação <span className="text-[#00624C]">*</span></label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="text"
-                        required
-                        disabled={confirmaOperacao}
-                        placeholder="Ex: COSTURA GOLA"
-                        value={formOperacao}
-                        onChange={(e) => {
-                          setFormOperacao(e.target.value);
-                          setShowOperacaoSuggestions(true);
-                        }}
-                        onFocus={() => setShowOperacaoSuggestions(true)}
-                        onBlur={() => {
-                          setTimeout(() => setShowOperacaoSuggestions(false), 200);
-                        }}
-                        className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!formOperacao.trim()) {
-                            showAlert('warning', "Por favor, preencha a Operação antes de confirmar.");
-                            return;
-                          }
-                          setConfirmaOperacao(!confirmaOperacao);
-                        }}
-                        className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                          confirmaOperacao 
-                            ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                        }`}
-                        title={confirmaOperacao ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                      >
-                        <Check size={16} className={confirmaOperacao ? "scale-110" : ""} />
-                      </button>
-                    </div>
-                    {showOperacaoSuggestions && (
-                      <div className="absolute left-0 right-0 bg-zinc-950 border border-zinc-800 rounded mt-1 z-50 shadow-2xl p-1">
-                        {(() => {
-                          const query = formOperacao.toLowerCase();
-                          const filtered = listaOperacoesObj.filter(item => 
-                            item.operacao_nome.toLowerCase().includes(query) ||
-                            item.categoria_nome.toLowerCase().includes(query)
-                          );
-                          
-                          // Group by category
-                          const grouped = filtered.reduce((acc, curr) => {
-                            const cat = curr.categoria_nome || 'DIVERSOS';
-                            if (!acc[cat]) acc[cat] = [];
-                            acc[cat].push(curr.operacao_nome);
-                            return acc;
-                          }, {} as Record<string, string[]>);
-                          
-                          const totalFiltered = filtered.length;
-                          
-                          if (totalFiltered === 0) {
-                            return <div className="p-2 text-zinc-500 text-xs font-mono">Nenhuma operação encontrada</div>;
-                          }
-                          
-                          const sortedEntries = (Object.entries(grouped) as [string, string[]][]).sort(([catA], [catB]) => {
-                            const getWeight = (cat: string) => {
-                              const norm = cat.toUpperCase().trim();
-                              if (norm === 'FORRAÇÃO CITY' || norm === 'FORRACAO CITY') return 1;
-                              if (norm === 'ORELHA CITY') return 2;
-                              return 3;
-                            };
-                            const weightA = getWeight(catA);
-                            const weightB = getWeight(catB);
-                            if (weightA !== weightB) return weightA - weightB;
-                            return catA.toUpperCase().localeCompare(catB.toUpperCase());
-                          });
-                          
-                          return (
-                            <select
-                              size={Math.min(8, totalFiltered + Object.keys(grouped).length)}
-                              className="w-full bg-transparent text-zinc-300 font-mono text-xs focus:outline-none border-none cursor-pointer"
-                              onChange={(e) => {
-                                if (e.target.value) {
-                                  setFormOperacao(e.target.value);
-                                  setShowOperacaoSuggestions(false);
-                                }
-                              }}
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                              }}
-                            >
-                              {sortedEntries.map(([category, ops]) => (
-                                <optgroup key={category} label={category.toUpperCase()} className="text-[#00624C] font-extrabold bg-zinc-950 px-2 py-1">
-                                  {ops.map(op => (
-                                    <option 
-                                      key={op} 
-                                      value={op} 
-                                      className="text-zinc-300 font-mono text-xs bg-zinc-900 px-3 py-1.5 hover:bg-[#00624C] hover:text-white cursor-pointer"
-                                      onClick={() => {
-                                        setFormOperacao(op);
-                                        setShowOperacaoSuggestions(false);
-                                      }}
-                                    >
-                                      {op}
-                                    </option>
-                                  ))}
-                                </optgroup>
-                              ))}
-                            </select>
-                          );
-                        })()}
-                      </div>
-                    )}
+                {/* Nome da Operação */}
+                <div className="space-y-1 relative">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operação *</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text"
+                      required
+                      disabled={confirmaOperacao}
+                      placeholder="Ex: COSTURA GOLA"
+                      value={formOperacao}
+                      onChange={(e) => {
+                        setFormOperacao(e.target.value);
+                        setShowOperacaoSuggestions(true);
+                      }}
+                      onFocus={() => setShowOperacaoSuggestions(true)}
+                      onBlur={() => {
+                        setTimeout(() => setShowOperacaoSuggestions(false), 200);
+                      }}
+                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!formOperacao.trim()) {
+                          showAlert('warning', "Por favor, preencha a Operação antes de confirmar.");
+                          return;
+                        }
+                        setConfirmaOperacao(!confirmaOperacao);
+                      }}
+                      className={`p-2.5 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                        confirmaOperacao 
+                          ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
+                          : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                      }`}
+                      title={confirmaOperacao ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
+                    >
+                      <Check size={16} className={confirmaOperacao ? "scale-110" : ""} />
+                    </button>
                   </div>
+                  {showOperacaoSuggestions && (
+                    <div className="absolute left-0 right-0 bg-zinc-950 border border-zinc-800 rounded mt-1 z-50 shadow-2xl p-1">
+                      {(() => {
+                        const query = formOperacao.toLowerCase();
+                        const filtered = listaOperacoesObj.filter(item => 
+                          item.operacao_nome.toLowerCase().includes(query) ||
+                          item.categoria_nome.toLowerCase().includes(query)
+                        );
+                        
+                        // Group by category
+                        const grouped = filtered.reduce((acc, curr) => {
+                          const cat = curr.categoria_nome || 'DIVERSOS';
+                          if (!acc[cat]) acc[cat] = [];
+                          acc[cat].push(curr.operacao_nome);
+                          return acc;
+                        }, {} as Record<string, string[]>);
+                        
+                        const totalFiltered = filtered.length;
+                        
+                        if (totalFiltered === 0) {
+                          return <div className="p-2 text-zinc-500 text-xs font-mono">Nenhuma operação encontrada</div>;
+                        }
+                        
+                        const sortedEntries = (Object.entries(grouped) as [string, string[]][]).sort(([catA], [catB]) => {
+                          const getWeight = (cat: string) => {
+                            const norm = cat.toUpperCase().trim();
+                            if (norm === 'FORRAÇÃO CITY' || norm === 'FORRACAO CITY') return 1;
+                            if (norm === 'ORELHA CITY') return 2;
+                            return 3;
+                          };
+                          const weightA = getWeight(catA);
+                          const weightB = getWeight(catB);
+                          if (weightA !== weightB) return weightA - weightB;
+                          return catA.toUpperCase().localeCompare(catB.toUpperCase());
+                        });
+                        
+                        return (
+                          <select
+                            size={Math.min(8, totalFiltered + Object.keys(grouped).length)}
+                            className="w-full bg-transparent text-zinc-300 font-mono text-xs focus:outline-none border-none cursor-pointer"
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                setFormOperacao(e.target.value);
+                                setShowOperacaoSuggestions(false);
+                              }
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            {sortedEntries.map(([category, ops]) => (
+                              <optgroup key={category} label={category.toUpperCase()} className="text-[#00624C] font-extrabold bg-zinc-950 px-2 py-1">
+                                {ops.map(op => (
+                                  <option 
+                                    key={op} 
+                                    value={op} 
+                                    className="text-zinc-300 font-mono text-xs bg-zinc-900 px-3 py-1.5 hover:bg-[#00624C] hover:text-white cursor-pointer"
+                                    onClick={() => {
+                                      setFormOperacao(op);
+                                      setShowOperacaoSuggestions(false);
+                                    }}
+                                  >
+                                    {op}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            ))}
+                          </select>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+
+                {/* 5. Agrupamento em 2 colunas: Lote de Produção e Lado */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Lote Input (numeric keypad trigger) */}
                   <div className="space-y-1">
-                    <label className="text-zinc-400 font-bold block">Lote de Produção <span className="text-[#00624C]">*</span></label>
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lote de Produção *</label>
                     <div className="flex gap-2">
                       <input 
-                        type="text"
-                        inputMode="numeric"
+                        type="text" 
+                        inputMode="numeric" 
                         pattern="[0-9]*"
                         required
                         disabled={confirmaLote}
-                        placeholder="Ex: L-205"
+                        placeholder="Ex: 205"
                         value={formLote}
                         onChange={(e) => setFormLote(e.target.value)}
-                        className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600"
+                        className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs font-bold"
                       />
                       <button
                         type="button"
@@ -1732,7 +1728,7 @@ export default function ScannerCaixas() {
                           }
                           setConfirmaLote(!confirmaLote);
                         }}
-                        className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                        className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                           confirmaLote 
                             ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                             : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
@@ -1743,18 +1739,16 @@ export default function ScannerCaixas() {
                       </button>
                     </div>
                   </div>
-                </div>
-
-                {/* Lado, Tipo Máquina */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  
+                  {/* Lado Select Dropdown */}
                   <div className="space-y-1">
-                    <label className="text-zinc-400 font-bold block">Lado</label>
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lado</label>
                     <div className="flex gap-2">
                       <select 
                         disabled={confirmaLado}
                         value={formLado} 
                         onChange={(e) => setFormLado(e.target.value as any)}
-                        className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] font-bold"
+                        className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-xs font-bold"
                       >
                         <option value="Único">Único</option>
                         <option value="Esquerdo">Esquerdo</option>
@@ -1762,10 +1756,8 @@ export default function ScannerCaixas() {
                       </select>
                       <button
                         type="button"
-                        onClick={() => {
-                          setConfirmaLado(!confirmaLado);
-                        }}
-                        className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                        onClick={() => setConfirmaLado(!confirmaLado)}
+                        className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                           confirmaLado 
                             ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                             : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
@@ -1776,109 +1768,74 @@ export default function ScannerCaixas() {
                       </button>
                     </div>
                   </div>
+                </div>
+
+                {/* Matéria-Prima Alimentada & Observação */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-zinc-400 font-bold block">Tipo de Máquina <span className="text-[#00624C]">*</span></label>
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Matéria-Prima Alimentada *</label>
                     <div className="flex gap-2">
                       <input 
-                        type="text"
+                        type="number"
                         required
-                        disabled={confirmaTipoMaquina || !!formTipoMaquina}
-                        readOnly={!!formTipoMaquina}
-                        placeholder="Ex: RETALHADORA"
-                        value={formTipoMaquina}
-                        onChange={(e) => setFormTipoMaquina(e.target.value)}
-                        className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600"
+                        min="0"
+                        disabled={confirmaMateriaPrima}
+                        placeholder="Ex: 500"
+                        value={formMateriaPrima === '' ? '' : formMateriaPrima}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormMateriaPrima(val === '' ? '' : Math.max(0, parseInt(val) || 0));
+                        }}
+                        onFocus={() => {
+                          if (formMateriaPrima === 0) {
+                            setFormMateriaPrima('');
+                          }
+                        }}
+                        className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs font-bold"
                       />
                       <button
                         type="button"
-                        disabled={!!formTipoMaquina}
-                        onClick={() => {
-                          if (!formTipoMaquina.trim()) {
-                            showAlert('warning', "Por favor, preencha o Tipo de Máquina antes de confirmar.");
-                            return;
-                          }
-                          setConfirmaTipoMaquina(!confirmaTipoMaquina);
-                        }}
-                        className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                          confirmaTipoMaquina 
+                        onClick={() => setConfirmaMateriaPrima(!confirmaMateriaPrima)}
+                        className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                          confirmaMateriaPrima 
                             ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                             : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                        } ${formTipoMaquina ? 'opacity-50 cursor-not-allowed bg-emerald-600 border-emerald-500 text-white' : ''}`}
-                        title={confirmaTipoMaquina ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
+                        }`}
+                        title={confirmaMateriaPrima ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
                       >
-                        <Check size={16} className={confirmaTipoMaquina ? "scale-110" : ""} />
+                        <Check size={16} className={confirmaMateriaPrima ? "scale-110" : ""} />
                       </button>
                     </div>
                   </div>
-                </div>
 
-                {/* Matéria-Prima Alimentada */}
-                <div className="space-y-1">
-                  <label className="text-zinc-400 font-bold block">Matéria-Prima Alimentada <span className="text-[#00624C]">*</span></label>
-                  <div className="flex gap-2">
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Observação</label>
+                      <span className="text-[9px] text-zinc-600 font-mono">{formObservacao.length}/150</span>
+                    </div>
                     <input 
-                      type="number"
-                      required
-                      min="0"
-                      disabled={confirmaMateriaPrima}
-                      placeholder="Ex: 500"
-                      value={formMateriaPrima === '' ? '' : formMateriaPrima}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setFormMateriaPrima(val === '' ? '' : Math.max(0, parseInt(val) || 0));
-                      }}
-                      onFocus={() => {
-                        if (formMateriaPrima === 0) {
-                          setFormMateriaPrima('');
-                        }
-                      }}
-                      className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-bold"
+                      type="text"
+                      maxLength={150}
+                      placeholder="Ex: Treinamento / Parada"
+                      value={formObservacao}
+                      onChange={(e) => setFormObservacao(e.target.value)}
+                      className="w-full h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs"
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setConfirmaMateriaPrima(!confirmaMateriaPrima);
-                      }}
-                      className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                        confirmaMateriaPrima 
-                          ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                      }`}
-                      title={confirmaMateriaPrima ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                    >
-                      <Check size={16} className={confirmaMateriaPrima ? "scale-110" : ""} />
-                    </button>
                   </div>
                 </div>
 
-                {/* Observação (Opcional, máx 150 caracteres) */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <label className="text-zinc-400 font-bold block">Observação (Justificativa de Parada / Treinamento)</label>
-                    <span className="text-[10px] text-zinc-500 font-mono">{formObservacao.length}/150</span>
-                  </div>
-                  <input 
-                    type="text"
-                    maxLength={150}
-                    placeholder="Ex: Treinamento ou justificativa de parada (máx 150 caracteres)"
-                    value={formObservacao}
-                    onChange={(e) => setFormObservacao(e.target.value)}
-                    className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] placeholder-zinc-600"
-                  />
-                </div>
-
-                {/* Hora Extra (Toggle) */}
-                <div className="bg-zinc-900/30 p-3.5 border border-zinc-900 rounded flex justify-between items-center">
+                {/* 6. Compact Regime de Hora Extra Toggle Section */}
+                <div className="bg-zinc-900/30 px-3 py-2 border border-zinc-800 rounded flex justify-between items-center">
                   <div>
-                    <span className="font-bold text-white block">Regime de Hora Extra?</span>
-                    <span className="text-[10px] text-zinc-500">Determina se o tempo conta como HE</span>
+                    <span className="font-bold text-zinc-300 text-[11px] block">Regime de Hora Extra?</span>
+                    <span className="text-[9px] text-zinc-500 font-mono">Determina se o tempo conta como HE</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFormHoraExtra(!formHoraExtra)}
-                    className={`px-4 h-10 md:h-8 rounded font-bold uppercase transition-all flex items-center justify-center gap-1 cursor-pointer text-[10px] ${
+                    className={`px-3 h-8 rounded font-bold font-mono uppercase transition-all flex items-center justify-center gap-1 cursor-pointer text-[10px] ${
                       formHoraExtra 
-                        ? 'bg-[#00624C] text-white shadow-lg shadow-[#00624C]/15' 
+                        ? 'bg-[#00624C] text-white shadow-md shadow-[#00624C]/20' 
                         : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
                     }`}
                   >
@@ -1889,22 +1846,25 @@ export default function ScannerCaixas() {
 
               </div>
 
-              {/* Botões do Form */}
-              <div className="flex flex-col sm:flex-row gap-3 border-t border-zinc-900 pt-4">
+              {/* 7. Enlarged Bottom Action Buttons (Thick, tall touch targets on mobile) */}
+              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-zinc-900/40">
                 <button 
+                  type="button"
                   onClick={retomarScanner}
-                  className="flex-1 h-12 md:h-10 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white font-bold rounded text-[10px] font-mono uppercase tracking-widest transition-colors flex justify-center items-center gap-2 cursor-pointer"
+                  className="h-14 text-sm font-mono font-bold uppercase text-zinc-400 hover:text-white rounded-lg border border-zinc-800 bg-transparent cursor-pointer transition-all flex items-center justify-center gap-2"
                 >
-                  <XCircle size={14} /> Cancelar
+                  <XCircle size={16} />
+                  Cancelar
                 </button>
                 <button 
+                  type="button"
                   onClick={handleSalvarCenarioA}
                   disabled={isSaving || !(confirmaOperadora && confirmaOperacao && confirmaLote && confirmaLado && confirmaTipoMaquina && confirmaMateriaPrima)}
-                  className="flex-1 h-12 md:h-10 bg-[#00624C] hover:bg-[#004838] text-white font-bold rounded text-[10px] font-mono uppercase tracking-widest shadow-lg shadow-[#00624C]/15 transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="h-14 text-sm font-mono font-bold uppercase text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg shadow-lg shadow-emerald-600/10 cursor-pointer transition-all flex items-center justify-center gap-2 text-center"
                 >
-                  {isSaving ? <Loader2 className="animate-spin" size={14} /> : <Play size={14} />}
+                  {isSaving ? <Loader2 className="animate-spin" size={16} /> : null}
                   {!(confirmaOperadora && confirmaOperacao && confirmaLote && confirmaLado && confirmaTipoMaquina && confirmaMateriaPrima)
-                    ? "CONFIRME TODOS OS CAMPOS"
+                    ? "Confirme Todos os Campos"
                     : "Iniciar Processo"}
                 </button>
               </div>
