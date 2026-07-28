@@ -1195,11 +1195,7 @@ export default function Apontamentos() {
               return (
                 <div 
                   key={block.key} 
-                  className={`border rounded-xl overflow-hidden transition-all duration-200 bg-transparent ${
-                    hasObs 
-                      ? "border-amber-500 shadow-sm shadow-amber-500/20" 
-                      : (hasFin ? "border-rose-500 shadow-sm shadow-rose-500/20" : "border-[#00624C]/25")
-                  }`}
+                  className="border rounded-xl overflow-hidden transition-all duration-200 bg-transparent border-[#00624C]/25"
                 >
                   {/* Linha principal fechada */}
                   <button
@@ -1225,8 +1221,8 @@ export default function Apontamentos() {
                           )}
                         </div>
 
-                        {/* GRAVATAS (Ultrafinas e Delicadas) */}
-                        <div className="absolute -top-8 md:-top-6 right-0 flex gap-1 z-10 items-start">
+                        {/* GRAVATAS (Apenas Mobile) */}
+                        <div className="absolute -top-8 right-0 flex gap-1 z-10 items-start md:hidden">
                           {hasObs && (
                             <div className="bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950 text-[9px] font-black w-3.5 pt-0.5 pb-2 shadow-sm flex flex-col items-center justify-center tracking-tighter" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)' }}>
                               <span className="leading-none">{obsCount}</span>
@@ -1242,13 +1238,29 @@ export default function Apontamentos() {
                         <div className="flex flex-row justify-between items-start md:flex-col md:space-y-3">
                           <div className="space-y-1.5">
                             <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block">POSTO / MÁQUINA</span>
-                            <span className="inline-flex px-3 py-1 bg-[#00624C]/15 border border-[#00624C]/35 text-[#00624C] text-base font-extrabold rounded-lg shadow-sm shadow-[#00624C]/10 font-mono">
-                              {(() => {
-                                const num = String(block.num_maquina || '');
-                                const cleanNum = num.replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '');
-                                return `MÁQ: ${cleanNum}`;
-                              })()}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex px-3 py-1 bg-[#00624C]/15 border border-[#00624C]/35 text-[#00624C] text-base font-extrabold rounded-lg shadow-sm shadow-[#00624C]/10 font-mono">
+                                {(() => {
+                                  const num = String(block.num_maquina || '');
+                                  const cleanNum = num.replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '');
+                                  return `MÁQ: ${cleanNum}`;
+                                })()}
+                              </span>
+
+                              {/* Cartinhas de observação/finalização no Desktop */}
+                              <div className="hidden md:flex items-center gap-1.5">
+                                {hasObs && (
+                                  <span className="text-[9px] font-black uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded flex items-center gap-1" title={`${obsCount} observações registradas`}>
+                                    <Mail size={10} /> +{obsCount}
+                                  </span>
+                                )}
+                                {hasFin && (
+                                  <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 bg-rose-950/40 border border-rose-500/30 px-2 py-0.5 rounded flex items-center gap-1" title={`${finCount} finalizações antecipadas`}>
+                                    <Mail size={10} /> +{finCount}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
 
                           <div className="flex flex-col items-end md:items-start space-y-1.5 md:space-y-3">
