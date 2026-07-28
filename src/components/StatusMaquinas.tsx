@@ -952,25 +952,25 @@ export default function StatusMaquinas() {
           <table className="w-full text-left border-collapse" id="telemetria-compact-table">
             <thead>
               <tr className="border-b border-zinc-900 bg-zinc-950/70 text-[9px] font-sans font-black uppercase tracking-widest text-zinc-400 select-none">
-                <th className="py-4 px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('status')}>
+                <th className="py-4 px-3 md:px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('status')}>
                   <div className="flex items-center gap-1">
                     <span>STATUS</span>
                     {sortField === 'status' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
                   </div>
                 </th>
-                <th className="py-4 px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('numero')}>
+                <th className="py-4 px-3 md:px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('numero')}>
                   <div className="flex items-center gap-1">
                     <span>MÁQUINA</span>
                     {sortField === 'numero' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
                   </div>
                 </th>
-                <th className="py-4 px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('processo')}>
+                <th className="py-4 px-3 md:px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('processo')}>
                   <div className="flex items-center gap-1">
                     <span>PROCESSO</span>
                     {sortField === 'processo' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
                   </div>
                 </th>
-                <th className="py-4 px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('operadora')}>
+                <th className="py-4 px-3 md:px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('operadora')}>
                   <div className="flex items-center gap-1">
                     <span>OPERADORA</span>
                     {sortField === 'operadora' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
@@ -991,9 +991,9 @@ export default function StatusMaquinas() {
                     className="transition-all duration-150 hover:bg-zinc-900/10 group"
                   >
                     {/* Status Dot */}
-                    <td className="py-3 px-6 whitespace-nowrap">
+                    <td className="py-3 px-3 md:px-6 md:whitespace-nowrap max-md:whitespace-normal max-md:break-words">
                       <div className="flex items-center gap-2">
-                        <span className="relative flex h-2 w-2">
+                        <span className="relative flex h-2 w-2 shrink-0">
                           {isProducing && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
                           {isPaused && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>}
                           {isMaintenance && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>}
@@ -1004,32 +1004,32 @@ export default function StatusMaquinas() {
                             'bg-zinc-700'
                           }`} />
                         </span>
-                        <span className="text-[8px] font-mono font-bold uppercase tracking-widest text-zinc-500">
+                        <span className="text-[8px] font-mono font-bold uppercase tracking-widest text-zinc-500 md:whitespace-nowrap max-md:whitespace-normal max-md:break-words">
                           {isOffline ? 'DESLIGADA' : m.status.toUpperCase()}
                         </span>
                       </div>
                     </td>
 
                     {/* Machine Number */}
-                    <td className="py-3 px-6 whitespace-nowrap font-mono font-black text-white">
+                    <td className="py-3 px-3 md:px-6 md:whitespace-nowrap max-md:whitespace-normal max-md:break-words font-mono font-black text-white">
                       <div className="flex items-center gap-1.5">
-                        <Cpu className={`w-3.5 h-3.5 transition-colors duration-150 ${
+                        <Cpu className={`w-3.5 h-3.5 shrink-0 transition-colors duration-150 ${
                           isProducing ? 'text-emerald-400 drop-shadow-[0_0_3px_rgba(16,185,129,0.4)]' :
                           isPaused ? 'text-amber-400 drop-shadow-[0_0_3px_rgba(245,158,11,0.4)]' :
                           isMaintenance ? 'text-rose-400 drop-shadow-[0_0_3px_rgba(239,68,68,0.4)]' :
                           'text-zinc-600'
                         }`} />
-                        <span>{m.numero}</span>
+                        <span className="md:whitespace-nowrap max-md:whitespace-normal max-md:break-words">{m.numero}</span>
                       </div>
                     </td>
 
                     {/* Process */}
-                    <td className="py-3 px-6 whitespace-nowrap uppercase tracking-wider font-sans text-[10px] text-zinc-400 font-bold">
+                    <td className="py-3 px-3 md:px-6 md:whitespace-nowrap max-md:whitespace-normal max-md:break-words uppercase tracking-wider font-sans text-[10px] text-zinc-400 font-bold">
                       {isOffline ? '-' : m.processo}
                     </td>
 
                     {/* Operator */}
-                    <td className="py-3 px-6 whitespace-nowrap font-sans font-bold text-zinc-200 uppercase tracking-wide">
+                    <td className="py-3 px-3 md:px-6 md:whitespace-nowrap max-md:whitespace-normal max-md:break-words font-sans font-bold text-zinc-200 uppercase tracking-wide">
                       {isOffline ? '-' : (m.operadora || 'NÃO DESIGNADA')}
                     </td>
                   </tr>
