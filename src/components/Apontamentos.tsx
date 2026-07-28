@@ -762,10 +762,10 @@ export default function Apontamentos() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="font-mono text-xl font-bold uppercase tracking-[0.2em] text-[#00624C]">
-            AUDITORIA E APONTAMENTOS DO TURNO
+            APONTAMENTOS DO TURNO
           </h2>
           <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest mt-1">
-            REGISTRO CRONOLÓGICO DE APONTAMENTOS DE LEITURA DE BARRAS DAS APONTADORAS
+            REGISTRO CRONOLÓGICO DE APONTAMENTOS
           </p>
         </div>
 
@@ -778,7 +778,7 @@ export default function Apontamentos() {
         <div className="flex items-center gap-2">
           <Filter size={14} className="text-[#00624C]" />
           <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-300">
-            PAINEL DE FILTROS DE PESQUISA
+            PAINEL DE PESQUISA
           </span>
         </div>
 
@@ -1071,7 +1071,7 @@ export default function Apontamentos() {
           <div className="flex items-center gap-2">
             <FileText size={14} className="text-zinc-500" />
             <span className="text-[10px] font-mono uppercase tracking-widest font-black text-zinc-300">
-              REGISTROS DE AUDITORIA ({totalCount} REGISTROS)
+              REGISTROS DE APONTAMENTO ({totalCount} REGISTROS)
             </span>
           </div>
           <button

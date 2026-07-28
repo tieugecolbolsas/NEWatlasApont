@@ -725,10 +725,10 @@ export default function StatusMaquinas() {
         <div>
           <h2 className="font-sans text-xl font-black uppercase tracking-widest text-[#00624C] flex items-center gap-2">
             <Layers className="w-5 h-5 text-purple-500" />
-            CONTROLE DE MÁQUINAS E TELEMETRIA
+            CONTROLE DE MÁQUINAS
           </h2>
           <p className="text-zinc-500 text-xs font-sans uppercase tracking-widest mt-1">
-            PAINEL DE COMANDO E SUPERVISÃO DO CHÃO DE FÁBRICA
+            PAINEL DE STATUS DE MÁQUINAS
           </p>
         </div>
       </div>

@@ -44,14 +44,70 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
           id="dashboard-mobile-bar"
           className="md:hidden w-full h-14 px-4 flex items-center justify-between transition-colors duration-300 sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 text-white shrink-0"
         >
-          <div className="flex items-center gap-2">
-            <Logo className="w-7 h-7 text-[#00624C]" />
-            <span 
-              className="font-gugi tracking-widest text-xs uppercase text-[#00624C]"
-              style={{ fontFamily: "'Gugi', sans-serif" }}
-            >
-              Atlas
-            </span>
+          <div className="relative flex items-center justify-center w-32 h-11 select-none overflow-hidden">
+            {/* Celestial Grid & Orbits Background */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+              <svg 
+                className="w-full h-full text-white/30" 
+                viewBox="0 0 100 100" 
+                fill="none" 
+                stroke="currentColor"
+              >
+                {/* Polar Grid / Concentric Orbits */}
+                <circle cx="50" cy="50" r="44" strokeWidth="0.3" strokeDasharray="2 3" />
+                <circle cx="50" cy="50" r="32" strokeWidth="0.5" />
+                <circle cx="50" cy="50" r="20" strokeWidth="0.35" strokeDasharray="1 2" />
+                <circle cx="50" cy="50" r="8" strokeWidth="0.2" />
+                
+                {/* Inclined Orbital/Planetary Rings */}
+                <ellipse cx="50" cy="50" rx="46" ry="14" transform="rotate(-28 50 50)" strokeWidth="0.65" strokeDasharray="3 2" />
+                <ellipse cx="50" cy="50" rx="38" ry="8" transform="rotate(15 50 50)" strokeWidth="0.4" />
+                
+                {/* Meridian / Equator Grid Lines */}
+                <line x1="50" y1="2" x2="50" y2="98" strokeWidth="0.25" strokeDasharray="4 4" />
+                <line x1="2" y1="50" x2="98" y2="50" strokeWidth="0.25" strokeDasharray="4 4" />
+                <line x1="15" y1="15" x2="85" y2="85" strokeWidth="0.15" strokeDasharray="2 6" />
+                <line x1="15" y1="85" x2="85" y2="15" strokeWidth="0.15" strokeDasharray="2 6" />
+                
+                {/* Orbiting Planets & Elements with Animations */}
+                <g className="animate-orbit-rotate-reverse">
+                  <circle cx="50" cy="18" r="2.2" fill="#00875A" stroke="none" />
+                  <circle cx="50" cy="18" r="3.5" stroke="#00875A" strokeWidth="0.15" fill="none" className="opacity-75" />
+                </g>
+
+                <g className="animate-orbit-rotate">
+                  <circle cx="50" cy="30" r="1.5" fill="#00875A" stroke="none" />
+                  <circle cx="50" cy="30" r="2.2" stroke="#00875A" strokeWidth="0.1" fill="none" className="opacity-60" strokeDasharray="1 1" />
+                </g>
+
+                <g className="animate-orbit-rotate-slow">
+                  <circle cx="88" cy="50" r="1.8" fill="#00875A" stroke="none" />
+                </g>
+
+                {/* Stars / Constellation background particles */}
+                <g className="opacity-80">
+                  <circle cx="18" cy="22" r="0.8" fill="currentColor" stroke="none" />
+                  <circle cx="82" cy="78" r="0.8" fill="currentColor" stroke="none" />
+                  <circle cx="78" cy="24" r="1.2" fill="currentColor" stroke="none" />
+                  <circle cx="22" cy="76" r="1.0" fill="currentColor" stroke="none" />
+                  <circle cx="88" cy="40" r="1.2" fill="currentColor" stroke="none" />
+                  <circle cx="12" cy="60" r="1.0" fill="currentColor" stroke="none" />
+                </g>
+              </svg>
+            </div>
+
+            {/* Logo Text Centered Over Orbits */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center pointer-events-none">
+              <h1 
+                className="font-gugi text-base font-normal tracking-wider uppercase text-white leading-none opacity-95" 
+                style={{ fontFamily: "'Gugi', sans-serif" }}
+              >
+                ATLAS
+              </h1>
+              <span className="mt-0.5 text-[6.5px] font-mono font-medium tracking-[0.2em] text-[#00875A] uppercase">
+                APONTAMENTO
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button 

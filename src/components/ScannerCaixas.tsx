@@ -1297,10 +1297,10 @@ export default function ScannerCaixas() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="font-mono text-xl font-bold uppercase tracking-[0.15em] text-[#00624C] flex items-center gap-2">
-            <ScanLine size={24} className="text-[#00624C]" /> TERMINAL MOBILE DE APONTAMENTO
+            <ScanLine size={24} className="text-[#00624C]" /> TERMINAL DE APONTAMENTO
           </h2>
           <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest mt-1">
-            LEITURA DE QR CODE DE MÁQUINAS E APONTAMENTOS DE PRODUÇÃO EM TEMPO REAL
+            LEITURA DE QR CODE E APONTAMENTOS DE PRODUÇÃO EM TEMPO REAL
           </p>
         </div>
       </div>
@@ -1313,7 +1313,7 @@ export default function ScannerCaixas() {
           <div className="bg-zinc-950 border border-zinc-900 rounded-xl p-5 md:p-6 relative overflow-hidden">
             <div className="flex flex-col gap-4">
               <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-400 block">
-                ESCANEIE O QR CODE DA MÁQUINA OU PROCESSO
+                ESCANEIE O QR CODE DA MÁQUINA
               </span>
 
               <div className="relative w-full aspect-[4/3] bg-black rounded-lg overflow-hidden border border-zinc-800 shadow-2xl flex items-center justify-center @container">
