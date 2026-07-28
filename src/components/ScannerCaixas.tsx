@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -198,6 +198,24 @@ export default function ScannerCaixas() {
   const [confirmaBMotivoOcorrencia, setConfirmaBMotivoOcorrencia] = useState(false);
   const [confirmaBObservacao, setConfirmaBObservacao] = useState(false);
 
+  // Body scroll lock on modal open
+  useEffect(() => {
+    const isAnyModalOpen = showScenarioA || !!activeSession || showManutencaoForm || showJustificativaModal || !!customAlert;
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none'; // Prevents elastic scrolling/dragging on iOS
+    } else {
+      document.body.style.overflow = 'unset';
+      document.body.style.touchAction = 'unset';
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.body.style.touchAction = 'unset';
+    };
+  }, [showScenarioA, activeSession, showManutencaoForm, showJustificativaModal, customAlert]);
+
   // Resetar confirmações ao carregar formulário Novo Processo
   useEffect(() => {
     if (showScenarioA) {
@@ -232,9 +250,20 @@ export default function ScannerCaixas() {
   const [listaOperadoras, setListaOperadoras] = useState<string[]>([]);
   const [showOperadoraSuggestions, setShowOperadoraSuggestions] = useState(false);
 
+  // Mapeamento de tipo de máquina e operações compatíveis
+  const [machineOpsMapping, setMachineOpsMapping] = useState<{ tipo_maquina: string, operacao_nome: string }[]>([]);
+
   useEffect(() => {
     async function carregarAuxiliares() {
       try {
+        const { data: mapData, error: mapError } = await supabase
+          .schema('AtlasApontamento')
+          .from('maquinas_operacoes_compativeis')
+          .select('tipo_maquina, operacao_nome');
+        if (!mapError && mapData) {
+          setMachineOpsMapping(mapData);
+        }
+
         const { data: procData, error: procError } = await supabase
           .schema('AtlasApontamento')
           .from('processos_disponiveis')
@@ -271,6 +300,23 @@ export default function ScannerCaixas() {
     }
     carregarAuxiliares();
   }, []);
+
+  // Operações filtradas dinamicamente com base no tipo de máquina ativo
+  const filteredOperations = useMemo(() => {
+    if (!formTipoMaquina) return []; // Se nenhum tipo de máquina estiver ativo, retorna lista vazia
+    
+    const currentTypeUpper = formTipoMaquina.trim().toUpperCase();
+    
+    // Filtra as operações mapeadas que correspondem ao tipo de máquina específico (case-insensitive)
+    const compOps = machineOpsMapping
+      .filter(item => item.tipo_maquina.toUpperCase() === currentTypeUpper)
+      .map(item => item.operacao_nome);
+      
+    // Cruza com a lista de operações predefinidas para manter categorias intactas
+    return listaOperacoesObj.filter(op => 
+      compOps.some(comp => comp.toUpperCase() === op.operacao_nome.toUpperCase())
+    );
+  }, [formTipoMaquina, machineOpsMapping, listaOperacoesObj]);
   
   // Campos do Formulário - Apontamento de Contagem (Apontamento de Produção de Sessão Ativa)
   const [prodConforme, setProdConforme] = useState<number | ''>('');
@@ -1632,7 +1678,7 @@ export default function ScannerCaixas() {
                     <div className="absolute left-0 right-0 bg-zinc-950 border border-zinc-800 rounded mt-1 z-50 shadow-2xl p-1">
                       {(() => {
                         const query = formOperacao.toLowerCase();
-                        const filtered = listaOperacoesObj.filter(item => 
+                        const filtered = filteredOperations.filter(item => 
                           item.operacao_nome.toLowerCase().includes(query) ||
                           item.categoria_nome.toLowerCase().includes(query)
                         );
