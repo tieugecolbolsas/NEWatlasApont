@@ -1297,7 +1297,7 @@ export default function ScannerCaixas() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="font-mono text-xl font-bold uppercase tracking-[0.15em] text-[#00624C] flex items-center gap-2">
-            <ScanLine size={24} className="text-[#00624C]" /> TERMINAL DE APONTAMENTO
+             TERMINAL DE APONTAMENTO
           </h2>
           <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest mt-1">
             LEITURA DE QR CODE E APONTAMENTOS DE PRODUÇÃO EM TEMPO REAL

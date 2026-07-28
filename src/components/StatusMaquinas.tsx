@@ -734,74 +734,76 @@ export default function StatusMaquinas() {
       </div>
 
       {/* Linha Horizontal Dedicada de Filtros Rápidos de Status */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-zinc-900/60 pb-5">
-        <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-500 mr-2 block w-full sm:w-auto">
+      <div className="w-full space-y-2.5 border-b border-zinc-900/60 pb-5">
+        <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-500 block">
           Filtrar por Status:
         </span>
 
-        {/* Botão PRODUZINDO */}
-        <button
-          onClick={() => setFilterStatus(filterStatus === 'produzindo' ? '' : 'produzindo')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm border cursor-pointer transition-all ${
-            filterStatus === 'produzindo'
-              ? 'bg-emerald-950/40 border-emerald-500 text-emerald-400 opacity-100 ring-2 ring-emerald-500/30 scale-[1.02]'
-              : filterStatus === ''
-              ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-400 opacity-100 hover:scale-[1.01]'
-              : 'bg-emerald-950/40 border-emerald-500/50 text-emerald-400 opacity-40 hover:opacity-75'
-          }`}
-          title="Filtrar por Produzindo"
-        >
-          <Activity size={15} className={filterStatus === 'produzindo' ? 'text-emerald-400' : 'text-[#00624C]'} />
-          <span>PRODUZINDO</span>
-        </button>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 w-full">
+          {/* Botão PRODUZINDO */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === 'produzindo' ? '' : 'produzindo')}
+            className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg font-bold text-xs sm:text-sm border cursor-pointer transition-all w-full ${
+              filterStatus === 'produzindo'
+                ? 'bg-emerald-950/40 border-emerald-500 text-emerald-400 opacity-100 ring-2 ring-emerald-500/30 scale-[1.01]'
+                : filterStatus === ''
+                ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-400 opacity-100 hover:scale-[1.01]'
+                : 'bg-emerald-950/40 border-emerald-500/50 text-emerald-400 opacity-40 hover:opacity-75'
+            }`}
+            title="Filtrar por Produzindo"
+          >
+            <Activity size={15} className={filterStatus === 'produzindo' ? 'text-emerald-400' : 'text-[#00624C]'} />
+            <span className="truncate">PRODUZINDO</span>
+          </button>
 
-        {/* Botão PAUSADA */}
-        <button
-          onClick={() => setFilterStatus(filterStatus === 'pausada' ? '' : 'pausada')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm border cursor-pointer transition-all ${
-            filterStatus === 'pausada'
-              ? 'bg-amber-950/40 border-amber-500 text-amber-400 opacity-100 ring-2 ring-amber-500/30 scale-[1.02]'
-              : filterStatus === ''
-              ? 'bg-amber-950/40 border-amber-500/50 text-amber-400 opacity-100 hover:scale-[1.01]'
-              : 'bg-amber-950/40 border-amber-500/50 text-amber-400 opacity-40 hover:opacity-75'
-          }`}
-          title="Filtrar por Pausada"
-        >
-          <PauseCircle size={15} className={filterStatus === 'pausada' ? 'text-amber-400' : 'text-zinc-500'} />
-          <span>PAUSADA</span>
-        </button>
+          {/* Botão PAUSADA */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === 'pausada' ? '' : 'pausada')}
+            className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg font-bold text-xs sm:text-sm border cursor-pointer transition-all w-full ${
+              filterStatus === 'pausada'
+                ? 'bg-amber-950/40 border-amber-500 text-amber-400 opacity-100 ring-2 ring-amber-500/30 scale-[1.01]'
+                : filterStatus === ''
+                ? 'bg-amber-950/40 border-amber-500/50 text-amber-400 opacity-100 hover:scale-[1.01]'
+                : 'bg-amber-950/40 border-amber-500/50 text-amber-400 opacity-40 hover:opacity-75'
+            }`}
+            title="Filtrar por Pausada"
+          >
+            <PauseCircle size={15} className={filterStatus === 'pausada' ? 'text-amber-400' : 'text-zinc-500'} />
+            <span className="truncate">PAUSADA</span>
+          </button>
 
-        {/* Botão MANUTENÇÃO */}
-        <button
-          onClick={() => setFilterStatus(filterStatus === 'manutencao' ? '' : 'manutencao')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm border cursor-pointer transition-all ${
-            filterStatus === 'manutencao'
-              ? 'bg-rose-950/40 border-rose-500 text-rose-400 opacity-100 ring-2 ring-rose-500/30 scale-[1.02]'
-              : filterStatus === ''
-              ? 'bg-rose-950/40 border-rose-500/50 text-rose-400 opacity-100 hover:scale-[1.01]'
-              : 'bg-rose-950/40 border-rose-500/50 text-rose-400 opacity-40 hover:opacity-75'
-          }`}
-          title="Filtrar por Manutenção"
-        >
-          <Wrench size={15} className={filterStatus === 'manutencao' ? 'text-rose-400' : 'text-zinc-500'} />
-          <span>MANUTENÇÃO</span>
-        </button>
+          {/* Botão MANUTENÇÃO */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === 'manutencao' ? '' : 'manutencao')}
+            className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg font-bold text-xs sm:text-sm border cursor-pointer transition-all w-full ${
+              filterStatus === 'manutencao'
+                ? 'bg-rose-950/40 border-rose-500 text-rose-400 opacity-100 ring-2 ring-rose-500/30 scale-[1.01]'
+                : filterStatus === ''
+                ? 'bg-rose-950/40 border-rose-500/50 text-rose-400 opacity-100 hover:scale-[1.01]'
+                : 'bg-rose-950/40 border-rose-500/50 text-rose-400 opacity-40 hover:opacity-75'
+            }`}
+            title="Filtrar por Manutenção"
+          >
+            <Wrench size={15} className={filterStatus === 'manutencao' ? 'text-rose-400' : 'text-zinc-500'} />
+            <span className="truncate">MANUTENÇÃO</span>
+          </button>
 
-        {/* Botão OFFLINE */}
-        <button
-          onClick={() => setFilterStatus(filterStatus === 'offline' ? '' : 'offline')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm border cursor-pointer transition-all ${
-            filterStatus === 'offline'
-              ? 'bg-zinc-900 border-zinc-500 text-zinc-300 opacity-100 ring-2 ring-zinc-500/30 scale-[1.02]'
-              : filterStatus === ''
-              ? 'bg-zinc-900 border-zinc-700/60 text-zinc-300 opacity-100 hover:scale-[1.01]'
-              : 'bg-zinc-900 border-zinc-700/60 text-zinc-300 opacity-40 hover:opacity-75'
-          }`}
-          title="Filtrar por Offline"
-        >
-          <PowerOff size={15} className={filterStatus === 'offline' ? 'text-zinc-200' : 'text-zinc-500'} />
-          <span>OFFLINE</span>
-        </button>
+          {/* Botão OFFLINE */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === 'offline' ? '' : 'offline')}
+            className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg font-bold text-xs sm:text-sm border cursor-pointer transition-all w-full ${
+              filterStatus === 'offline'
+                ? 'bg-zinc-900 border-zinc-500 text-zinc-300 opacity-100 ring-2 ring-zinc-500/30 scale-[1.01]'
+                : filterStatus === ''
+                ? 'bg-zinc-900 border-zinc-700/60 text-zinc-300 opacity-100 hover:scale-[1.01]'
+                : 'bg-zinc-900 border-zinc-700/60 text-zinc-300 opacity-40 hover:opacity-75'
+            }`}
+            title="Filtrar por Offline"
+          >
+            <PowerOff size={15} className={filterStatus === 'offline' ? 'text-zinc-200' : 'text-zinc-500'} />
+            <span className="truncate">OFFLINE</span>
+          </button>
+        </div>
       </div>
 
       {/* FILTERS PANEL */}

@@ -189,7 +189,6 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
 
           {/* FOOTER */}
           <footer className="h-12 border-t border-neutral-900 bg-neutral-950/30 backdrop-blur-sm text-[9px] uppercase tracking-widest font-mono font-bold flex items-center justify-between px-6 text-neutral-600 mt-auto shrink-0 animate-none">
-            <span>Estação Atlas // Apontamento em Tempo Real</span>
             <span className="text-right text-[#00624C]">SISTEMA OPERACIONAL VER. 0.0.1 alpha</span>
           </footer>
         </main>
