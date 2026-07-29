@@ -1318,13 +1318,13 @@ export default function Apontamentos() {
                       <div className="flex flex-col justify-between space-y-4 md:space-y-3 pt-4 md:pt-0 border-t border-zinc-900/60 md:border-t-0 md:border-l md:pl-6 mt-4 md:mt-0">
                         <div className="grid grid-cols-2 md:grid-cols-1 gap-4 md:gap-3">
                           <div>
-                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block leading-relaxed">COLABORADORA ATIVA</span>
+                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block leading-relaxed">OPERADORA</span>
                             <h4 className="text-sm font-extrabold text-zinc-100 flex items-center gap-1.5 mt-0.5 leading-relaxed truncate" title={block.colaboradora}>
                               <User size={13} className="text-[#00624C] shrink-0" /> <span className="truncate">{block.colaboradora}</span>
                             </h4>
                           </div>
                           <div>
-                            <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">OPERAÇÃO ATRIBUÍDA</span>
+                            <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">OPERAÇÃO</span>
                             <span className="text-zinc-200 font-semibold text-xs leading-snug flex items-start gap-1.5 mt-0.5 break-words whitespace-normal" title={block.operacao_nome}>
                               <SewingMachineIcon size={14} className="text-[#00624C] shrink-0 mt-0.5" /> <span className="break-words whitespace-normal">{block.operacao_nome}</span>
                             </span>
@@ -1466,7 +1466,7 @@ export default function Apontamentos() {
                           return (
                             <div className="space-y-1 mt-4 md:mt-2">
                               <div className="flex items-center justify-between text-[10px] font-bold">
-                                <span className="text-zinc-500 uppercase tracking-wider">META DO BLOCO</span>
+                                <span className="text-zinc-500 uppercase tracking-wider">META DIÁRIA</span>
                                 <span className="text-zinc-400 font-mono">
                                   <span className={progColor}>{soma}</span> / <span className="text-emerald-500">{metaAlvo} Pçs</span> ({percent.toFixed(0)}%)
                                 </span>
@@ -1622,11 +1622,11 @@ export default function Apontamentos() {
 
                         return (
                           <div className="space-y-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                               {/* Boletim da Qualidade */}
                               <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
                                 <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
-                                  Boletim da Qualidade
+                                  Qualidade
                                 </span>
                                 <div className="flex flex-col gap-0.5">
                                   <span className="text-rose-400 text-xs font-bold">
@@ -1641,7 +1641,7 @@ export default function Apontamentos() {
                               {/* Ritmo Atual */}
                               <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
                                 <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
-                                  Ritmo de Produção
+                                  PRODUÇÃO ATUAL
                                 </span>
                                 <span className="text-zinc-200 text-xs font-bold sm:text-sm">
                                   Ritmo Atual: <span className="text-emerald-500 font-extrabold">{rhythm.toFixed(1)}</span> Pçs/h
@@ -1649,7 +1649,7 @@ export default function Apontamentos() {
                               </div>
 
                               {/* Controle de Matéria-Prima */}
-                              <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
+                              <div className="col-span-2 md:col-span-1 bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
                                 <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
                                   Controle de Matéria-Prima
                                 </span>
