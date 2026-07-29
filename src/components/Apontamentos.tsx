@@ -1204,7 +1204,7 @@ export default function Apontamentos() {
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <div
                     onClick={() => toggleGroup(block.key)}
-                    className="p-5 space-y-4 cursor-pointer w-full text-left outline-none"
+                    className="p-5 space-y-4 cursor-pointer w-full text-left outline-none select-none active:bg-transparent focus:outline-none [webkit-tap-highlight-color:transparent]"
                     role="button"
                     tabIndex={0}
                   >
@@ -1692,22 +1692,22 @@ export default function Apontamentos() {
                               )}
 
                               {/* Grid de Informações Técnicas */}
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] text-zinc-400 font-mono">
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] sm:text-xs text-zinc-400 font-mono">
                                 <div className="flex justify-between border-b border-zinc-950/40 pb-1">
-                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Duração</span>
-                                  <span className="text-[#00624C] font-bold">{tempoProducaoReg || '0h 0m'}</span>
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Duração</span>
+                                  <span className="text-[#00624C] font-bold text-[10px] sm:text-xs">{tempoProducaoReg || '0h 0m'}</span>
                                 </div>
                                 <div className="flex justify-between border-b border-zinc-950/40 pb-1">
-                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Lote/Lado</span>
-                                  <span className="text-zinc-300">{lote} ({lado})</span>
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Lote/Lado</span>
+                                  <span className="text-zinc-300 text-[10px] sm:text-xs">{lote} ({lado})</span>
                                 </div>
                                 <div className="flex justify-between border-b border-zinc-950/40 pb-1">
-                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Máquina</span>
-                                  <span className="text-zinc-300">{tipoMaq}</span>
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Máquina</span>
+                                  <span className="text-zinc-300 text-[10px] sm:text-xs">{tipoMaq}</span>
                                 </div>
                                 <div className="flex justify-between border-b border-zinc-950/40 pb-1">
-                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Hora Extra</span>
-                                  <span className="text-zinc-300">{horaExtra}</span>
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Hora Extra</span>
+                                  <span className="text-zinc-300 text-[10px] sm:text-xs">{horaExtra}</span>
                                 </div>
                               </div>
 

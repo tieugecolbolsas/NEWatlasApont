@@ -1460,7 +1460,7 @@ export default function ScannerCaixas() {
                   {historicoHoje.map((registro, idx) => (
                     <div 
                       key={registro.id || idx} 
-                      className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg hover:border-[#00624C]/40 transition-colors space-y-3"
+                      className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg md:hover:border-[#00624C]/40 transition-colors space-y-3 select-none active:bg-transparent focus:outline-none [webkit-tap-highlight-color:transparent]"
                     >
                       {/* Header do Log */}
                       <div className="flex items-center justify-between border-b border-zinc-900/40 pb-2">
