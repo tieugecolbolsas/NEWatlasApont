@@ -688,41 +688,45 @@ export default function Apontamentos() {
     const refugo = Number(reg.refugo || 0);
     const pecasLiquidas = Math.max(0, pecasBrutas - (rePr + reTe + refugo));
 
-    if (!groups[key]) {
-      groups[key] = {
-        key,
-        data: dateStr,
-        num_maquina: maquina,
-        codigo_manual_curto: reg.codigo_manual_curto || '',
-        operacao_nome: operacao,
-        colaboradora: reg.operadora_nome || reg.operadora || 'Desconhecida',
-        processo: reg.tipo_maquina || reg.processo || 'Processo',
-        somaTotal: 0,
-        somaRefugo: 0,
-        somaRetrabalho: 0,
-        somaMateriaPrima: 0,
-        materia_prima_inicial: Number(reg.materia_prima_inicial) || 0,
-        tempoTotalMs: 0,
-        itens: []
-      };
-    } else {
-      if (Number(reg.materia_prima_inicial) > 0 && !groups[key].materia_prima_inicial) {
-        groups[key].materia_prima_inicial = Number(reg.materia_prima_inicial);
+      if (!groups[key]) {
+        groups[key] = {
+          key,
+          data: dateStr,
+          num_maquina: maquina,
+          codigo_manual_curto: reg.codigo_manual_curto || '',
+          operacao_nome: operacao,
+          colaboradora: reg.operadora_nome || reg.operadora || 'Desconhecida',
+          processo: reg.tipo_maquina || reg.processo || 'Processo',
+          somaTotal: 0,
+          somaRefugo: 0,
+          somaRetrabalho: 0,
+          somaRetrabalhoProprio: 0,
+          somaRetrabalhoTerceiro: 0,
+          somaMateriaPrima: 0,
+          materia_prima_inicial: Number(reg.materia_prima_inicial) || 0,
+          tempoTotalMs: 0,
+          itens: []
+        };
+      } else {
+        if (Number(reg.materia_prima_inicial) > 0 && !groups[key].materia_prima_inicial) {
+          groups[key].materia_prima_inicial = Number(reg.materia_prima_inicial);
+        }
       }
-    }
-
-    const isMateriaPrima = reg.motivo_ocorrencia === 'MATERIA_PRIMA';
-    if (isMateriaPrima) {
-      groups[key].somaMateriaPrima += pecasBrutas;
-    } else {
-      groups[key].somaTotal += pecasLiquidas;
-      groups[key].somaRefugo += refugo;
-      groups[key].somaRetrabalho += (rePr + reTe);
-      if (reg.horario_inicio && (reg.horario_termino || reg.created_at || reg.timestamp)) {
-         const term = reg.horario_termino || reg.created_at || reg.timestamp;
-         groups[key].tempoTotalMs += getRegistroProductionTimeMs(reg.horario_inicio, term, reg.data);
+  
+      const isMateriaPrima = reg.motivo_ocorrencia === 'MATERIA_PRIMA';
+      if (isMateriaPrima) {
+        groups[key].somaMateriaPrima += pecasBrutas;
+      } else {
+        groups[key].somaTotal += pecasLiquidas;
+        groups[key].somaRefugo += refugo;
+        groups[key].somaRetrabalho += (rePr + reTe);
+        groups[key].somaRetrabalhoProprio += rePr;
+        groups[key].somaRetrabalhoTerceiro += reTe;
+        if (reg.horario_inicio && (reg.horario_termino || reg.created_at || reg.timestamp)) {
+           const term = reg.horario_termino || reg.created_at || reg.timestamp;
+           groups[key].tempoTotalMs += getRegistroProductionTimeMs(reg.horario_inicio, term, reg.data);
+        }
       }
-    }
     groups[key].itens.push(reg);
   });
 
@@ -1624,16 +1628,19 @@ export default function Apontamentos() {
                           <div className="space-y-3">
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                               {/* Boletim da Qualidade */}
-                              <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
-                                <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
-                                  Qualidade
+                              <div className="bg-[#1a1a1a] border border-zinc-800/80 p-3 rounded-lg flex flex-col justify-between shadow-md shadow-black/40">
+                                <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider mb-1">
+                                  Boletim da Qualidade
                                 </span>
                                 <div className="flex flex-col gap-0.5">
-                                  <span className="text-rose-400 text-xs font-bold">
+                                  <span className="text-rose-400 text-xs font-bold font-mono">
                                     Refugo: {block.somaRefugo} pçs
                                   </span>
-                                  <span className="text-amber-400 text-xs font-bold">
-                                    Retrabalhos: {block.somaRetrabalho} pçs
+                                  <span className="text-amber-400 text-xs font-bold font-mono">
+                                    Retrabalho Próprio: {block.somaRetrabalhoProprio} pçs
+                                  </span>
+                                  <span className="text-amber-500 text-xs font-bold font-mono">
+                                    Retrabalho Terceiro: {block.somaRetrabalhoTerceiro} pçs
                                   </span>
                                 </div>
                               </div>
@@ -1772,67 +1779,64 @@ export default function Apontamentos() {
                           return (
                             <div 
                               key={item.id || itemIdx} 
-                              className="p-4 bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg mb-3 last:mb-0 space-y-3"
+                              className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3 shadow-lg shadow-black/50 mb-3 last:mb-0"
                             >
-                              {/* Registro de Contagem - Nova Organização das Contagens em Duas Linhas para Tablet */}
-                              <div className="flex flex-col gap-2.5 w-full">
-                                {/* Linha 1 (Superior): Horário, duração, Produção Conforme na esquerda, selo azul na extrema direita */}
-                                <div className="flex flex-wrap items-center justify-between gap-2 w-full">
-                                  <div className="flex flex-wrap items-center gap-2.5">
-                                    <span className="text-zinc-300 font-bold bg-zinc-900/80 px-2.5 py-1 rounded border border-zinc-800 flex items-center gap-1.5 text-xs">
-                                      <Clock size={11} /> {formattedTimeInicio ? `${formattedTimeInicio} - ${formattedTime}` : formattedTime}
+                              {/* Linha de Título Gigante */}
+                              <div className="border-b border-zinc-950 pb-2.5 flex justify-between items-center gap-2">
+                                <div className="text-base font-black text-emerald-400 tracking-wide flex items-center gap-1.5 leading-none">
+                                  <span className="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full"></span>
+                                  {conforme} Peças Conformes
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {isSessionActive && itemIdx === 0 ? (
+                                    <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                                      ÚLTIMO REGISTRO
                                     </span>
-                                    {tempoProducaoReg && (
-                                      <span className="text-[#00624C] font-bold text-xs bg-[#00624C]/5 border border-[#00624C]/10 px-2 py-0.5 rounded">
-                                        Tempo: {tempoProducaoReg}
-                                      </span>
-                                    )}
-                                    <span className="text-emerald-500 font-bold text-xs bg-emerald-500/5 border border-emerald-500/10 px-2 py-0.5 rounded">
-                                      Produção Conforme: {conforme} Pçs
-                                    </span>
-                                    {ocorrencia && ocorrencia !== 'Produção Normal' && (
-                                      <span className="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-bold uppercase tracking-wider">
-                                        Ocorrência: {ocorrencia}
-                                      </span>
-                                    )}
-                                    {!isLegacyRealtime && status !== 'validado' && (
-                                      <span className={`text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded border ${
-                                        status === 'rejeitado'
-                                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                          : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                      }`}>
-                                        {status}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  <div className="flex items-center gap-2">
-                                    {isSessionActive && itemIdx === 0 ? (
-                                      <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider">
-                                        ÚLTIMO REGISTRO
-                                      </span>
-                                    ) : null}
-                                  </div>
+                                  ) : null}
                                 </div>
                               </div>
 
-                              {/* Grid de 4 colunas bem distribuídas, fontes legíveis (~text-sm / 14px), sem cor de fundo */}
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-transparent border border-zinc-900 p-3.5 rounded-lg text-sm">
-                                <div className="flex flex-col">
-                                  <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Lote</span>
-                                  <span className="text-zinc-200 font-medium">{lote}</span>
+                              {/* Badges Adicionais (Status, Ocorrência) */}
+                              {((ocorrencia && ocorrencia !== 'Produção Normal') || (!isLegacyRealtime && status !== 'validado')) && (
+                                <div className="flex flex-wrap gap-2">
+                                  {ocorrencia && ocorrencia !== 'Produção Normal' && (
+                                    <span className="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                                      Ocorrência: {ocorrencia}
+                                    </span>
+                                  )}
+                                  {!isLegacyRealtime && status !== 'validado' && (
+                                    <span className={`text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded border ${
+                                      status === 'rejeitado'
+                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                    }`}>
+                                      {status}
+                                    </span>
+                                  )}
                                 </div>
-                                <div className="flex flex-col">
-                                  <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Lado</span>
-                                  <span className="text-zinc-200 font-medium">{lado}</span>
+                              )}
+
+                              {/* Grid de Informações Técnicas */}
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] text-zinc-400 font-mono">
+                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Horário</span>
+                                  <span className="text-zinc-300">{formattedTimeInicio ? `${formattedTimeInicio} - ${formattedTime}` : formattedTime}</span>
                                 </div>
-                                <div className="flex flex-col">
-                                  <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Tipo Máquina</span>
-                                  <span className="text-zinc-200 font-medium">{tipoMaq}</span>
+                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Duração</span>
+                                  <span className="text-[#00624C] font-bold">{tempoProducaoReg || '0h 0m'}</span>
                                 </div>
-                                <div className="flex flex-col">
-                                  <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Hora Extra</span>
-                                  <span className="text-zinc-200 font-medium">{horaExtra}</span>
+                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Lote/Lado</span>
+                                  <span className="text-zinc-300">{lote} ({lado})</span>
+                                </div>
+                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Máquina</span>
+                                  <span className="text-zinc-300">{tipoMaq}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-zinc-950/40 pb-1 col-span-2 md:col-span-1">
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Hora Extra</span>
+                                  <span className="text-zinc-300">{horaExtra}</span>
                                 </div>
                               </div>
 
