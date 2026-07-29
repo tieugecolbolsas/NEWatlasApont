@@ -1626,78 +1626,69 @@ export default function Apontamentos() {
 
                         return (
                           <div className="space-y-3">
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                              {/* Boletim da Qualidade */}
-                              <div className="bg-[#1a1a1a] border border-zinc-800/80 p-3 rounded-lg flex flex-col justify-between shadow-md shadow-black/40">
-                                <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider mb-1">
-                                  Boletim da Qualidade
-                                </span>
-                                <div className="flex flex-col gap-0.5">
-                                  <span className="text-rose-400 text-xs font-bold font-mono">
-                                    Refugo: {block.somaRefugo} pçs
-                                  </span>
-                                  <span className="text-amber-400 text-xs font-bold font-mono">
-                                    Retrabalho Próprio: {block.somaRetrabalhoProprio} pçs
-                                  </span>
-                                  <span className="text-amber-500 text-xs font-bold font-mono">
-                                    Retrabalho Terceiro: {block.somaRetrabalhoTerceiro} pçs
+                            <div className="bg-[#141414] border border-zinc-900 p-4 rounded-xl space-y-4 shadow-lg shadow-black/45">
+                              {/* Top 3-Column Grid */}
+                              <div className="grid grid-cols-3 gap-2.5 text-center">
+                                
+                                {/* Block 1: Qualidade (Red/Refugo) */}
+                                <div className="bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60 flex flex-col justify-between h-[68px]">
+                                  <span className="text-[8px] text-rose-500 font-bold uppercase tracking-wider">Qualidade</span>
+                                  <span className="text-[11px] text-zinc-300 font-mono font-bold leading-none mt-1">
+                                    Refugo: <span className="text-rose-500 font-black">{block.somaRefugo}</span>
                                   </span>
                                 </div>
-                              </div>
-
-                              {/* Ritmo Atual */}
-                              <div className="bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
-                                <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
-                                  PRODUÇÃO ATUAL
-                                </span>
-                                <span className="text-zinc-200 text-xs font-bold sm:text-sm">
-                                  Ritmo Atual: <span className="text-emerald-500 font-extrabold">{rhythm.toFixed(1)}</span> Pçs/h
-                                </span>
-                              </div>
-
-                              {/* Controle de Matéria-Prima */}
-                              <div className="col-span-2 md:col-span-1 bg-[#1a1a1a] border border-zinc-800 shadow-md shadow-black/40 rounded-lg p-3.5 flex flex-col justify-between">
-                                <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
-                                  Controle de Matéria-Prima
-                                </span>
+                                
+                                {/* Block 2: Ritmo de Produção (Green) */}
+                                <div className="bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60 flex flex-col justify-between h-[68px]">
+                                  <span className="text-[8px] text-emerald-500 font-bold uppercase tracking-wider">Ritmo</span>
+                                  <span className="text-[11px] text-zinc-300 font-mono font-bold leading-none mt-1">
+                                    <span className="text-emerald-500 font-black">{rhythm.toFixed(1)}</span> P/h
+                                  </span>
+                                </div>
+                                
+                                {/* Block 3: Controle de Matéria-Prima (Blue/Sky) */}
                                 {(() => {
                                   const matInicial = Number(block.materia_prima_inicial) || Number(block.somaMateriaPrima) || 0;
                                   const materia_prima_restante = matInicial - (block.somaTotal || 0);
-
-                                  if (matInicial <= 0) {
-                                    return (
-                                      <span className="text-zinc-400 text-xs font-bold sm:text-sm">
-                                        Nenhuma matéria-prima alimentada
-                                      </span>
-                                    );
-                                  }
-
-                                  if (materia_prima_restante <= 0) {
-                                    return (
-                                      <span className="text-rose-500 text-xs font-black sm:text-sm animate-pulse">
-                                        Matéria-Prima Finalizada!
-                                      </span>
-                                    );
-                                  }
-
+                                  const isMateriaPrimaFinalizada = materia_prima_restante <= 0;
+                                  
+                                  let tempoMateriaPrimaRestante = '';
                                   if (rhythm <= 0) {
-                                    return (
-                                      <span className="text-zinc-300 text-xs font-bold sm:text-sm">
-                                        {materia_prima_restante} pçs restantes (Aguardando prod.)
-                                      </span>
-                                    );
+                                    tempoMateriaPrimaRestante = 'Aguardando';
+                                  } else {
+                                    const hrsRemaining = materia_prima_restante / rhythm;
+                                    const estHrs = Math.floor(hrsRemaining);
+                                    const estMins = Math.round((hrsRemaining - estHrs) * 60);
+                                    tempoMateriaPrimaRestante = `${estHrs}h ${estMins}m`;
                                   }
-
-                                  const hrsRemaining = materia_prima_restante / rhythm;
-                                  const estHrs = Math.floor(hrsRemaining);
-                                  const estMins = Math.round((hrsRemaining - estHrs) * 60);
 
                                   return (
-                                    <span className="text-blue-400 text-xs font-bold sm:text-sm">
-                                      {materia_prima_restante} pçs restantes (Acaba em: {estHrs}h {estMins}min)
-                                    </span>
+                                    <div className="bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60 flex flex-col justify-between h-[68px]">
+                                      <span className="text-[8px] text-sky-500 font-bold uppercase tracking-wider">M.P. Restante</span>
+                                      {matInicial <= 0 ? (
+                                        <span className="text-[10px] text-zinc-500 font-mono font-bold leading-none mt-1">
+                                          N/A
+                                        </span>
+                                      ) : isMateriaPrimaFinalizada ? (
+                                        <span className="text-[10px] text-rose-400 font-mono font-bold leading-none mt-1">
+                                          Finalizada!
+                                        </span>
+                                      ) : (
+                                        <div className="space-y-0.5 mt-1 leading-none">
+                                          <span className="text-[11px] text-zinc-300 font-mono font-bold block">{materia_prima_restante} pçs</span>
+                                          <span className="text-[8px] text-sky-500 font-bold block">Acaba: {tempoMateriaPrimaRestante}</span>
+                                        </div>
+                                      )}
+                                    </div>
                                   );
                                 })()}
+                                
+                              </div>
+                              
+                              {/* Bottom Reworks Row */}
+                              <div className="flex justify-between text-[10px] font-mono font-bold text-zinc-500 pt-2.5 border-t border-zinc-900/60">
+                                <span className="text-amber-500">Ret. Próprio: <span className="text-zinc-300">{block.somaRetrabalhoProprio} pçs</span></span>
+                                <span className="text-amber-500">Ret. Terceiro: <span className="text-zinc-300">{block.somaRetrabalhoTerceiro} pçs</span></span>
                               </div>
                             </div>
                           </div>
