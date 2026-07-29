@@ -1204,24 +1204,26 @@ export default function Apontamentos() {
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <div
                     onClick={() => toggleGroup(block.key)}
-                    className="p-5 pt-10 sm:pt-5 space-y-4 cursor-pointer w-full text-left outline-none"
+                    className="p-5 space-y-4 cursor-pointer w-full text-left outline-none"
                     role="button"
                     tabIndex={0}
                   >
-                    {/* Indicadores de Alertas no Mobile (acima) e Desktop (lado do chevron) */}
-                    <div className="absolute top-3 left-5 sm:top-5 sm:left-auto sm:right-12 flex items-center space-x-1.5 z-10">
-                      {hasObs && (
-                        <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${obsCount} observações registradas`}>
-                          <Mail size={12} className="inline mr-0.5" /> +{obsCount}
-                        </span>
-                      )}
-                      {hasFin && (
-                        <span className="text-rose-500 bg-rose-950/30 border border-rose-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${finCount} finalizações antecipadas`}>
-                          <Mail size={12} className="inline mr-0.5" /> +{finCount}
-                        </span>
-                      )}
-                    </div>
-                      
+                    {/* Alertas de Notificação (Restaurados no topo) */}
+                    {(hasObs || hasFin) && (
+                      <div className="flex items-center space-x-2 mb-2 pr-8 sm:pr-32">
+                        {hasObs && (
+                          <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${obsCount} observações registradas`}>
+                            <Mail size={12} className="inline mr-0.5" /> +{obsCount}
+                          </span>
+                        )}
+                        {hasFin && (
+                          <span className="text-rose-500 bg-rose-950/30 border border-rose-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${finCount} finalizações antecipadas`}>
+                            <Mail size={12} className="inline mr-0.5" /> +{finCount}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     {/* Chevron Indicator */}
                     <div className="absolute top-5 right-4 sm:ml-1 sm:pl-1.5 sm:border-l sm:border-zinc-700 flex items-center justify-center z-10">
                       {isExpanded ? (
