@@ -1748,72 +1748,60 @@ export default function ScannerCaixas() {
                   )}
                 </div>
 
-                {/* 5. Agrupamento em 2 colunas: Lote de Produção e Lado */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* 5. Agrupamento: Lote de Produção e Lado (Confirmados juntos) */}
+                <div className="flex gap-2 items-end">
                   {/* Lote Input (numeric keypad trigger) */}
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lote de Produção *</label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        inputMode="numeric" 
-                        pattern="[0-9]*"
-                        required
-                        disabled={confirmaLote}
-                        placeholder="Ex: 205"
-                        value={formLote}
-                        onChange={(e) => setFormLote(e.target.value)}
-                        className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs font-bold"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!formLote.trim()) {
-                            showAlert('warning', "Por favor, preencha o Lote antes de confirmar.");
-                            return;
-                          }
-                          setConfirmaLote(!confirmaLote);
-                        }}
-                        className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                          confirmaLote 
-                            ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                        }`}
-                        title={confirmaLote ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                      >
-                        <Check size={16} className={confirmaLote ? "scale-110" : ""} />
-                      </button>
-                    </div>
+                    <input 
+                      type="text" 
+                      inputMode="numeric" 
+                      pattern="[0-9]*"
+                      required
+                      disabled={confirmaLote}
+                      placeholder="Ex: 205"
+                      value={formLote}
+                      onChange={(e) => setFormLote(e.target.value)}
+                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs font-bold"
+                    />
                   </div>
                   
                   {/* Lado Select Dropdown */}
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lado</label>
-                    <div className="flex gap-2">
-                      <select 
-                        disabled={confirmaLado}
-                        value={formLado} 
-                        onChange={(e) => setFormLado(e.target.value as any)}
-                        className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-xs font-bold"
-                      >
-                        <option value="Único">Único</option>
-                        <option value="Esquerdo">Esquerdo</option>
-                        <option value="Direito">Direito</option>
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => setConfirmaLado(!confirmaLado)}
-                        className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                          confirmaLado 
-                            ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                        }`}
-                        title={confirmaLado ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                      >
-                        <Check size={16} className={confirmaLado ? "scale-110" : ""} />
-                      </button>
-                    </div>
+                    <select 
+                      disabled={confirmaLado}
+                      value={formLado} 
+                      onChange={(e) => setFormLado(e.target.value as any)}
+                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-xs font-bold"
+                    >
+                      <option value="Único">Único</option>
+                      <option value="Esquerdo">Esquerdo</option>
+                      <option value="Direito">Direito</option>
+                    </select>
                   </div>
+                  
+                  {/* Botão Único de Confirmação para Lote e Lado */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!confirmaLote && !formLote.trim()) {
+                        showAlert('warning', "Por favor, preencha o Lote antes de confirmar.");
+                        return;
+                      }
+                      const nextState = !confirmaLote;
+                      setConfirmaLote(nextState);
+                      setConfirmaLado(nextState);
+                    }}
+                    className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                      confirmaLote 
+                        ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                    }`}
+                    title={confirmaLote ? "Desbloquear Campos (Lote e Lado)" : "Confirmar e Travar Campos (Lote e Lado)"}
+                  >
+                    <Check size={16} className={confirmaLote ? "scale-110" : ""} />
+                  </button>
                 </div>
 
                 {/* Matéria-Prima Alimentada & Observação */}
