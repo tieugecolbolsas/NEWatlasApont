@@ -1204,36 +1204,36 @@ export default function Apontamentos() {
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <div
                     onClick={() => toggleGroup(block.key)}
-                    className="p-4 space-y-3.5 cursor-pointer w-full text-left outline-none"
+                    className="p-5 pt-7 space-y-4 cursor-pointer w-full text-left outline-none"
                     role="button"
                     tabIndex={0}
                   >
-                    {/* Indicadores de Alertas no Canto Superior Direito */}
-                    <div className="absolute top-4 right-4 flex items-center space-x-1 z-10">
+                    {/* Indicadores de Alertas no Canto Superior Direito - Fixados acima */}
+                    <div className="absolute top-0 right-0 flex items-center space-x-1.5 z-10 bg-zinc-900 px-3 py-1.5 rounded-bl-xl border-b border-l border-zinc-800">
                       {hasObs && (
-                        <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[8px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${obsCount} observações registradas`}>
-                          <Mail size={8} className="inline mr-0.5" /> +{obsCount}
+                        <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${obsCount} observações registradas`}>
+                          <Mail size={12} className="inline mr-0.5" /> +{obsCount}
                         </span>
                       )}
                       {hasFin && (
-                        <span className="text-rose-500 bg-rose-950/30 border border-rose-500/20 text-[8px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${finCount} finalizações antecipadas`}>
-                          <Mail size={8} className="inline mr-0.5" /> +{finCount}
+                        <span className="text-rose-500 bg-rose-950/30 border border-rose-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${finCount} finalizações antecipadas`}>
+                          <Mail size={12} className="inline mr-0.5" /> +{finCount}
                         </span>
                       )}
                       
                       {/* Chevron Indicator */}
-                      <div className="ml-2 pl-2 border-l border-zinc-900/60 flex items-center justify-center">
+                      <div className="ml-1 pl-1.5 border-l border-zinc-700 flex items-center justify-center">
                         {isExpanded ? (
-                          <ChevronDown size={14} className="text-emerald-500" />
+                          <ChevronDown size={16} className="text-emerald-500" />
                         ) : (
-                          <ChevronRight size={14} className="text-zinc-500" />
+                          <ChevronRight size={16} className="text-zinc-500" />
                         )}
                       </div>
                     </div>
 
                     {/* Linha 1: Identificação, Linha de Máquina e Status do Processo */}
-                    <div className="flex items-center space-x-2 pr-24">
-                      <span className="bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 text-xs font-mono font-bold px-2.5 py-0.5 rounded">
+                    <div className="flex items-center space-x-3">
+                      <span className="bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 text-xs font-mono font-bold px-2.5 py-1 rounded">
                         {(() => {
                           const num = String(block.num_maquina || '');
                           const cleanNum = num.replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '');
@@ -1241,29 +1241,34 @@ export default function Apontamentos() {
                         })()}
                       </span>
                       {isSessionActive ? (
-                        <span className="text-blue-400 text-[10px] font-bold uppercase tracking-wider bg-blue-950/20 border border-blue-500/20 px-2 py-0.5 rounded truncate">
+                        <span className="text-blue-400 text-xs font-bold uppercase tracking-wider bg-blue-950/20 border border-blue-500/20 px-2.5 py-1 rounded truncate">
                           ● PROCESSO EM ANDAMENTO
                         </span>
                       ) : (
-                        <span className="text-rose-400 text-[10px] font-bold uppercase tracking-wider bg-rose-950/20 border border-rose-500/20 px-2 py-0.5 rounded truncate">
+                        <span className="text-rose-400 text-xs font-bold uppercase tracking-wider bg-rose-950/20 border border-rose-500/20 px-2.5 py-1 rounded truncate">
                           ● PROCESSO ENCERRADO
                         </span>
                       )}
                     </div>
 
                     {/* Linha 2: Informações do Processo (Alinhadas verticalmente sem embolar) */}
-                    <div className="border-t border-zinc-900/60 pt-3.5 space-y-1.5">
+                    <div className="border-t border-zinc-900/60 pt-4 space-y-2">
                       <div>
-                        <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider block">Operadora</span>
-                        <span className="text-sm font-bold text-zinc-100 flex items-center gap-1 truncate" title={`${block.colaboradora} - [${block.processo}]`}>
-                          👤 {block.colaboradora} - <span className="text-zinc-400 text-xs bg-zinc-900 border border-zinc-800 px-1.5 rounded">[{block.processo}]</span>
-                        </span>
+                        <span className="text-zinc-500 text-[9px] uppercase font-bold tracking-wider block mb-0.5">Operadora</span>
+                        <div className="flex justify-between items-center w-full">
+                          <span className="text-[15px] font-bold text-zinc-100 flex items-center gap-1 truncate" title={`${block.colaboradora} - [${block.processo}]`}>
+                            👤 {block.colaboradora}
+                          </span>
+                          <span className="text-zinc-400 text-xs font-bold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded shrink-0">
+                            [{block.processo}]
+                          </span>
+                        </div>
                       </div>
                       <div>
-                        <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider block">Operação</span>
-                        <span className="text-xs font-semibold text-zinc-300 flex items-center gap-1 break-words whitespace-normal leading-snug" title={block.operacao_nome}>
+                        <span className="text-zinc-500 text-[9px] uppercase font-bold tracking-wider block mb-0.5">Operação</span>
+                        <span className="text-sm font-semibold text-zinc-300 flex items-center gap-1.5 break-words whitespace-normal leading-snug" title={block.operacao_nome}>
                           {/* Ícone de Máquina de Costura Real */}
-                          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline text-emerald-500 shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline text-emerald-500 shrink-0">
                             <rect x="1" y="18" width="22" height="3" rx="1.5" /><rect x="3" y="3" width="2" height="11" rx="1" /><line x1="4" y1="14" x2="4" y2="17" /><path d="M 4.5 5 h 11 c 2 0, 3.5 1, 3.5 3 v 10" /><path d="M 4.5 10 c 4 0, 7 1, 10 3.5 c 1 0.8, 1.5 2, 1.5 4.5" /><rect x="20" y="6" width="1" height="5" rx="0.5" /><line x1="16" y1="5" x2="16" y2="2" />
                           </svg>
                           {block.operacao_nome}
@@ -1272,7 +1277,7 @@ export default function Apontamentos() {
                     </div>
 
                     {/* Linha 3: Bloco de Dados Técnicos (Data, Código Curto e Cronômetro) */}
-                    <div className="border-t border-zinc-900/60 pt-3 grid grid-cols-3 gap-2 text-xs font-mono text-zinc-400">
+                    <div className="border-t border-zinc-900/60 pt-3.5 grid grid-cols-3 gap-3 text-sm font-mono text-zinc-400">
                       {/* Coluna 1: Data do Processo */}
                       <div className="flex flex-col">
                         <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-0.5">Data Processo</span>
