@@ -1224,18 +1224,9 @@ export default function Apontamentos() {
                       </div>
                     )}
 
-                    {/* Chevron Indicator */}
-                    <div className="absolute top-5 right-4 sm:ml-1 sm:pl-1.5 sm:border-l sm:border-zinc-700 flex items-center justify-center z-10">
-                      {isExpanded ? (
-                        <ChevronDown size={16} className="text-emerald-500" />
-                      ) : (
-                        <ChevronRight size={16} className="text-zinc-500" />
-                      )}
-                    </div>
-
                     {/* Linha 1: Identificação, Linha de Máquina e Status do Processo */}
-                    <div className="flex items-center space-x-3 pr-8 sm:pr-32">
-                      <span className="bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 text-xs font-mono font-bold px-2.5 py-1 rounded">
+                    <div className="flex items-start sm:items-center justify-between gap-2">
+                      <span className="bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 text-[9px] sm:text-xs font-mono font-bold px-1 py-0.5 sm:px-2.5 sm:py-1 rounded shrink-0 whitespace-nowrap mt-0.5 sm:mt-0">
                         {(() => {
                           const num = String(block.num_maquina || '');
                           const cleanNum = num.replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '');
@@ -1243,11 +1234,11 @@ export default function Apontamentos() {
                         })()}
                       </span>
                       {isSessionActive ? (
-                        <span className="text-blue-400 text-xs font-bold uppercase tracking-wider bg-blue-950/20 border border-blue-500/20 px-2.5 py-1 rounded truncate">
+                        <span className="text-blue-400 text-[7.5px] sm:text-xs font-bold uppercase tracking-wider bg-blue-950/20 border border-blue-500/20 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded whitespace-normal sm:truncate leading-tight text-right">
                           ● PROCESSO EM ANDAMENTO
                         </span>
                       ) : (
-                        <span className="text-rose-400 text-xs font-bold uppercase tracking-wider bg-rose-950/20 border border-rose-500/20 px-2.5 py-1 rounded truncate">
+                        <span className="text-rose-400 text-[7.5px] sm:text-xs font-bold uppercase tracking-wider bg-rose-950/20 border border-rose-500/20 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded whitespace-normal sm:truncate leading-tight text-right">
                           ● PROCESSO ENCERRADO
                         </span>
                       )}
@@ -1278,45 +1269,18 @@ export default function Apontamentos() {
                       </div>
                     </div>
 
-                    {/* Linha 3: Bloco de Dados Técnicos (Data, Código Curto e Cronômetro) */}
-                    <div className="border-t border-zinc-900/60 pt-3.5 grid grid-cols-3 gap-3 text-sm font-mono text-zinc-400">
+                    {/* Linha 3: Bloco de Dados Técnicos (Data e Cronômetro) */}
+                    <div className="border-t border-zinc-900/60 pt-3.5 flex justify-between items-center gap-3 text-sm font-mono text-zinc-400">
                       {/* Coluna 1: Data do Processo */}
                       <div className="flex flex-col">
                         <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-0.5">Data Processo</span>
-                        <span className="text-zinc-300 truncate">📅 {block.data}</span>
-                      </div>
-                      
-                      {/* Coluna 2: Código Curto com Copiar */}
-                      <div className="flex flex-col">
-                        <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-0.5">Código Curto</span>
-                        {(() => {
-                          const shortCode = getShortCode(block);
-                          const statusDoCard = isSessionActive ? '● PROCESSO EM ANDAMENTO' : '● PROCESSO ENCERRADO';
-                          const handleCopyCode = (cod: string) => {
-                            navigator.clipboard.writeText(cod);
-                            addToast(`Código ${cod} copiado para a área de transferência!`, 'success');
-                          };
-                          return (
-                            <span 
-                              className={`font-bold flex items-center gap-0.5 truncate ${isSessionActive ? 'text-emerald-500 cursor-pointer hover:text-emerald-400 transition-colors' : 'text-zinc-500 cursor-not-allowed'}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (statusDoCard !== '● PROCESSO ENCERRADO') {
-                                  handleCopyCode(shortCode);
-                                }
-                              }}
-                              title={isSessionActive ? "Copiar Código" : "Cópia Desabilitada (Processo Encerrado)"}
-                            >
-                              {shortCode} 📄
-                            </span>
-                          );
-                        })()}
+                        <span className="text-zinc-300 truncate text-[11px] sm:text-sm">📅 {block.data}</span>
                       </div>
 
-                      {/* Coluna 3: Tempo Corrido/Operação */}
+                      {/* Coluna 2: Tempo Corrido/Operação */}
                       <div className="flex flex-col items-end">
                         <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-0.5">Tempo Operação</span>
-                        <span className="text-zinc-300 font-bold bg-zinc-950 border border-zinc-900 px-1.5 py-0.5 rounded truncate text-sm">
+                        <span className="text-zinc-300 font-bold bg-zinc-950 border border-zinc-900 px-1.5 py-0.5 rounded truncate text-[11px] sm:text-sm">
                           ⏱ {(() => {
                             let baseMs = block.tempoTotalMs || 0;
                             if (isSessionActive && activeSessionForBlock && activeSessionForBlock.horario_inicio) {
