@@ -1204,12 +1204,12 @@ export default function Apontamentos() {
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <div
                     onClick={() => toggleGroup(block.key)}
-                    className="p-5 pt-7 space-y-4 cursor-pointer w-full text-left outline-none"
+                    className="p-5 pt-10 sm:pt-5 space-y-4 cursor-pointer w-full text-left outline-none"
                     role="button"
                     tabIndex={0}
                   >
-                    {/* Indicadores de Alertas no Canto Superior Direito - Fixados acima */}
-                    <div className="absolute top-0 right-0 flex items-center space-x-1.5 z-10 bg-zinc-900 px-3 py-1.5 rounded-bl-xl border-b border-l border-zinc-800">
+                    {/* Indicadores de Alertas no Mobile (acima) e Desktop (lado do chevron) */}
+                    <div className="absolute top-3 left-5 sm:top-5 sm:left-auto sm:right-12 flex items-center space-x-1.5 z-10">
                       {hasObs && (
                         <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${obsCount} observações registradas`}>
                           <Mail size={12} className="inline mr-0.5" /> +{obsCount}
@@ -1220,19 +1220,19 @@ export default function Apontamentos() {
                           <Mail size={12} className="inline mr-0.5" /> +{finCount}
                         </span>
                       )}
+                    </div>
                       
-                      {/* Chevron Indicator */}
-                      <div className="ml-1 pl-1.5 border-l border-zinc-700 flex items-center justify-center">
-                        {isExpanded ? (
-                          <ChevronDown size={16} className="text-emerald-500" />
-                        ) : (
-                          <ChevronRight size={16} className="text-zinc-500" />
-                        )}
-                      </div>
+                    {/* Chevron Indicator */}
+                    <div className="absolute top-5 right-4 sm:ml-1 sm:pl-1.5 sm:border-l sm:border-zinc-700 flex items-center justify-center z-10">
+                      {isExpanded ? (
+                        <ChevronDown size={16} className="text-emerald-500" />
+                      ) : (
+                        <ChevronRight size={16} className="text-zinc-500" />
+                      )}
                     </div>
 
                     {/* Linha 1: Identificação, Linha de Máquina e Status do Processo */}
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3 pr-8 sm:pr-32">
                       <span className="bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 text-xs font-mono font-bold px-2.5 py-1 rounded">
                         {(() => {
                           const num = String(block.num_maquina || '');
