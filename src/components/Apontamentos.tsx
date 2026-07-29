@@ -1776,23 +1776,40 @@ export default function Apontamentos() {
                           // Hora extra vem sempre "Não" por padrão, exceto se banco retornar exatamente 's'
                           const horaExtra = item.hora_extra === 's' ? 'Sim' : 'Não';
 
+                          const regNumber = block.itens.length - itemIdx;
+
                           return (
                             <div 
                               key={item.id || itemIdx} 
-                              className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3 shadow-lg shadow-black/50 mb-3 last:mb-0"
+                              className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3 shadow-lg shadow-black/50 mb-3 last:mb-0 relative overflow-hidden"
                             >
                               {/* Linha de Título Gigante */}
-                              <div className="border-b border-zinc-950 pb-2.5 flex justify-between items-center gap-2">
-                                <div className="text-base font-black text-emerald-400 tracking-wide flex items-center gap-1.5 leading-none">
-                                  <span className="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full"></span>
-                                  {conforme} Peças Conformes
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {isSessionActive && itemIdx === 0 ? (
-                                    <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                                      ÚLTIMO REGISTRO
+                              <div className="border-b border-zinc-950 pb-3 flex flex-col gap-3">
+                                <div className="flex justify-between items-start gap-2">
+                                  <div className="flex items-center gap-2.5">
+                                    <span className="bg-zinc-800 text-zinc-400 text-[10px] font-black px-1.5 py-0.5 rounded border border-zinc-700/50">
+                                      #{regNumber}
                                     </span>
-                                  ) : null}
+                                    <div className="text-base font-black text-emerald-400 tracking-wide flex items-center gap-1.5 leading-none">
+                                      <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                                      {conforme} Peças Conformes
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {isSessionActive && itemIdx === 0 ? (
+                                      <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                                        ÚLTIMO REGISTRO
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </div>
+                                
+                                {/* HORÁRIO EM DESTAQUE */}
+                                <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-800/80 px-3 py-1.5 rounded-lg w-fit">
+                                  <Clock size={12} className="text-brand" />
+                                  <span className="text-zinc-100 font-bold text-xs tracking-wider">
+                                    {formattedTimeInicio ? `${formattedTimeInicio} - ${formattedTime}` : formattedTime}
+                                  </span>
                                 </div>
                               </div>
 
@@ -1819,10 +1836,6 @@ export default function Apontamentos() {
                               {/* Grid de Informações Técnicas */}
                               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] text-zinc-400 font-mono">
                                 <div className="flex justify-between border-b border-zinc-950/40 pb-1">
-                                  <span className="text-zinc-600 font-bold uppercase text-[8px]">Horário</span>
-                                  <span className="text-zinc-300">{formattedTimeInicio ? `${formattedTimeInicio} - ${formattedTime}` : formattedTime}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
                                   <span className="text-zinc-600 font-bold uppercase text-[8px]">Duração</span>
                                   <span className="text-[#00624C] font-bold">{tempoProducaoReg || '0h 0m'}</span>
                                 </div>
@@ -1834,7 +1847,7 @@ export default function Apontamentos() {
                                   <span className="text-zinc-600 font-bold uppercase text-[8px]">Máquina</span>
                                   <span className="text-zinc-300">{tipoMaq}</span>
                                 </div>
-                                <div className="flex justify-between border-b border-zinc-950/40 pb-1 col-span-2 md:col-span-1">
+                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
                                   <span className="text-zinc-600 font-bold uppercase text-[8px]">Hora Extra</span>
                                   <span className="text-zinc-300">{horaExtra}</span>
                                 </div>
