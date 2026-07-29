@@ -1199,7 +1199,7 @@ export default function Apontamentos() {
               return (
                 <div 
                   key={block.key} 
-                  className={`bg-[#141414] rounded-xl border border-zinc-900 border-l-4 border-emerald-600 relative shadow-lg shadow-black/50 mb-4 transition-all duration-200 overflow-hidden ${isExpanded ? 'bg-emerald-950/5' : 'bg-emerald-950/10'}`}
+                  className={`rounded-xl border border-[#00624c]/50 border-l-4 border-[#00624c] relative shadow-lg shadow-black/50 mb-4 transition-all duration-200 overflow-hidden ${isExpanded ? 'bg-[#00624c]/30' : 'bg-[#00624c]/22'}`}
                 >
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <div
