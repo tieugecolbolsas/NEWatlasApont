@@ -1199,315 +1199,214 @@ export default function Apontamentos() {
               return (
                 <div 
                   key={block.key} 
-                  className="border rounded-xl overflow-hidden transition-all duration-200 bg-transparent border-[#00624C]/25"
+                  className={`bg-[#141414] rounded-xl border border-zinc-900 border-l-4 border-[#af1e59] relative shadow-lg shadow-black/50 mb-4 transition-all duration-200 overflow-hidden ${isExpanded ? 'bg-[#af1e59]/5' : 'bg-[#af1e59]/10'}`}
                 >
-                  {/* Linha principal fechada */}
-                  <button
+                  {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
+                  <div
                     onClick={() => toggleGroup(block.key)}
-                    className="w-full p-5 pt-8 md:pt-6 hover:bg-[#00624C]/20 transition-colors font-mono focus:outline-none cursor-pointer border-b border-[#00624C]/25 text-left bg-[#00624C]/16 relative"
+                    className="p-4 space-y-3.5 cursor-pointer w-full text-left outline-none"
+                    role="button"
+                    tabIndex={0}
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-                      {/* Coluna 1: Identificação de Máquina e Data */}
-                      <div className="flex flex-col justify-between space-y-4 md:space-y-3 relative z-0">
-                        {/* DATA E STATUS NO TOPO */}
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm text-zinc-200 flex items-center gap-1.5 font-bold bg-zinc-900 border border-zinc-800/80 px-2 py-1 rounded-md">
-                            <Calendar size={13} className="text-[#00624C]" /> {block.data}
-                          </span>
-                          {isSessionActive ? (
-                            <span className="text-[9px] font-black uppercase tracking-wider text-blue-400 bg-blue-950/40 border border-blue-500/30 px-2 py-0.5 rounded">
-                              ● ANDAMENTO
-                            </span>
-                          ) : (
-                            <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 bg-rose-950/40 border border-rose-500/30 px-2 py-0.5 rounded">
-                              ● ENCERRADO
-                            </span>
-                          )}
-                        </div>
-
-                        {/* GRAVATAS (Apenas Mobile) */}
-                        <div className="absolute -top-8 right-0 flex gap-1 z-10 items-start md:hidden">
-                          {hasObs && (
-                            <div className="bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950 text-[9px] font-black w-3.5 pt-0.5 pb-2 shadow-sm flex flex-col items-center justify-center tracking-tighter" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)' }}>
-                              <span className="leading-none">{obsCount}</span>
-                            </div>
-                          )}
-                          {hasFin && (
-                            <div className="bg-gradient-to-b from-rose-500 to-rose-600 text-rose-950 text-[9px] font-black w-3.5 pt-0.5 pb-2 shadow-sm flex flex-col items-center justify-center tracking-tighter" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)' }}>
-                              <span className="leading-none">{finCount}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex flex-row justify-between items-start md:flex-col md:space-y-3">
-                          <div className="space-y-1.5">
-                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block">POSTO / MÁQUINA</span>
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex px-3 py-1 bg-[#00624C]/15 border border-[#00624C]/35 text-[#00624C] text-base font-extrabold rounded-lg shadow-sm shadow-[#00624C]/10 font-mono">
-                                {(() => {
-                                  const num = String(block.num_maquina || '');
-                                  const cleanNum = num.replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '');
-                                  return `MÁQ: ${cleanNum}`;
-                                })()}
-                              </span>
-
-                              {/* Cartinhas de observação/finalização no Desktop */}
-                              <div className="hidden md:flex items-center gap-1.5">
-                                {hasObs && (
-                                  <span className="text-[9px] font-black uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded flex items-center gap-1" title={`${obsCount} observações registradas`}>
-                                    <Mail size={10} /> +{obsCount}
-                                  </span>
-                                )}
-                                {hasFin && (
-                                  <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 bg-rose-950/40 border border-rose-500/30 px-2 py-0.5 rounded flex items-center gap-1" title={`${finCount} finalizações antecipadas`}>
-                                    <Mail size={10} /> +{finCount}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col items-end md:items-start space-y-1.5 md:space-y-3">
-                            <span className="text-zinc-300 uppercase text-xs bg-zinc-900 border border-zinc-800 px-2 py-1 rounded w-fit font-bold tracking-wide">
-                              {block.processo}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-row justify-between items-center md:flex-col md:items-start md:space-y-3">
-                          {(() => {
-                            const shortCode = getShortCode(block);
-                            const statusDoCard = isSessionActive ? '● PROCESSO EM ANDAMENTO' : '● PROCESSO ENCERRADO';
-                            const codigo = shortCode;
-                            const handleCopyCode = (cod: string) => {
-                              navigator.clipboard.writeText(cod);
-                              addToast(`Código ${cod} copiado para a área de transferência!`, 'success');
-                            };
-                            return (
-                              <div className="space-y-1">
-                                <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block">CÓDIGO CURTO</span>
-                                <div 
-                                  role="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation(); // Evita que o clique abra/feche o card de histórico ao tentar copiar o código
-                                    if (statusDoCard !== '● PROCESSO ENCERRADO') {
-                                      handleCopyCode(codigo);
-                                    }
-                                  }}
-                                  title={isSessionActive ? "Copiar Código" : "Cópia Desabilitada (Processo Encerrado)"}
-                                  className={`inline-flex items-center gap-2 px-3 py-1 bg-zinc-900 border text-xs font-mono font-black rounded-md shadow-md shadow-emerald-950/10 transition-colors ${
-                                    isSessionActive 
-                                      ? 'border-emerald-500/40 text-emerald-400 hover:border-emerald-500/80 hover:bg-emerald-500/10 cursor-pointer group' 
-                                      : 'border-zinc-800 text-zinc-500 cursor-not-allowed'
-                                  }`}
-                                >
-                                  <span>COD: {shortCode}</span>
-                                  <span
-                                    className={`p-1 flex items-center justify-center transition-colors ${
-                                      isSessionActive 
-                                        ? 'text-zinc-400 group-hover:text-emerald-400' 
-                                        : 'opacity-30 text-zinc-600'
-                                    }`}
-                                  >
-                                    <Copy size={12} className={isSessionActive ? "group-hover:scale-110 transition-transform" : ""} />
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      </div>
-
-                      {/* Coluna 2: Operadora, Operação e Fluxo de Matéria Prima */}
-                      <div className="flex flex-col justify-between space-y-4 md:space-y-3 pt-4 md:pt-0 border-t border-zinc-900/60 md:border-t-0 md:border-l md:pl-6 mt-4 md:mt-0">
-                        <div className="grid grid-cols-2 md:grid-cols-1 gap-4 md:gap-3">
-                          <div>
-                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block leading-relaxed">OPERADORA</span>
-                            <h4 className="text-sm font-extrabold text-zinc-100 flex items-center gap-1.5 mt-0.5 leading-relaxed truncate" title={block.colaboradora}>
-                              <User size={13} className="text-[#00624C] shrink-0" /> <span className="truncate">{block.colaboradora}</span>
-                            </h4>
-                          </div>
-                          <div>
-                            <span className="text-zinc-500 font-bold uppercase text-[9px] tracking-wider block leading-relaxed">OPERAÇÃO</span>
-                            <span className="text-zinc-200 font-semibold text-xs leading-snug flex items-start gap-1.5 mt-0.5 break-words whitespace-normal" title={block.operacao_nome}>
-                              <SewingMachineIcon size={14} className="text-[#00624C] shrink-0 mt-0.5" /> <span className="break-words whitespace-normal">{block.operacao_nome}</span>
-                            </span>
-                          </div>
-                          {block.itens?.some((item: any) => item.motivo_ocorrencia === 'Finalização Automática') && (
-                            <div className="col-span-2 md:col-span-1">
-                              <div className="text-rose-400 bg-rose-950/20 border border-rose-500/20 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1 w-fit mt-1">
-                                ⚠ FINALIZAÇÃO AUTOMÁTICA
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Monitoramento de Matéria Prima Restante e Tempo Estimado */}
-                        {block.somaMateriaPrima > 0 && (() => {
-                          const matTotal = block.somaMateriaPrima;
-                          const prod = block.somaTotal;
-                          const rest = Math.max(0, matTotal - prod);
-                          const tempoRestante = getTempoRestanteMateriaPrima(matTotal, prod, block.tempoTotalMs, block.itens);
-                          
-                          return (
-                            <div className="pt-2.5 border-t border-zinc-900/60 mt-1.5">
-                              <span className="text-[#00624C] font-black uppercase text-[10px] tracking-widest block mb-1">MATÉRIA-PRIMA</span>
-                              <div className="grid grid-cols-2 gap-2 bg-zinc-900/40 border border-zinc-800/60 p-2 rounded-lg">
-                                <div>
-                                  <span className="text-[8px] text-zinc-500 uppercase font-bold block">RESTANTE</span>
-                                  <span className="text-blue-400 font-extrabold text-xs">{rest} pçs</span>
-                                </div>
-                                <div>
-                                  <span className="text-[8px] text-zinc-500 uppercase font-bold block">DURAÇÃO EST.</span>
-                                  <span className="text-amber-500 font-bold text-[10px] font-mono block leading-tight mt-0.5">
-                                    {tempoRestante}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </div>
-
-                      {/* Coluna 3: Produção Acumulada, Metas & Tempo de Operação */}
-                      <div className="flex flex-col justify-between space-y-4 md:space-y-3 pt-4 md:pt-0 border-t border-zinc-900/60 md:border-t-0 md:border-l md:pl-6 mt-4 md:mt-0">
-                        <div className="grid grid-cols-2 md:grid-cols-1 gap-4 md:gap-3">
-                          {/* Produção Acumulada */}
-                          <div className="space-y-1">
-                            <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest block">PRODUÇÃO ACUMULADA</span>
-                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              <span className="text-emerald-400 font-black text-xl md:text-2xl">{block.somaTotal} Pçs</span>
-                              {(() => {
-                                const soma = block.somaTotal || 0;
-                                let metaAlvo = 1000;
-                                if (soma >= 1000 && soma < 1200) {
-                                  metaAlvo = 1200;
-                                } else if (soma >= 1200) {
-                                  metaAlvo = 1500;
-                                }
-                                if (soma >= metaAlvo) {
-                                  return (
-                                    <span className="text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 text-[9px] px-2 py-0.5 rounded-md font-black uppercase tracking-wider flex items-center gap-1 shrink-0 animate-pulse mt-0.5">
-                                      ✓ META BATIDA
-                                    </span>
-                                  );
-                                }
-                                return null;
-                              })()}
-                            </div>
-                          </div>
-
-                          {/* Tempo Ativo de Operação */}
-                          <div className="space-y-1 text-right md:text-left pt-0 md:pt-2 md:border-t md:border-zinc-900/40 border-t-0">
-                            <span className="text-[9px] text-zinc-500 uppercase font-black tracking-widest block">TEMPO DE OPERAÇÃO</span>
-                            <div className="flex items-center justify-end md:justify-start gap-1.5 mt-0.5">
-                              <Clock size={12} className="text-[#00624C] animate-pulse" />
-                              <span className="text-zinc-200 font-mono font-bold text-xs bg-zinc-900 border border-zinc-800/60 px-2.5 py-0.5 rounded shadow-inner">
-                                {(() => {
-                                  let baseMs = block.tempoTotalMs || 0;
-                                  if (isSessionActive && activeSessionForBlock && activeSessionForBlock.horario_inicio) {
-                                    const dInicio = parseTimeToDateToday(activeSessionForBlock.horario_inicio, block.data);
-                                    if (dInicio) {
-                                      const liveMs = Math.max(0, now.getTime() - dInicio.getTime());
-                                      baseMs += liveMs;
-                                    }
-                                  }
-
-                                  if (baseMs <= 0) {
-                                    let earliestStart: Date | null = null;
-                                    let latestEnd: Date | null = null;
-                                    block.itens.forEach((item: any) => {
-                                      const hIni = item.horario_inicio;
-                                      if (hIni) {
-                                        const d = parseTimeToDateToday(hIni, item.data);
-                                        if (d && (!earliestStart || d < earliestStart)) earliestStart = d;
-                                      }
-                                      const hTerm = item.horario_termino || item.created_at || item.timestamp;
-                                      if (hTerm) {
-                                        const d = parseTimeToDateToday(hTerm, item.data);
-                                        if (d && (!latestEnd || d > latestEnd)) latestEnd = d;
-                                      }
-                                    });
-                                    if (earliestStart) {
-                                      const baseEnd = latestEnd || now;
-                                      const diffMs = Math.max(0, baseEnd.getTime() - earliestStart.getTime());
-                                      return formatProductionTime(diffMs);
-                                    }
-                                    return '00:00:00';
-                                  }
-                                  return formatProductionTime(baseMs);
-                                })()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Metas Progressivas com Barra de Progresso Clássica */}
-                        {(() => {
-                          const soma = block.somaTotal || 0;
-                          let metaAlvo = 1000;
-                          let progColor = 'text-zinc-300';
-                          
-                          if (soma < 1000) {
-                            metaAlvo = 1000;
-                            if (soma < 500) {
-                              progColor = 'text-red-500';
-                            } else if (soma < 750) {
-                              progColor = 'text-orange-500';
-                            } else {
-                              progColor = 'text-yellow-500';
-                            }
-                          } else if (soma < 1200) {
-                            metaAlvo = 1200;
-                            progColor = 'text-emerald-500';
-                          } else {
-                            metaAlvo = 1500;
-                            progColor = 'text-emerald-500';
-                          }
-                          
-                          const percent = Math.min(100, (soma / metaAlvo) * 100);
-                          
-                          return (
-                            <div className="space-y-1 mt-4 md:mt-2">
-                              <div className="flex items-center justify-between text-[10px] font-bold">
-                                <span className="text-zinc-500 uppercase tracking-wider">META DIÁRIA</span>
-                                <span className="text-zinc-400 font-mono">
-                                  <span className={progColor}>{soma}</span> / <span className="text-emerald-500">{metaAlvo} Pçs</span> ({percent.toFixed(0)}%)
-                                </span>
-                              </div>
-                              <div className="w-full bg-zinc-900 border border-zinc-800/80 h-2 rounded-full overflow-hidden">
-                                <div 
-                                  className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full rounded-full transition-all duration-500" 
-                                  style={{ width: `${percent}%` }}
-                                />
-                              </div>
-                              <div className="text-xs font-bold text-zinc-300 mt-1">
-                                {blockEstimativaLabel}{blockEstimativaValue}
-                              </div>
-                            </div>
-                          );
-                        })()}
-
-                        {/* Chevron Indicator Mobile */}
-                        <div className="md:hidden flex justify-center w-full pt-4 border-t border-zinc-900/60">
-                          {isExpanded ? (
-                            <ChevronDown size={20} className="text-[#00624C] transition-transform duration-200 bg-[#00624C]/10 p-1 rounded border border-[#00624C]/25" />
-                          ) : (
-                            <ChevronRight size={20} className="text-zinc-500 transition-transform duration-200 bg-zinc-900 p-1 rounded border border-zinc-800" />
-                          )}
-                        </div>
-
-                        {/* Chevron Indicator Desktop */}
-                        <div className="hidden md:block self-end pb-1 absolute right-5 top-5">
-                          {isExpanded ? (
-                            <ChevronDown size={20} className="text-[#00624C] transition-transform duration-200 bg-[#00624C]/10 p-1 rounded border border-[#00624C]/25 hover:bg-[#00624C]/20" />
-                          ) : (
-                            <ChevronRight size={20} className="text-zinc-500 transition-transform duration-200 bg-zinc-900 p-1 rounded border border-zinc-800 hover:text-white" />
-                          )}
-                        </div>
+                    {/* Indicadores de Alertas no Canto Superior Direito */}
+                    <div className="absolute top-4 right-4 flex items-center space-x-1 z-10">
+                      {hasObs && (
+                        <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[8px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${obsCount} observações registradas`}>
+                          <Mail size={8} className="inline mr-0.5" /> +{obsCount}
+                        </span>
+                      )}
+                      {hasFin && (
+                        <span className="text-rose-500 bg-rose-950/30 border border-rose-500/20 text-[8px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${finCount} finalizações antecipadas`}>
+                          <Mail size={8} className="inline mr-0.5" /> +{finCount}
+                        </span>
+                      )}
+                      
+                      {/* Chevron Indicator */}
+                      <div className="ml-2 pl-2 border-l border-zinc-900/60 flex items-center justify-center">
+                        {isExpanded ? (
+                          <ChevronDown size={14} className="text-[#af1e59]" />
+                        ) : (
+                          <ChevronRight size={14} className="text-zinc-500" />
+                        )}
                       </div>
                     </div>
-                  </button>
+
+                    {/* Linha 1: Identificação, Linha de Máquina e Status do Processo */}
+                    <div className="flex items-center space-x-2 pr-16">
+                      <span className="bg-[#af1e59]/10 border border-[#af1e59]/20 text-[#af1e59] text-xs font-mono font-bold px-2.5 py-0.5 rounded">
+                        {(() => {
+                          const num = String(block.num_maquina || '');
+                          const cleanNum = num.replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '');
+                          return `MÁQ: ${cleanNum}`;
+                        })()}
+                      </span>
+                      <span className="bg-zinc-950 border border-zinc-900 text-zinc-400 text-[9px] font-bold px-2 py-0.5 rounded uppercase max-w-[100px] sm:max-w-[150px] truncate">
+                        {block.processo}
+                      </span>
+                      {isSessionActive ? (
+                        <span className="text-blue-400 text-[8px] font-bold uppercase tracking-wider bg-blue-950/20 border border-blue-500/20 px-2 py-0.5 rounded truncate">
+                          ● Em Andamento
+                        </span>
+                      ) : (
+                        <span className="text-rose-400 text-[8px] font-bold uppercase tracking-wider bg-rose-950/20 border border-rose-500/20 px-2 py-0.5 rounded truncate">
+                          ● Encerrado
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Linha 2: Informações do Processo (Alinhadas verticalmente sem embolar) */}
+                    <div className="border-t border-zinc-900/60 pt-3.5 space-y-1.5">
+                      <div>
+                        <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider block">Colaboradora Ativa</span>
+                        <span className="text-sm font-bold text-zinc-100 flex items-center gap-1 truncate" title={block.colaboradora}>
+                          👤 {block.colaboradora}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider block">Operação Atribuída</span>
+                        <span className="text-xs font-semibold text-zinc-300 flex items-center gap-1 break-words whitespace-normal leading-snug" title={block.operacao_nome}>
+                          {/* Ícone de Máquina de Costura Real */}
+                          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline text-[#af1e59] shrink-0">
+                            <rect x="1" y="18" width="22" height="3" rx="1.5" /><rect x="3" y="3" width="2" height="11" rx="1" /><line x1="4" y1="14" x2="4" y2="17" /><path d="M 4.5 5 h 11 c 2 0, 3.5 1, 3.5 3 v 10" /><path d="M 4.5 10 c 4 0, 7 1, 10 3.5 c 1 0.8, 1.5 2, 1.5 4.5" /><rect x="20" y="6" width="1" height="5" rx="0.5" /><line x1="16" y1="5" x2="16" y2="2" />
+                          </svg>
+                          {block.operacao_nome}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Linha 3: Bloco de Dados Técnicos (Data, Código Curto e Cronômetro) */}
+                    <div className="border-t border-zinc-900/60 pt-3 grid grid-cols-3 gap-2 text-[9px] font-mono text-zinc-400">
+                      {/* Coluna 1: Data do Processo */}
+                      <div className="flex flex-col">
+                        <span className="text-zinc-600 block text-[7px] uppercase font-bold mb-0.5">Data Processo</span>
+                        <span className="text-zinc-300 truncate">📅 {block.data}</span>
+                      </div>
+                      
+                      {/* Coluna 2: Código Curto com Copiar */}
+                      <div className="flex flex-col">
+                        <span className="text-zinc-600 block text-[7px] uppercase font-bold mb-0.5">Código Curto</span>
+                        {(() => {
+                          const shortCode = getShortCode(block);
+                          const statusDoCard = isSessionActive ? '● PROCESSO EM ANDAMENTO' : '● PROCESSO ENCERRADO';
+                          const handleCopyCode = (cod: string) => {
+                            navigator.clipboard.writeText(cod);
+                            addToast(`Código ${cod} copiado para a área de transferência!`, 'success');
+                          };
+                          return (
+                            <span 
+                              className={`font-bold flex items-center gap-0.5 truncate ${isSessionActive ? 'text-emerald-500 cursor-pointer hover:text-emerald-400 transition-colors' : 'text-zinc-500 cursor-not-allowed'}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (statusDoCard !== '● PROCESSO ENCERRADO') {
+                                  handleCopyCode(shortCode);
+                                }
+                              }}
+                              title={isSessionActive ? "Copiar Código" : "Cópia Desabilitada (Processo Encerrado)"}
+                            >
+                              {shortCode} 📄
+                            </span>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Coluna 3: Tempo Corrido/Operação */}
+                      <div className="flex flex-col items-end">
+                        <span className="text-zinc-600 block text-[7px] uppercase font-bold mb-0.5">Tempo Operação</span>
+                        <span className="text-zinc-300 font-bold bg-zinc-950 border border-zinc-900 px-1.5 py-0.5 rounded truncate">
+                          ⏱ {(() => {
+                            let baseMs = block.tempoTotalMs || 0;
+                            if (isSessionActive && activeSessionForBlock && activeSessionForBlock.horario_inicio) {
+                              const dInicio = parseTimeToDateToday(activeSessionForBlock.horario_inicio, block.data);
+                              if (dInicio) {
+                                const liveMs = Math.max(0, now.getTime() - dInicio.getTime());
+                                baseMs += liveMs;
+                              }
+                            }
+
+                            if (baseMs <= 0) {
+                              let earliestStart: Date | null = null;
+                              let latestEnd: Date | null = null;
+                              block.itens.forEach((item: any) => {
+                                const hIni = item.horario_inicio;
+                                if (hIni) {
+                                  const d = parseTimeToDateToday(hIni, item.data);
+                                  if (d && (!earliestStart || d < earliestStart)) earliestStart = d;
+                                }
+                                const hTerm = item.horario_termino || item.created_at || item.timestamp;
+                                if (hTerm) {
+                                  const d = parseTimeToDateToday(hTerm, item.data);
+                                  if (d && (!latestEnd || d > latestEnd)) latestEnd = d;
+                                }
+                              });
+                              if (earliestStart) {
+                                const baseEnd = latestEnd || now;
+                                const diffMs = Math.max(0, baseEnd.getTime() - earliestStart.getTime());
+                                return formatProductionTime(diffMs);
+                              }
+                              return '00:00:00';
+                            }
+                            return formatProductionTime(baseMs);
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Linha 4: Produção Acumulada, Meta e Barra de Progresso */}
+                    {(() => {
+                      const soma = block.somaTotal || 0;
+                      let metaAlvo = 1000;
+                      let progColor = 'bg-zinc-300';
+                      let textColor = 'text-zinc-300';
+                      
+                      if (soma < 1000) {
+                        metaAlvo = 1000;
+                        if (soma < 500) {
+                          progColor = 'bg-red-500';
+                          textColor = 'text-red-500';
+                        } else if (soma < 750) {
+                          progColor = 'bg-orange-500';
+                          textColor = 'text-orange-500';
+                        } else {
+                          progColor = 'bg-yellow-500';
+                          textColor = 'text-yellow-500';
+                        }
+                      } else if (soma < 1200) {
+                        metaAlvo = 1200;
+                        progColor = 'bg-emerald-500';
+                        textColor = 'text-emerald-500';
+                      } else {
+                        metaAlvo = 1500;
+                        progColor = 'bg-emerald-500';
+                        textColor = 'text-emerald-500';
+                      }
+                      
+                      const percent = Math.min(100, (soma / metaAlvo) * 100);
+                      const isMetaBatida = soma >= metaAlvo;
+
+                      return (
+                        <div className="border-t border-zinc-900/60 pt-3 space-y-2">
+                          <div className="flex justify-between items-end">
+                            <div className="flex flex-col">
+                              <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider">Produção Acumulada</span>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className={`text-base font-black leading-none ${textColor}`}>{soma} Pçs</span>
+                                {isMetaBatida && (
+                                  <span className="text-[8px] text-emerald-500 bg-emerald-950/30 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold uppercase">✓ Meta Batida</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end font-mono text-[9px] text-zinc-400">
+                              <span className="text-zinc-600 block text-[7px] uppercase font-bold mb-0.5">Meta Diária</span>
+                              <span>{soma} / {metaAlvo} ({percent.toFixed(0)}%)</span>
+                            </div>
+                          </div>
+                          <div className="w-full bg-zinc-950 rounded-full h-1 border border-zinc-900 overflow-hidden">
+                            <div className={`${progColor} h-full rounded-full transition-all duration-500`} style={{ width: `${percent}%` }}></div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
 
                   {/* Detalhes expandidos (Accordion/Sanfona) */}
                   {isExpanded && (

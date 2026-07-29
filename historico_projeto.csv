@@ -16,3 +16,4 @@ v2.5,Wed Jul 29 03:27:45 PM UTC 2026,Apontamentos,Layout 2x3 dos cards no mobile
 v2.6,Wed Jul 29 11:11:24 AM UTC 2026,Apontamentos,Refatoração do Sub-Card para Opção 5 e divisão de métricas de Retrabalho,Implementar Layout 5 (alto contraste e grid compacto) e separar Retrabalho Próprio/Terceiro no Boletim de Qualidade,Sucesso
 v2.7,Wed Jul 29 11:19:26 AM UTC 2026,Apontamentos,Numeração de subregistros e destaque para horário,Adicionar numeração e destacar horário em um pill acima da grid técnica de forma proeminente,Sucesso
 v2.8,Wed Jul 29 11:53:00 AM UTC 2026,Apontamentos,Consolidate Top 3 Global Block Metrics Into a Single Option 4 Grid Card,Replace the three separate vertically-stacked/mismatched containers with a single cohesive Option 4 dashboard card,Sucesso
+v2.9,Wed Jul 29 07:11:00 AM UTC 2026,Apontamentos,Refinamento da Opção 1 - Accordion Header,Replace the accordion header button with the new Opção 1 card layout requested by the user,Sucesso
