@@ -1199,7 +1199,7 @@ export default function Apontamentos() {
               return (
                 <div 
                   key={block.key} 
-                  className={`bg-[#141414] rounded-xl border border-zinc-900 border-l-4 border-[#af1e59] relative shadow-lg shadow-black/50 mb-4 transition-all duration-200 overflow-hidden ${isExpanded ? 'bg-[#af1e59]/5' : 'bg-[#af1e59]/10'}`}
+                  className={`bg-[#141414] rounded-xl border border-zinc-900 border-l-4 border-emerald-600 relative shadow-lg shadow-black/50 mb-4 transition-all duration-200 overflow-hidden ${isExpanded ? 'bg-emerald-950/5' : 'bg-emerald-950/10'}`}
                 >
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <div
@@ -1224,7 +1224,7 @@ export default function Apontamentos() {
                       {/* Chevron Indicator */}
                       <div className="ml-2 pl-2 border-l border-zinc-900/60 flex items-center justify-center">
                         {isExpanded ? (
-                          <ChevronDown size={14} className="text-[#af1e59]" />
+                          <ChevronDown size={14} className="text-emerald-500" />
                         ) : (
                           <ChevronRight size={14} className="text-zinc-500" />
                         )}
@@ -1232,24 +1232,21 @@ export default function Apontamentos() {
                     </div>
 
                     {/* Linha 1: Identificação, Linha de Máquina e Status do Processo */}
-                    <div className="flex items-center space-x-2 pr-16">
-                      <span className="bg-[#af1e59]/10 border border-[#af1e59]/20 text-[#af1e59] text-xs font-mono font-bold px-2.5 py-0.5 rounded">
+                    <div className="flex items-center space-x-2 pr-24">
+                      <span className="bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 text-xs font-mono font-bold px-2.5 py-0.5 rounded">
                         {(() => {
                           const num = String(block.num_maquina || '');
                           const cleanNum = num.replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '');
                           return `MÁQ: ${cleanNum}`;
                         })()}
                       </span>
-                      <span className="bg-zinc-950 border border-zinc-900 text-zinc-400 text-[9px] font-bold px-2 py-0.5 rounded uppercase max-w-[100px] sm:max-w-[150px] truncate">
-                        {block.processo}
-                      </span>
                       {isSessionActive ? (
-                        <span className="text-blue-400 text-[8px] font-bold uppercase tracking-wider bg-blue-950/20 border border-blue-500/20 px-2 py-0.5 rounded truncate">
-                          ● Em Andamento
+                        <span className="text-blue-400 text-[10px] font-bold uppercase tracking-wider bg-blue-950/20 border border-blue-500/20 px-2 py-0.5 rounded truncate">
+                          ● PROCESSO EM ANDAMENTO
                         </span>
                       ) : (
-                        <span className="text-rose-400 text-[8px] font-bold uppercase tracking-wider bg-rose-950/20 border border-rose-500/20 px-2 py-0.5 rounded truncate">
-                          ● Encerrado
+                        <span className="text-rose-400 text-[10px] font-bold uppercase tracking-wider bg-rose-950/20 border border-rose-500/20 px-2 py-0.5 rounded truncate">
+                          ● PROCESSO ENCERRADO
                         </span>
                       )}
                     </div>
@@ -1257,16 +1254,16 @@ export default function Apontamentos() {
                     {/* Linha 2: Informações do Processo (Alinhadas verticalmente sem embolar) */}
                     <div className="border-t border-zinc-900/60 pt-3.5 space-y-1.5">
                       <div>
-                        <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider block">Colaboradora Ativa</span>
-                        <span className="text-sm font-bold text-zinc-100 flex items-center gap-1 truncate" title={block.colaboradora}>
-                          👤 {block.colaboradora}
+                        <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider block">Operadora</span>
+                        <span className="text-sm font-bold text-zinc-100 flex items-center gap-1 truncate" title={`${block.colaboradora} - [${block.processo}]`}>
+                          👤 {block.colaboradora} - <span className="text-zinc-400 text-xs bg-zinc-900 border border-zinc-800 px-1.5 rounded">[{block.processo}]</span>
                         </span>
                       </div>
                       <div>
-                        <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider block">Operação Atribuída</span>
+                        <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider block">Operação</span>
                         <span className="text-xs font-semibold text-zinc-300 flex items-center gap-1 break-words whitespace-normal leading-snug" title={block.operacao_nome}>
                           {/* Ícone de Máquina de Costura Real */}
-                          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline text-[#af1e59] shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline text-emerald-500 shrink-0">
                             <rect x="1" y="18" width="22" height="3" rx="1.5" /><rect x="3" y="3" width="2" height="11" rx="1" /><line x1="4" y1="14" x2="4" y2="17" /><path d="M 4.5 5 h 11 c 2 0, 3.5 1, 3.5 3 v 10" /><path d="M 4.5 10 c 4 0, 7 1, 10 3.5 c 1 0.8, 1.5 2, 1.5 4.5" /><rect x="20" y="6" width="1" height="5" rx="0.5" /><line x1="16" y1="5" x2="16" y2="2" />
                           </svg>
                           {block.operacao_nome}
@@ -1275,16 +1272,16 @@ export default function Apontamentos() {
                     </div>
 
                     {/* Linha 3: Bloco de Dados Técnicos (Data, Código Curto e Cronômetro) */}
-                    <div className="border-t border-zinc-900/60 pt-3 grid grid-cols-3 gap-2 text-[9px] font-mono text-zinc-400">
+                    <div className="border-t border-zinc-900/60 pt-3 grid grid-cols-3 gap-2 text-xs font-mono text-zinc-400">
                       {/* Coluna 1: Data do Processo */}
                       <div className="flex flex-col">
-                        <span className="text-zinc-600 block text-[7px] uppercase font-bold mb-0.5">Data Processo</span>
+                        <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-0.5">Data Processo</span>
                         <span className="text-zinc-300 truncate">📅 {block.data}</span>
                       </div>
                       
                       {/* Coluna 2: Código Curto com Copiar */}
                       <div className="flex flex-col">
-                        <span className="text-zinc-600 block text-[7px] uppercase font-bold mb-0.5">Código Curto</span>
+                        <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-0.5">Código Curto</span>
                         {(() => {
                           const shortCode = getShortCode(block);
                           const statusDoCard = isSessionActive ? '● PROCESSO EM ANDAMENTO' : '● PROCESSO ENCERRADO';
@@ -1311,8 +1308,8 @@ export default function Apontamentos() {
 
                       {/* Coluna 3: Tempo Corrido/Operação */}
                       <div className="flex flex-col items-end">
-                        <span className="text-zinc-600 block text-[7px] uppercase font-bold mb-0.5">Tempo Operação</span>
-                        <span className="text-zinc-300 font-bold bg-zinc-950 border border-zinc-900 px-1.5 py-0.5 rounded truncate">
+                        <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-0.5">Tempo Operação</span>
+                        <span className="text-zinc-300 font-bold bg-zinc-950 border border-zinc-900 px-1.5 py-0.5 rounded truncate text-sm">
                           ⏱ {(() => {
                             let baseMs = block.tempoTotalMs || 0;
                             if (isSessionActive && activeSessionForBlock && activeSessionForBlock.horario_inicio) {
