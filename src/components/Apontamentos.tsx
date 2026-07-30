@@ -1191,14 +1191,19 @@ export default function Apontamentos() {
                 );
               }
 
-              const somaObservacoes = block.itens.filter((item: any) => 
-                item.observacao && 
-                item.observacao.trim() !== "" && 
-                item.observacao !== "EMPTY" && 
-                item.observacao !== "NULL" &&
-                item.motivo_ocorrencia !== "Finalização Antecipada" &&
-                item.motivo_ocorrencia !== "Finalização Automática"
-              ).length;
+              const uniqueObsSet = new Set<string>();
+              block.itens.forEach((item: any) => {
+                if (item.motivo_ocorrencia !== "Finalização Antecipada" && item.motivo_ocorrencia !== "Finalização Automática") {
+                  const obsStr = item.observacao || '';
+                  obsStr.split('|').forEach((o: string) => {
+                    const trimmed = o.trim();
+                    if (trimmed && trimmed !== "EMPTY" && trimmed !== "NULL") {
+                      uniqueObsSet.add(trimmed);
+                    }
+                  });
+                }
+              });
+              const somaObservacoes = uniqueObsSet.size;
               const finCount = blockFinalizacoes.length;
               const hasObs = somaObservacoes > 0;
               const hasFin = finCount > 0;
@@ -1402,7 +1407,7 @@ export default function Apontamentos() {
 
                   {/* Detalhes expandidos (Accordion/Sanfona) */}
                   {isExpanded && (
-                    <div className="border-t border-zinc-900/60 bg-transparent px-5 py-5 space-y-4 font-mono text-xs">
+                    <div className="border-t border-emerald-500/30 bg-emerald-950/10 px-5 py-5 space-y-4 font-mono text-xs shadow-inner shadow-emerald-500/10">
                       {/* Tempo de Produção Destacado */}
                       {(() => {
                         let totalBlockMs = block.itens.reduce((acc: number, curr: any) => {
@@ -1517,7 +1522,7 @@ export default function Apontamentos() {
 
                         return (
                           <div className="space-y-3">
-                            <div className="bg-[#141414] border border-zinc-900 p-4 rounded-xl space-y-4 shadow-lg shadow-black/45">
+                            <div className="bg-emerald-950/20 border border-emerald-900/50 p-4 rounded-xl space-y-4 shadow-lg shadow-emerald-900/20">
                               {/* Top 3-Column Grid */}
                               <div className="grid grid-cols-3 gap-2.5 text-center">
                                 
@@ -1658,18 +1663,24 @@ export default function Apontamentos() {
                           // Hora extra vem sempre "Não" por padrão, exceto se banco retornar exatamente 's'
                           const horaExtra = item.hora_extra === 's' ? 'Sim' : 'Não';
 
-                          const regNumber = block.itens.length - itemIdx;
+                          const regNumber = displayItens.length - itemIdx;
+                          
+                          // Lógica de desduplicação de observações acumuladas (exibe apenas as novas observações para este registro)
+                          const obsArray = (item.observacao || '').split('|').map((o: string) => o.trim()).filter((o: string) => o !== "" && o !== "EMPTY" && o !== "NULL");
+                          const prevItem = displayItens[itemIdx + 1];
+                          const prevObsArray = prevItem ? (prevItem.observacao || '').split('|').map((o: string) => o.trim()).filter((o: string) => o !== "" && o !== "EMPTY" && o !== "NULL") : [];
+                          const newObs = obsArray.filter((o: string) => !prevObsArray.includes(o));
 
                           return (
                             <div 
                               key={item.id || itemIdx} 
-                              className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3 shadow-lg shadow-black/50 mb-3 last:mb-0 relative overflow-hidden"
+                              className="bg-[#04120c]/60 border border-emerald-900/40 rounded-xl p-4 space-y-3 shadow-lg shadow-black/50 mb-3 last:mb-0 relative overflow-hidden"
                             >
                               {/* Linha de Título Gigante */}
                               <div className="border-b border-zinc-950 pb-3 flex flex-col gap-3">
                                 <div className="flex justify-between items-start gap-2">
                                   <div className="flex items-center gap-2.5">
-                                    <span className="bg-zinc-800 text-zinc-400 text-[10px] font-black px-1.5 py-0.5 rounded border border-zinc-700/50">
+                                    <span className="bg-blue-950/40 text-blue-400 text-xs font-black px-2 py-0.5 rounded border border-blue-900/50 shadow-sm shadow-blue-900/20">
                                       #{regNumber}
                                     </span>
                                     <div className="text-base font-black text-emerald-400 tracking-wide flex items-center gap-1.5 leading-none">
@@ -1736,17 +1747,18 @@ export default function Apontamentos() {
                               </div>
 
                               {/* Observação correspondente no log */}
-                              {item.observacao && 
-                               item.observacao.trim() !== "" && 
-                               item.observacao !== "EMPTY" && 
-                               item.observacao !== "NULL" && 
+                              {newObs.length > 0 && 
                                item.motivo_ocorrencia !== "Finalização Antecipada" &&
                                item.motivo_ocorrencia !== "Finalização Automática" && (
-                                 <div className="mt-3 p-3 bg-amber-950/20 border border-amber-500/30 rounded-lg text-[10px] text-amber-400">
+                                 <div className="mt-3 p-3 bg-amber-950/20 border border-amber-500/30 rounded-lg text-[10px] text-amber-400 shadow-inner shadow-amber-900/10">
                                    <div className="font-bold uppercase text-[8px] tracking-wider mb-1 flex items-center gap-1">
                                      ✉ OBSERVAÇÃO / JUSTIFICATIVA:
                                    </div>
-                                   <span className="italic font-medium">"{item.observacao}"</span>
+                                   <div className="flex flex-col gap-1.5">
+                                     {newObs.map((obs: string, oIdx: number) => (
+                                       <span key={oIdx} className="italic font-medium">"{obs}"</span>
+                                     ))}
+                                   </div>
                                  </div>
                               )}
 
