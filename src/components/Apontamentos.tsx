@@ -1225,12 +1225,12 @@ export default function Apontamentos() {
               return (
                 <div 
                   key={block.key} 
-                  className={`rounded-xl border relative mb-4 transition-all duration-200 overflow-hidden ${wrapperClass}`}
+                  className={`rounded-xl border relative mb-4 transition-colors transition-shadow duration-200 overflow-hidden ${wrapperClass}`}
                 >
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <button
                     onClick={() => toggleGroup(block.key)}
-                    className={`w-full p-4 hover:bg-zinc-900/40 transition-all duration-200 font-mono focus:outline-none cursor-pointer text-left ${headerBgClass} ${headerBorderClass}`}
+                    className={`w-full p-4 hover:bg-zinc-900/40 transition-colors duration-200 font-mono focus:outline-none cursor-pointer text-left ${headerBgClass} ${headerBorderClass}`}
                   >
                     {/* Alertas de Notificação (Restaurados no topo) */}
                     {hasObs && (
