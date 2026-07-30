@@ -1191,33 +1191,43 @@ export default function Apontamentos() {
                 );
               }
 
-              const obsCount = block.itens.filter((item: any) => {
-                const temObsReal = item.observacao && item.observacao.trim() !== "" && item.observacao !== "EMPTY" && item.observacao !== "NULL";
-                return temObsReal;
-              }).length;
+              const somaObservacoes = block.itens.filter((item: any) => 
+                item.observacao && 
+                item.observacao.trim() !== "" && 
+                item.observacao !== "EMPTY" && 
+                item.observacao !== "NULL" &&
+                item.motivo_ocorrencia !== "Finalização Antecipada" &&
+                item.motivo_ocorrencia !== "Finalização Automática"
+              ).length;
               const finCount = blockFinalizacoes.length;
-              const hasObs = obsCount > 0;
+              const hasObs = somaObservacoes > 0;
               const hasFin = finCount > 0;
               const hasFinalizacaoAutomatica = block.itens.some((i: any) => i.motivo_ocorrencia === 'Finalização Automática');
               const hasFinalizacaoAntecipada = block.itens.some((i: any) => i.motivo_ocorrencia === 'Finalização Antecipada') || finCount > 0;
 
+              const headerBgClass = isExpanded 
+                ? 'bg-emerald-950/30 border-emerald-500/35 text-emerald-400 shadow-lg shadow-emerald-950/50' 
+                : 'bg-[#141414] border-zinc-900 text-zinc-300';
+                
+              const headerBorderClass = isExpanded
+                ? 'border-l-4 border-l-emerald-500 border-t-emerald-500/30 border-r-emerald-500/30 border-b-zinc-900/60'
+                : 'border-l-4 border-l-zinc-800 border-zinc-900';
+
               return (
                 <div 
                   key={block.key} 
-                  className={`rounded-xl border border-[#00624c]/50 border-l-4 border-[#00624c] relative shadow-lg shadow-black/50 mb-4 transition-all duration-200 overflow-hidden ${isExpanded ? 'bg-[#00624c]/30' : 'bg-[#00624c]/22'}`}
+                  className={`rounded-xl border border-zinc-900/50 relative shadow-lg shadow-black/50 mb-4 transition-all duration-200 overflow-hidden ${isExpanded ? 'bg-[#00624c]/10' : 'bg-[#141414]'}`}
                 >
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
-                  <div
+                  <button
                     onClick={() => toggleGroup(block.key)}
-                    className="p-5 space-y-4 cursor-pointer w-full text-left outline-none select-none active:bg-transparent focus:outline-none [webkit-tap-highlight-color:transparent]"
-                    role="button"
-                    tabIndex={0}
+                    className={`w-full p-4 hover:bg-zinc-900/50 transition-all duration-200 font-mono focus:outline-none cursor-pointer rounded-t-xl text-left ${headerBgClass} ${headerBorderClass}`}
                   >
                     {/* Alertas de Notificação (Restaurados no topo) */}
                     {hasObs && (
                       <div className="flex items-center space-x-2 mb-2 pr-8 sm:pr-32">
-                        <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${obsCount} observações registradas`}>
-                          <Mail size={12} className="inline mr-0.5" /> +{obsCount}
+                        <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${somaObservacoes} observações registradas`}>
+                          <Mail size={12} className="inline mr-0.5" /> +{somaObservacoes}
                         </span>
                       </div>
                     )}
@@ -1384,7 +1394,7 @@ export default function Apontamentos() {
                         </div>
                       );
                     })()}
-                  </div>
+                  </button>
 
                   {/* Detalhes expandidos (Accordion/Sanfona) */}
                   {isExpanded && (
