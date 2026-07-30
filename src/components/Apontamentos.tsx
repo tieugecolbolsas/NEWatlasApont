@@ -1225,7 +1225,7 @@ export default function Apontamentos() {
               return (
                 <div 
                   key={block.key} 
-                  className={`rounded-xl border relative mb-4 transition-colors transition-shadow duration-200 overflow-hidden ${wrapperClass}`}
+                  className={`rounded-xl border relative mb-4 transition-colors transition-shadow duration-200 overflow-clip transform-gpu backface-hidden ${wrapperClass}`}
                 >
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <button
@@ -1397,7 +1397,7 @@ export default function Apontamentos() {
                               <span>{soma} / {metaAlvo} ({percent.toFixed(0)}%)</span>
                             </div>
                           </div>
-                          <div className="w-full bg-zinc-950 rounded-full h-1 border border-zinc-900 overflow-hidden">
+                          <div className="w-full bg-zinc-950 rounded-full h-1 border border-zinc-900 overflow-clip transform-gpu backface-hidden">
                             <div className={`${progColor} h-full rounded-full transition-all duration-500`} style={{ width: `${percent}%` }}></div>
                           </div>
                         </div>
@@ -1407,7 +1407,7 @@ export default function Apontamentos() {
 
                   {/* Detalhes expandidos (Accordion/Sanfona) */}
                   {isExpanded && (
-                    <div className="border-t border-emerald-500/30 bg-emerald-950/10 px-5 py-5 space-y-4 font-mono text-xs shadow-inner shadow-emerald-500/10">
+                    <div className="border-t border-emerald-500/30 bg-emerald-950/10 px-5 py-5 space-y-4 font-mono text-xs shadow-inner shadow-emerald-500/10 transform-gpu backface-hidden">
                       {/* Tempo de Produção Destacado */}
                       {(() => {
                         let totalBlockMs = block.itens.reduce((acc: number, curr: any) => {
@@ -1674,7 +1674,7 @@ export default function Apontamentos() {
                           return (
                             <div 
                               key={item.id || itemIdx} 
-                              className="bg-[#04120c]/60 border border-emerald-900/40 rounded-xl p-4 space-y-3 shadow-lg shadow-black/50 mb-3 last:mb-0 relative overflow-hidden"
+                              className="bg-[#04120c]/60 border border-emerald-900/40 rounded-xl p-4 space-y-3 shadow-lg shadow-black/50 mb-3 last:mb-0 relative overflow-clip transform-gpu backface-hidden"
                             >
                               {/* Linha de Título Gigante */}
                               <div className="border-b border-zinc-950 pb-3 flex flex-col gap-3">
