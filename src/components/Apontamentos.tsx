@@ -1191,10 +1191,15 @@ export default function Apontamentos() {
                 );
               }
 
-              const obsCount = block.itens.filter((item: any) => item.observacao && item.observacao.trim().length > 0).length;
+              const obsCount = block.itens.filter((item: any) => {
+                const temObsReal = item.observacao && item.observacao.trim() !== "" && item.observacao !== "EMPTY" && item.observacao !== "NULL";
+                return temObsReal;
+              }).length;
               const finCount = blockFinalizacoes.length;
               const hasObs = obsCount > 0;
               const hasFin = finCount > 0;
+              const hasFinalizacaoAutomatica = block.itens.some((i: any) => i.motivo_ocorrencia === 'Finalização Automática');
+              const hasFinalizacaoAntecipada = block.itens.some((i: any) => i.motivo_ocorrencia === 'Finalização Antecipada') || finCount > 0;
 
               return (
                 <div 
@@ -1209,18 +1214,11 @@ export default function Apontamentos() {
                     tabIndex={0}
                   >
                     {/* Alertas de Notificação (Restaurados no topo) */}
-                    {(hasObs || hasFin) && (
+                    {hasObs && (
                       <div className="flex items-center space-x-2 mb-2 pr-8 sm:pr-32">
-                        {hasObs && (
-                          <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${obsCount} observações registradas`}>
-                            <Mail size={12} className="inline mr-0.5" /> +{obsCount}
-                          </span>
-                        )}
-                        {hasFin && (
-                          <span className="text-rose-500 bg-rose-950/30 border border-rose-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${finCount} finalizações antecipadas`}>
-                            <Mail size={12} className="inline mr-0.5" /> +{finCount}
-                          </span>
-                        )}
+                        <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${obsCount} observações registradas`}>
+                          <Mail size={12} className="inline mr-0.5" /> +{obsCount}
+                        </span>
                       </div>
                     )}
 
@@ -1248,13 +1246,25 @@ export default function Apontamentos() {
                     <div className="border-t border-zinc-900/60 pt-4 space-y-2">
                       <div>
                         <span className="text-zinc-500 text-[9px] uppercase font-bold tracking-wider block mb-0.5">Operadora</span>
-                        <div className="flex justify-between items-center w-full">
-                          <span className="text-[15px] font-bold text-zinc-100 flex items-center gap-1 truncate" title={`${block.colaboradora} - [${block.processo}]`}>
+                        <div className="flex justify-between items-start w-full">
+                          <span className="text-[15px] font-bold text-zinc-100 flex items-center gap-1 truncate mt-0.5" title={`${block.colaboradora} - [${block.processo}]`}>
                             👤 {block.colaboradora}
                           </span>
-                          <span className="text-zinc-400 text-xs font-bold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded shrink-0">
-                            [{block.processo}]
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <span className="text-zinc-400 text-xs font-bold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded shrink-0">
+                              [{block.processo}]
+                            </span>
+                            {hasFinalizacaoAutomatica && (
+                              <span className="bg-rose-950/40 border border-rose-500/20 text-rose-400 text-[8px] px-2.5 py-1 mt-2 rounded font-bold uppercase tracking-wider flex items-center gap-1 w-fit text-right">
+                                ⚠ FINALIZAÇÃO AUTOMÁTICA
+                              </span>
+                            )}
+                            {hasFinalizacaoAntecipada && !hasFinalizacaoAutomatica && (
+                              <span className="bg-rose-950/40 border border-rose-500/20 text-rose-400 text-[8px] px-2.5 py-1 mt-2 rounded font-bold uppercase tracking-wider flex items-center gap-1 w-fit text-right">
+                                ⚠ FINALIZAÇÃO ANTECIPADA
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div>
