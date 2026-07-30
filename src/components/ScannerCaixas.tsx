@@ -1373,13 +1373,13 @@ export default function ScannerCaixas() {
         {/* LADO ESQUERDO: SCANNER DE QR CODE DE MAQUINA */}
         <div className="lg:col-span-5 flex flex-col gap-6">
           
-          <div className="bg-zinc-950 border border-zinc-900 rounded-xl p-5 md:p-6 relative overflow-hidden">
+          <div className="bg-zinc-950 border border-white/30 rounded-xl p-5 md:p-6 relative overflow-hidden">
             <div className="flex flex-col gap-4">
               <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-400 block">
                 ESCANEIE O QR CODE DA MÁQUINA
               </span>
 
-              <div className="relative w-full aspect-[4/3] bg-black rounded-lg overflow-hidden border border-zinc-800 shadow-2xl flex items-center justify-center @container">
+              <div className="relative w-full aspect-[4/3] bg-black rounded-lg overflow-hidden border border-white/30 shadow-2xl flex items-center justify-center @container">
                 <div id={readerId} className="w-full h-full rounded-xl overflow-hidden [&>video]:object-cover [&_#qr-shaded-region]:hidden" />
                 
                 {!cameraDisponivel && (
@@ -1418,7 +1418,7 @@ export default function ScannerCaixas() {
               </div>
 
               {/* PAINEL DE SIMULAÇÃO RÁPIDA */}
-              <div className="pt-4 border-t border-zinc-900 mt-2 space-y-3">
+              <div className="pt-4 border-t border-white/30 mt-2 space-y-3">
                 <span className="text-[9px] font-mono uppercase tracking-widest font-bold text-zinc-500 block">
                   Número da Máquina ou Código Curto
                 </span>
@@ -1429,7 +1429,7 @@ export default function ScannerCaixas() {
                     placeholder="Número da Máquina ou Código Curto"
                     value={manualCodeInput}
                     onChange={(e) => setManualCodeInput(e.target.value)}
-                    className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-[#00624C]"
+                    className="flex-1 bg-zinc-900 border border-white/30 rounded px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-[#00624C]"
                   />
                   <button
                     type="button"
@@ -1456,8 +1456,8 @@ export default function ScannerCaixas() {
         {/* LADO DIREITO: HISTÓRICO DE APONTAMENTOS DE HOJE */}
         <div className="lg:col-span-7 flex flex-col">
           
-          <div className="border border-zinc-900 rounded-xl bg-zinc-950/40 p-5 md:p-6 flex flex-col h-full min-h-[450px]">
-            <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-zinc-900">
+          <div className="border border-white/30 rounded-xl bg-zinc-950/40 p-5 md:p-6 flex flex-col h-full min-h-[450px]">
+            <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-white/30">
               <div className="flex items-center gap-2">
                 <History className="text-zinc-400" size={16} />
                 <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-300 font-black">
@@ -1469,7 +1469,7 @@ export default function ScannerCaixas() {
 
             <div className="flex-1 overflow-y-auto max-h-[500px] space-y-3 pr-1">
               {historicoHoje.length === 0 ? (
-                <div className="text-center py-16 text-zinc-600 font-mono text-xs uppercase tracking-widest border border-dashed border-zinc-900 rounded-lg">
+                <div className="text-center py-16 text-zinc-600 font-mono text-xs uppercase tracking-widest border border-dashed border-white/30 rounded-lg">
                   Nenhum apontamento finalizado hoje neste terminal.
                 </div>
               ) : (
@@ -1477,10 +1477,10 @@ export default function ScannerCaixas() {
                   {historicoHoje.map((registro, idx) => (
                     <div 
                       key={registro.id || idx} 
-                      className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg md:hover:border-[#00624C]/40 transition-colors space-y-3 select-none active:bg-transparent focus:outline-none [webkit-tap-highlight-color:transparent]"
+                      className="bg-zinc-900 border border-white/30 p-4 rounded-lg md:hover:border-[#00624C]/40 transition-colors space-y-3 select-none active:bg-transparent focus:outline-none [webkit-tap-highlight-color:transparent]"
                     >
                       {/* Header do Log */}
-                      <div className="flex items-center justify-between border-b border-zinc-900/40 pb-2">
+                      <div className="flex items-center justify-between border-b border-white/20 pb-2">
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 bg-[#00624C]/10 border border-[#00624C]/20 text-[#00624C] text-[9px] font-mono font-bold rounded">
                             {registro.num_maquina}
@@ -1512,7 +1512,7 @@ export default function ScannerCaixas() {
                       </div>
 
                       {/* Resultados da Produção */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 border-t border-zinc-900/20 text-[10px] font-mono gap-2">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 border-t border-white/20 text-[10px] font-mono gap-2">
                         <div className="flex flex-wrap gap-3">
                           <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -1562,10 +1562,10 @@ export default function ScannerCaixas() {
               initial={{ opacity: 0, scale: 0.95, y: 15 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-zinc-950 border border-zinc-900 rounded-xl w-full max-w-md max-h-[92vh] overflow-y-auto p-3.5 sm:p-5 space-y-3 sm:space-y-4 shadow-2xl scrollbar-thin my-auto"
+              className="bg-zinc-950 border border-white/30 rounded-xl w-full max-w-md max-h-[92vh] overflow-y-auto p-3.5 sm:p-5 space-y-3 sm:space-y-4 shadow-2xl scrollbar-thin my-auto"
             >
               {/* Header do Form */}
-              <div className="flex justify-between items-center border-b border-zinc-900 pb-3">
+              <div className="flex justify-between items-center border-b border-white/30 pb-3">
                 <div className="flex items-center gap-2">
                   <Layers className="text-[#00624C]" size={20} />
                   <div>
@@ -1589,7 +1589,7 @@ export default function ScannerCaixas() {
               <div className="space-y-3 font-mono text-xs">
                 
                 {/* 2. Display Bar de Leitura Travada (Substitui Máquina Alvo / Cód. Curto Gerado) */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded px-4 py-3 text-center text-sm font-bold font-mono text-zinc-300">
+                <div className="bg-zinc-900 border border-white/30 rounded px-4 py-3 text-center text-sm font-bold font-mono text-zinc-300">
                   N.º {formMaquina} | {formTipoMaquina}
                 </div>
 
@@ -1931,12 +1931,12 @@ export default function ScannerCaixas() {
               initial={{ opacity: 0, scale: 0.95, y: 15 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-zinc-950 border border-zinc-900 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 md:p-6 space-y-4 shadow-2xl scrollbar-thin my-auto"
+              className="bg-zinc-950 border border-white/30 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 md:p-6 space-y-4 shadow-2xl scrollbar-thin my-auto"
             >
               {/* Informações Atuais de Leitura (READ-ONLY) */}
-              <div className="space-y-3 bg-zinc-900/40 p-4 rounded-lg border border-zinc-900/60 font-mono text-[11px] text-zinc-400">
+              <div className="space-y-3 bg-zinc-900/40 p-4 rounded-lg border border-white/30 font-mono text-[11px] text-zinc-400">
                 {/* Linha de Cabeçalho (Manutenção e Código) */}
-                <div className="flex justify-between items-center border-b border-zinc-900/40 pb-3 mb-1">
+                <div className="flex justify-between items-center border-b border-white/20 pb-3 mb-1">
                   <span className="text-neutral-500 font-mono text-[9px] font-bold">COD: {activeSession.codigo_manual_curto}</span>
                   <div className="flex items-center gap-3">
                     {!showQualidadeForm && !showManutencaoForm && (

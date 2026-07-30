@@ -135,7 +135,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
-                className="w-full pointer-events-auto bg-zinc-950/95 border border-zinc-800 rounded-lg p-4 shadow-2xl flex items-start gap-3 backdrop-blur-md"
+                className="w-full pointer-events-auto bg-zinc-950/95 border border-white/30 rounded-lg p-4 shadow-2xl flex items-start gap-3 backdrop-blur-md"
               >
                 {isSuccess ? (
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />

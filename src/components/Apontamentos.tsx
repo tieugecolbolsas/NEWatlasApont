@@ -778,7 +778,7 @@ export default function Apontamentos() {
       </div>
 
       {/* FILTER PANEL */}
-      <div className="bg-zinc-950 border border-zinc-900 rounded-xl p-5 space-y-4">
+      <div className="bg-zinc-950 border border-white/30 rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2">
           <Filter size={14} className="text-[#00624C]" />
           <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-300">
@@ -979,7 +979,7 @@ export default function Apontamentos() {
 
       {/* POINTING REGISTRATION DRAWER (COLLAPSIBLE FORM) */}
       {showForm && (
-        <div className="border border-zinc-900 bg-zinc-950/20 p-4 sm:p-5 rounded-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto scrollbar-thin">
+        <div className="border border-white/30 bg-zinc-950/20 p-4 sm:p-5 rounded-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto scrollbar-thin">
           <span className="text-[10px] font-mono uppercase tracking-widest font-black text-white block mb-4">
             REGISTRAR APONTAMENTO MANUAL NO TERMINAL
           </span>
@@ -1069,7 +1069,7 @@ export default function Apontamentos() {
       )}
 
       {/* AUDIT LOG COLLAPSIBLE LIST */}
-      <div className="border border-zinc-900 rounded-xl bg-zinc-950/40 p-5 flex flex-col space-y-4">
+      <div className="border border-white/30 rounded-xl bg-zinc-950/40 p-5 flex flex-col space-y-4">
         
         <div className="flex items-center justify-between mb-2 pb-2 border-b border-zinc-900/60">
           <div className="flex items-center gap-2">
@@ -1220,7 +1220,7 @@ export default function Apontamentos() {
                 
               const wrapperClass = isExpanded
                 ? 'bg-emerald-950/20 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                : 'bg-[#141414] border-zinc-900/50 shadow-black/50';
+                : 'bg-[#141414] border-white/20 shadow-black/50';
 
               return (
                 <div 

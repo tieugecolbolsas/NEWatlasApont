@@ -91,24 +91,24 @@ export default function ControleCaixas() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="border border-zinc-800 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60 shadow-lg shadow-[#00624C]/5 relative overflow-hidden">
+        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60 shadow-lg shadow-[#00624C]/5 relative overflow-hidden">
           <div className="absolute right-3 top-3 opacity-15"><PackageCheck size={28} className="text-[#00624C]" /></div>
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Pecas Validadas</span>
           <span className="text-3xl font-mono font-bold text-white mt-2">{stats.totalPecas}</span>
         </div>
-        <div className="border border-zinc-800 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
+        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Lotes Registrados</span>
           <span className="text-3xl font-mono font-bold text-white mt-2">{stats.caixasTotais}</span>
         </div>
-        <div className="border border-zinc-800 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
+        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Validadas</span>
           <span className="text-3xl font-mono font-bold text-emerald-500 mt-2">{stats.caixasValidadas}</span>
         </div>
-        <div className="border border-zinc-800 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
+        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Pendentes</span>
           <span className="text-3xl font-mono font-bold text-amber-500 mt-2">{stats.caixasPendentes}</span>
         </div>
-        <div className="border border-zinc-800 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
+        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Rejeitadas</span>
           <span className="text-3xl font-mono font-bold text-rose-500 mt-2">{stats.caixasRejeitadas}</span>
         </div>
@@ -116,7 +116,7 @@ export default function ControleCaixas() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Registration Form */}
-        <div className="lg:col-span-1 border border-zinc-800 rounded-lg p-6 bg-zinc-900/30 flex flex-col h-fit">
+        <div className="lg:col-span-1 border border-white/30 rounded-lg p-6 bg-zinc-900/30 flex flex-col h-fit">
           <div className="flex items-center gap-2 mb-4">
             <ClipboardList className="w-4 h-4 text-[#00624C]" />
             <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-300">
@@ -135,7 +135,7 @@ export default function ControleCaixas() {
                 value={novoCodigo}
                 onChange={(e) => setNovoCodigo(e.target.value)}
                 placeholder="EX: CX-38915"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-sm font-mono text-zinc-100 focus:outline-none focus:border-[#00624C] uppercase"
+                className="w-full bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-sm font-mono text-zinc-100 focus:outline-none focus:border-[#00624C] uppercase"
               />
             </div>
 
@@ -149,7 +149,7 @@ export default function ControleCaixas() {
                 value={novaOperadora}
                 onChange={(e) => setNovaOperadora(e.target.value)}
                 placeholder="NOME DA OPERADORA"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-sm font-mono text-zinc-100 focus:outline-none focus:border-[#00624C] uppercase"
+                className="w-full bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-sm font-mono text-zinc-100 focus:outline-none focus:border-[#00624C] uppercase"
               />
             </div>
 
@@ -161,7 +161,7 @@ export default function ControleCaixas() {
                 <select
                   value={novoProcesso}
                   onChange={(e) => setNovoProcesso(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C]"
+                  className="w-full bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C]"
                 >
                   <option value="CADÊNCIA">CADÊNCIA</option>
                   <option value="EMBALAGEM">EMBALAGEM</option>
@@ -180,7 +180,7 @@ export default function ControleCaixas() {
                   required
                   value={novaQtd}
                   onChange={(e) => setNovaQtd(Number(e.target.value))}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono"
+                  className="w-full bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono"
                 />
               </div>
             </div>
@@ -196,7 +196,7 @@ export default function ControleCaixas() {
         </div>
 
         {/* List of Registered Boxes */}
-        <div className="lg:col-span-2 border border-zinc-800 rounded-lg p-6 bg-zinc-900/30 flex flex-col">
+        <div className="lg:col-span-2 border border-white/30 rounded-lg p-6 bg-zinc-900/30 flex flex-col">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-2">
               <Box className="w-4 h-4 text-[#00624C]" />
@@ -212,14 +212,14 @@ export default function ControleCaixas() {
                 placeholder="Filtrar caixas ou colaboradoras..."
                 value={filtro}
                 onChange={(e) => setFiltro(e.target.value)}
-                className="pl-9 pr-4 py-1.5 bg-zinc-950 border border-zinc-800 rounded text-xs text-white focus:outline-none focus:border-[#00624C] transition-colors font-mono"
+                className="pl-9 pr-4 py-1.5 bg-zinc-950 border border-white/30 rounded text-xs text-white focus:outline-none focus:border-[#00624C] transition-colors font-mono"
               />
             </div>
           </div>
 
           <div className="overflow-x-auto min-w-0">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="text-[9px] uppercase tracking-wider text-zinc-500 border-b border-zinc-800">
+              <thead className="text-[9px] uppercase tracking-wider text-zinc-500 border-b border-white/30">
                 <tr>
                   <th className="py-3 px-4">LOTE (CX)</th>
                   <th className="py-3 px-4">COLABORADORA</th>
@@ -229,13 +229,13 @@ export default function ControleCaixas() {
                   <th className="py-3 px-4 text-center">AÇÕES</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-900">
+              <tbody className="divide-y divide-white/10">
                 {filteredCaixas.map((c) => (
                   <tr key={c.id} className="hover:bg-zinc-900/30 transition-colors">
                     <td className="py-3.5 px-4 font-bold text-white">{c.codigo}</td>
                     <td className="py-3.5 px-4 font-sans text-zinc-300 uppercase font-semibold text-[11px] tracking-wide">{c.operadora}</td>
                     <td className="py-3.5 px-4">
-                      <span className="bg-zinc-950 border border-zinc-800 text-[10px] px-2 py-0.5 rounded font-bold text-zinc-400">
+                      <span className="bg-zinc-950 border border-white/30 text-[10px] px-2 py-0.5 rounded font-bold text-zinc-400">
                         {c.processo}
                       </span>
                     </td>

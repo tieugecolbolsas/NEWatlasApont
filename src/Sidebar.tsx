@@ -46,13 +46,13 @@ export default function Sidebar({
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} 
         ${isSidebarCollapsed ? 'md:-ml-72 md:opacity-0 md:border-r-0' : 'md:translate-x-0 md:ml-0 md:border-r md:opacity-100'}
         ${isDark 
-          ? 'bg-[#0a0a0a] border-neutral-900 text-[#ffffff]' 
+          ? 'bg-[#0a0a0a] border-white/20 text-[#ffffff]' 
           : 'bg-white border-neutral-200 text-black shadow-2xl md:shadow-none shadow-neutral-400'
         }`}
     >
       <div className="flex flex-col h-full">
         {/* Logo & Banner Section */}
-        <div className="px-4 py-6 border-b border-neutral-900 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[170px]">
+        <div className="px-4 py-6 border-b border-white/20 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[170px]">
           {/* Unified Celestial Logo Container */}
           <div className="relative flex items-center justify-center w-40 h-40 select-none">
             {/* Celestial Grid & Orbits Background */}
@@ -164,7 +164,7 @@ export default function Sidebar({
       </div>
 
       {/* User Identity and Operations Section At Base */}
-      <div className="p-4 border-t border-neutral-900 bg-neutral-950/20">
+      <div className="p-4 border-t border-white/20 bg-neutral-950/20">
         <div className="flex items-center gap-3 mb-4" id="sidebar-user-block">
           <div className="w-9 h-9 rounded-full bg-[#00624C]/10 border-2 border-[#00624C] flex items-center justify-center font-sans font-black text-xs text-[#00624C]">
             {user?.email?.charAt(0).toUpperCase() || 'U'}

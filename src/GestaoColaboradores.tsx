@@ -96,7 +96,7 @@ export default function GestaoColaboradores({
           className={`border rounded-lg p-5 flex flex-col items-center justify-center transition-all cursor-pointer ${
             activeTab === 'ativa' 
               ? 'border-[#00624C] bg-[#00624C]/5 shadow-[0_0_15px_rgba(90,24,154,0.15)]' 
-              : 'border-zinc-800 bg-zinc-900/20 hover:border-zinc-700'
+              : 'border-white/30 bg-zinc-900/20 hover:border-white/50'
           }`}
         >
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 mb-1">Ativas</span>
@@ -108,7 +108,7 @@ export default function GestaoColaboradores({
           className={`border rounded-lg p-5 flex flex-col items-center justify-center transition-all cursor-pointer ${
             activeTab === 'ferias' 
               ? 'border-emerald-500 bg-emerald-500/5 shadow-[0_0_15px_rgba(16,185,129,0.1)]' 
-              : 'border-zinc-800 bg-zinc-900/20 hover:border-zinc-700'
+              : 'border-white/30 bg-zinc-900/20 hover:border-white/50'
           }`}
         >
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 mb-1">Férias</span>
@@ -120,7 +120,7 @@ export default function GestaoColaboradores({
           className={`border rounded-lg p-5 flex flex-col items-center justify-center transition-all cursor-pointer ${
             activeTab === 'afastamento' 
               ? 'border-amber-500 bg-amber-500/5 shadow-[0_0_15px_rgba(245,158,11,0.1)]' 
-              : 'border-zinc-800 bg-zinc-900/20 hover:border-zinc-700'
+              : 'border-white/30 bg-zinc-900/20 hover:border-white/50'
           }`}
         >
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 mb-1">Afastamento</span>
@@ -132,7 +132,7 @@ export default function GestaoColaboradores({
           className={`border rounded-lg p-5 flex flex-col items-center justify-center transition-all cursor-pointer ${
             activeTab === 'inativa' 
               ? 'border-rose-500 bg-rose-500/5 shadow-[0_0_15px_rgba(239,68,68,0.1)]' 
-              : 'border-zinc-800 bg-zinc-900/20 hover:border-zinc-700'
+              : 'border-white/30 bg-zinc-900/20 hover:border-white/50'
           }`}
         >
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 mb-1">Inativas</span>
@@ -141,7 +141,7 @@ export default function GestaoColaboradores({
       </div>
 
       {/* Action and Filter Controls */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-zinc-900/20 border border-zinc-800/80 p-4 rounded-lg">
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-zinc-900/20 border border-white/30 p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
           {/* Role selector */}
           <div className="flex flex-col gap-1">
@@ -149,7 +149,7 @@ export default function GestaoColaboradores({
             <select
               value={selectedCargo}
               onChange={(e) => setSelectedCargo(e.target.value)}
-              className="bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-[#00624C]"
+              className="bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-[#00624C]"
             >
               {uniqueCargos.map((cargo) => (
                 <option key={cargo} value={cargo}>
@@ -169,7 +169,7 @@ export default function GestaoColaboradores({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por nome ou cargo..."
-                className="w-full pl-9 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-[#00624C]"
+                className="w-full pl-9 pr-4 py-2.5 bg-zinc-950 border border-white/30 rounded text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-[#00624C]"
               />
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function GestaoColaboradores({
       </div>
 
       {/* Main List Table */}
-      <div className="border border-zinc-800 rounded-lg p-6 bg-zinc-900/40 relative">
+      <div className="border border-white/30 rounded-lg p-6 bg-zinc-900/40 relative">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 space-y-3">
             <div className="w-8 h-8 border-2 border-t-transparent border-[#00624C] rounded-full animate-spin" />
@@ -195,7 +195,7 @@ export default function GestaoColaboradores({
         ) : (
           <div className="overflow-x-auto min-w-0">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="text-[9px] uppercase tracking-wider text-zinc-500 border-b border-zinc-800">
+              <thead className="text-[9px] uppercase tracking-wider text-zinc-500 border-b border-white/30">
                 <tr>
                   <th className="py-3 px-4">NOME COMPLETO</th>
                   <th className="py-3 px-4">CARGO / SETOR</th>

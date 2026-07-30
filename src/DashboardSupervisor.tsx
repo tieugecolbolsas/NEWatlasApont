@@ -42,7 +42,7 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
         {/* MOBILE BAR (Hidden on Desktop) */}
         <div 
           id="dashboard-mobile-bar"
-          className="md:hidden w-full h-14 px-4 flex items-center justify-between transition-colors duration-300 sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-zinc-900 text-white shrink-0"
+          className="md:hidden w-full h-14 px-4 flex items-center justify-between transition-colors duration-300 sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-white/30 text-white shrink-0"
         >
           <div className="relative flex items-center justify-center w-32 h-11 select-none overflow-hidden">
             {/* Celestial Grid & Orbits Background */}
@@ -188,7 +188,7 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
           </div>
 
           {/* FOOTER */}
-          <footer className="h-12 border-t border-neutral-900 bg-neutral-950/30 backdrop-blur-sm text-[9px] uppercase tracking-widest font-mono font-bold flex items-center justify-between px-6 text-neutral-600 mt-auto shrink-0 animate-none">
+          <footer className="h-12 border-t border-white/20 bg-neutral-950/30 backdrop-blur-sm text-[9px] uppercase tracking-widest font-mono font-bold flex items-center justify-between px-6 text-neutral-600 mt-auto shrink-0 animate-none">
             <span className="text-right text-[#00624C]">SISTEMA OPERACIONAL VER. 0.0.1 alpha</span>
           </footer>
         </main>

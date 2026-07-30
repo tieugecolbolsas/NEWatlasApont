@@ -734,7 +734,7 @@ export default function StatusMaquinas() {
       </div>
 
       {/* Linha Horizontal Dedicada de Filtros Rápidos de Status */}
-      <div className="w-full space-y-2.5 border-b border-zinc-900/60 pb-5">
+      <div className="w-full space-y-2.5 border-b border-white/20 pb-5">
         <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-500 block">
           Filtrar por Status:
         </span>
@@ -795,8 +795,8 @@ export default function StatusMaquinas() {
               filterStatus === 'offline'
                 ? 'bg-zinc-900 border-zinc-500 text-zinc-300 opacity-100 ring-2 ring-zinc-500/30 scale-[1.01]'
                 : filterStatus === ''
-                ? 'bg-zinc-900 border-zinc-700/60 text-zinc-300 opacity-100 hover:scale-[1.01]'
-                : 'bg-zinc-900 border-zinc-700/60 text-zinc-300 opacity-40 hover:opacity-75'
+                ? 'bg-zinc-900 border-white/30 text-zinc-300 opacity-100 hover:scale-[1.01]'
+                : 'bg-zinc-900 border-white/20 text-zinc-300 opacity-40 hover:opacity-75'
             }`}
             title="Filtrar por Offline"
           >
@@ -807,7 +807,7 @@ export default function StatusMaquinas() {
       </div>
 
       {/* FILTERS PANEL */}
-      <div className="bg-zinc-950 border border-zinc-900 rounded-xl p-4 md:p-5 space-y-4">
+      <div className="bg-zinc-950 border border-white/30 rounded-xl p-4 md:p-5 space-y-4">
         <div className="flex items-center gap-2 text-[10px] font-sans uppercase tracking-widest font-black text-zinc-400">
           <Filter className="w-3.5 h-3.5 text-purple-500" />
           <span>PAINEL DE BUSCA E FILTRAGEM</span>
@@ -936,7 +936,7 @@ export default function StatusMaquinas() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-xs font-sans text-zinc-300 focus:outline-none focus:border-[#00624C] uppercase tracking-wider"
+              className="w-full bg-zinc-900 border border-white/30 rounded px-3 py-2 text-xs font-sans text-zinc-300 focus:outline-none focus:border-[#00624C] uppercase tracking-wider"
             >
               <option value="">TODOS OS STATUS</option>
               <option value="produzindo">PRODUZINDO</option>
@@ -949,11 +949,11 @@ export default function StatusMaquinas() {
       </div>
 
       {/* COMPACT INDUSTRIAL LIST/TABLE */}
-      <div className="border border-zinc-900 rounded-xl bg-zinc-950/20 overflow-hidden">
+      <div className="border border-white/30 rounded-xl bg-zinc-950/20 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse" id="telemetria-compact-table">
             <thead>
-              <tr className="border-b border-zinc-900 bg-zinc-950/70 text-[9px] font-sans font-black uppercase tracking-widest text-zinc-400 select-none">
+              <tr className="border-b border-white/30 bg-zinc-950/70 text-[9px] font-sans font-black uppercase tracking-widest text-zinc-400 select-none">
                 <th className="py-4 px-3 md:px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('status')}>
                   <div className="flex items-center gap-1">
                     <span>STATUS</span>
@@ -980,7 +980,7 @@ export default function StatusMaquinas() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-900/40 text-xs">
+            <tbody className="divide-y divide-white/20 text-xs">
               {paginatedMachines.map((m) => {
                 const isProducing = m.status === 'produzindo';
                 const isPaused = m.status === 'pausada';
@@ -1052,7 +1052,7 @@ export default function StatusMaquinas() {
 
       {/* PAGINATION CONTROLS */}
       {sortedAndFilteredMachines.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 font-mono text-[11px] text-zinc-400">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-950/60 border border-white/30 rounded-xl p-4 font-mono text-[11px] text-zinc-400">
           <div className="flex items-center gap-2">
             <span className="uppercase text-zinc-500 font-bold tracking-wider">Mostrando</span>
             <span className="text-zinc-200 font-black">
@@ -1071,17 +1071,17 @@ export default function StatusMaquinas() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-zinc-900 text-zinc-300 font-bold transition-all uppercase cursor-pointer"
+              className="px-3 py-1.5 rounded border border-white/30 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-zinc-900 text-zinc-300 font-bold transition-all uppercase cursor-pointer"
             >
               Anterior
             </button>
-            <div className="px-3 py-1.5 rounded border border-zinc-900 bg-zinc-950 text-zinc-300 font-black">
+            <div className="px-3 py-1.5 rounded border border-white/30 bg-zinc-950 text-zinc-300 font-black">
               {currentPage} / {totalPages}
             </div>
             <button
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1.5 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-zinc-900 text-zinc-300 font-bold transition-all uppercase cursor-pointer"
+              className="px-3 py-1.5 rounded border border-white/30 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-zinc-900 text-zinc-300 font-bold transition-all uppercase cursor-pointer"
             >
               Próximo
             </button>

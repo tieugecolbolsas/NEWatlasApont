@@ -94,13 +94,13 @@ export default function FuncionariaModal({
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="relative bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl z-10 text-zinc-100 font-sans"
+            className="relative bg-zinc-900 border border-white/30 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl z-10 text-zinc-100 font-sans"
           >
             {/* Upper Blue/Purple accent bar */}
             <div className="h-1 w-full bg-[#00624C]" />
 
             {/* Header */}
-            <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
+            <div className="p-6 border-b border-white/30 flex items-center justify-between">
               <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-[#00624C] font-bold">
                 {funcionariaToEdit ? 'ALTERAR COLABORADORA' : 'CADASTRAR NOVA COLABORADORA'}
               </h2>
@@ -125,7 +125,7 @@ export default function FuncionariaModal({
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="EX: CLAUDIA MARQUES"
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono uppercase"
+                  className="w-full bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono uppercase"
                 />
               </div>
 
@@ -138,7 +138,7 @@ export default function FuncionariaModal({
                   <select
                     value={cargo}
                     onChange={(e) => setCargo(e.target.value)}
-                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C]"
+                    className="flex-1 bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C]"
                   >
                     {cargosPredefinidos.map((c) => (
                       <option key={c} value={c}>
@@ -152,7 +152,7 @@ export default function FuncionariaModal({
                   <input
                     type="text"
                     placeholder="Outro Cargo"
-                    className="w-1/3 bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono uppercase"
+                    className="w-1/3 bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono uppercase"
                     onChange={(e) => {
                       if (e.target.value) setCargo(e.target.value.toUpperCase());
                     }}
@@ -180,7 +180,7 @@ export default function FuncionariaModal({
                       className={`py-2 rounded border text-[10px] font-mono font-bold uppercase transition-all ${
                         status === st
                           ? 'border-[#00624C] bg-[#00624C]/10 text-white shadow-[0_0_10px_rgba(90,24,154,0.15)]'
-                          : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200'
+                          : 'border-white/30 bg-zinc-950 text-zinc-400 hover:text-zinc-200'
                       }`}
                     >
                       {st === 'ferias' ? 'FÉRIAS' : st}
@@ -191,7 +191,7 @@ export default function FuncionariaModal({
 
               {/* Date pickers (for non-active status) */}
               {status !== 'ativa' && (
-                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed border-zinc-800">
+                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed border-white/30">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 font-bold block">
                       Data de Saída
@@ -200,7 +200,7 @@ export default function FuncionariaModal({
                       type="date"
                       value={dataSaida}
                       onChange={(e) => setDataSaida(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono"
+                      className="w-full bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -211,18 +211,18 @@ export default function FuncionariaModal({
                       type="date"
                       value={dataVolta}
                       onChange={(e) => setDataVolta(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono"
+                      className="w-full bg-zinc-950 border border-white/30 rounded px-4 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-[#00624C] font-mono"
                     />
                   </div>
                 </div>
               )}
 
               {/* Form Action buttons */}
-              <div className="flex gap-3 pt-4 border-t border-zinc-800 justify-end">
+              <div className="flex gap-3 pt-4 border-t border-white/30 justify-end">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-5 py-2.5 rounded border border-zinc-800 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs font-mono font-bold uppercase tracking-wider transition-colors"
+                  className="px-5 py-2.5 rounded border border-white/30 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs font-mono font-bold uppercase tracking-wider transition-colors"
                 >
                   CANCELAR
                 </button>
