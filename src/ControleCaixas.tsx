@@ -91,24 +91,24 @@ export default function ControleCaixas() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60 shadow-lg shadow-[#00624C]/5 relative overflow-hidden">
+        <div className="border border-white/60 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60 shadow-lg shadow-[#00624C]/5 relative overflow-hidden">
           <div className="absolute right-3 top-3 opacity-15"><PackageCheck size={28} className="text-[#00624C]" /></div>
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Pecas Validadas</span>
           <span className="text-3xl font-mono font-bold text-white mt-2">{stats.totalPecas}</span>
         </div>
-        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
+        <div className="border border-white/60 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Lotes Registrados</span>
           <span className="text-3xl font-mono font-bold text-white mt-2">{stats.caixasTotais}</span>
         </div>
-        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
+        <div className="border border-white/60 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Validadas</span>
           <span className="text-3xl font-mono font-bold text-emerald-500 mt-2">{stats.caixasValidadas}</span>
         </div>
-        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
+        <div className="border border-white/60 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Pendentes</span>
           <span className="text-3xl font-mono font-bold text-amber-500 mt-2">{stats.caixasPendentes}</span>
         </div>
-        <div className="border border-white/30 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
+        <div className="border border-white/60 rounded-lg p-5 flex flex-col justify-between bg-zinc-900/60">
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Rejeitadas</span>
           <span className="text-3xl font-mono font-bold text-rose-500 mt-2">{stats.caixasRejeitadas}</span>
         </div>
@@ -116,7 +116,7 @@ export default function ControleCaixas() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Registration Form */}
-        <div className="lg:col-span-1 border border-white/30 rounded-lg p-6 bg-zinc-900/30 flex flex-col h-fit">
+        <div className="lg:col-span-1 border border-white/60 rounded-lg p-6 bg-zinc-900/30 flex flex-col h-fit">
           <div className="flex items-center gap-2 mb-4">
             <ClipboardList className="w-4 h-4 text-[#00624C]" />
             <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-300">
@@ -196,7 +196,7 @@ export default function ControleCaixas() {
         </div>
 
         {/* List of Registered Boxes */}
-        <div className="lg:col-span-2 border border-white/30 rounded-lg p-6 bg-zinc-900/30 flex flex-col">
+        <div className="lg:col-span-2 border border-white/60 rounded-lg p-6 bg-zinc-900/30 flex flex-col">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-2">
               <Box className="w-4 h-4 text-[#00624C]" />

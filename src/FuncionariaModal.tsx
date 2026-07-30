@@ -94,7 +94,7 @@ export default function FuncionariaModal({
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="relative bg-zinc-900 border border-white/30 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl z-10 text-zinc-100 font-sans"
+            className="relative bg-zinc-900 border border-white/60 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl z-10 text-zinc-100 font-sans"
           >
             {/* Upper Blue/Purple accent bar */}
             <div className="h-1 w-full bg-[#00624C]" />

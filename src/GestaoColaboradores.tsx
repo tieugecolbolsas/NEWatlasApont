@@ -141,7 +141,7 @@ export default function GestaoColaboradores({
       </div>
 
       {/* Action and Filter Controls */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-zinc-900/20 border border-white/30 p-4 rounded-lg">
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-zinc-900/20 border border-white/60 p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
           {/* Role selector */}
           <div className="flex flex-col gap-1">
@@ -186,7 +186,7 @@ export default function GestaoColaboradores({
       </div>
 
       {/* Main List Table */}
-      <div className="border border-white/30 rounded-lg p-6 bg-zinc-900/40 relative">
+      <div className="border border-white/60 rounded-lg p-6 bg-zinc-900/40 relative">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 space-y-3">
             <div className="w-8 h-8 border-2 border-t-transparent border-[#00624C] rounded-full animate-spin" />

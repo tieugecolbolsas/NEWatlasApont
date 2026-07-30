@@ -569,18 +569,21 @@ export default function StatusMaquinas() {
     if (!selectedMachine) return;
 
     try {
+      const operadoraUpper = terminalOperator.toUpperCase().trim();
+      const processoUpper = terminalProcess;
+
       // Set optimistic updates
       updateOptimistic(selectedMachine.numero, {
-        operadora: terminalOperator.toUpperCase().trim(),
-        processo: terminalProcess
+        operadora: operadoraUpper,
+        processo: processoUpper
       });
 
       const updatePayload = {
-        operadora_nome: terminalOperator.toUpperCase().trim(),
-        operacao_nome: terminalProcess
+        operadora_nome: operadoraUpper,
+        operacao_nome: processoUpper
       };
 
-      // Find if active session exists
+      // 1. Find and update active session in sessoes_ativas_terminal
       const { data: existing, error: findError } = await supabase
         .schema('AtlasApontamento')
         .from('sessoes_ativas_terminal')
@@ -603,8 +606,8 @@ export default function StatusMaquinas() {
           .from('sessoes_ativas_terminal')
           .insert([{
             num_maquina: selectedMachine.numero,
-            operadora_nome: terminalOperator.toUpperCase().trim(),
-            operacao_nome: terminalProcess,
+            operadora_nome: operadoraUpper,
+            operacao_nome: processoUpper,
             lote: 'L-01',
             lado: 'Único',
             tipo_maquina: 'RETA',
@@ -616,13 +619,43 @@ export default function StatusMaquinas() {
         if (error) throw error;
       }
 
+      // 2. Sincroniza também a tabela base de operadoras (SupervisorProd)
+      try {
+        await supabase
+          .schema('SupervisorProd')
+          .from('maquinas_operadoras_base')
+          .update({ operadora_nome: operadoraUpper })
+          .eq('num_maquina', selectedMachine.numero);
+      } catch (errBase) {
+        console.warn('[StatusMaquinas] Aviso ao atualizar maquinas_operadoras_base:', errBase);
+      }
+
+      // 3. Sincroniza os registros de produção do dia em registros_producao_terminal (AtlasApontamento)
+      const hojeStr = new Date().toISOString().split('T')[0];
+      try {
+        await supabase
+          .schema('AtlasApontamento')
+          .from('registros_producao_terminal')
+          .update({
+            operadora_nome: operadoraUpper,
+            operacao_nome: processoUpper
+          })
+          .eq('num_maquina', selectedMachine.numero)
+          .eq('data', hojeStr);
+      } catch (errReg) {
+        console.warn('[StatusMaquinas] Aviso ao atualizar registros_producao_terminal:', errReg);
+      }
+
+      // Dispara evento global para recalcular e atualizar o painel Apontamentos e demais telas
+      window.dispatchEvent(new CustomEvent('refresh-apontamentos'));
+
       addToast(`Configurações da Máquina ${selectedMachine.numero} salvas com sucesso!`, 'success');
       
       // Update local state temporarily
       setMachines(prev => prev.map(m => m.id === selectedMachine.id ? { 
         ...m, 
-        operadora: terminalOperator.toUpperCase().trim(),
-        processo: terminalProcess
+        operadora: operadoraUpper,
+        processo: processoUpper
       } : m));
 
       fetchData();
@@ -734,7 +767,7 @@ export default function StatusMaquinas() {
       </div>
 
       {/* Linha Horizontal Dedicada de Filtros Rápidos de Status */}
-      <div className="w-full space-y-2.5 border-b border-white/20 pb-5">
+      <div className="w-full space-y-2.5 border-b border-white/40 pb-5">
         <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-500 block">
           Filtrar por Status:
         </span>
@@ -807,7 +840,7 @@ export default function StatusMaquinas() {
       </div>
 
       {/* FILTERS PANEL */}
-      <div className="bg-zinc-950 border border-white/30 rounded-xl p-4 md:p-5 space-y-4">
+      <div className="bg-zinc-950 border border-white/60 rounded-xl p-4 md:p-5 space-y-4">
         <div className="flex items-center gap-2 text-[10px] font-sans uppercase tracking-widest font-black text-zinc-400">
           <Filter className="w-3.5 h-3.5 text-purple-500" />
           <span>PAINEL DE BUSCA E FILTRAGEM</span>
@@ -949,11 +982,11 @@ export default function StatusMaquinas() {
       </div>
 
       {/* COMPACT INDUSTRIAL LIST/TABLE */}
-      <div className="border border-white/30 rounded-xl bg-zinc-950/20 overflow-hidden">
+      <div className="border border-white/60 rounded-xl bg-zinc-950/20 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse" id="telemetria-compact-table">
             <thead>
-              <tr className="border-b border-white/30 bg-zinc-950/70 text-[9px] font-sans font-black uppercase tracking-widest text-zinc-400 select-none">
+              <tr className="border-b border-white/50 bg-zinc-950/70 text-[9px] font-sans font-black uppercase tracking-widest text-zinc-400 select-none">
                 <th className="py-4 px-3 md:px-6 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('status')}>
                   <div className="flex items-center gap-1">
                     <span>STATUS</span>
@@ -1052,7 +1085,7 @@ export default function StatusMaquinas() {
 
       {/* PAGINATION CONTROLS */}
       {sortedAndFilteredMachines.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-950/60 border border-white/30 rounded-xl p-4 font-mono text-[11px] text-zinc-400">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-950/60 border border-white/60 rounded-xl p-4 font-mono text-[11px] text-zinc-400">
           <div className="flex items-center gap-2">
             <span className="uppercase text-zinc-500 font-bold tracking-wider">Mostrando</span>
             <span className="text-zinc-200 font-black">

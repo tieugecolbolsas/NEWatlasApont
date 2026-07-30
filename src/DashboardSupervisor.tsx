@@ -42,7 +42,7 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
         {/* MOBILE BAR (Hidden on Desktop) */}
         <div 
           id="dashboard-mobile-bar"
-          className="md:hidden w-full h-14 px-4 flex items-center justify-between transition-colors duration-300 sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-white/30 text-white shrink-0"
+          className="md:hidden w-full h-14 px-4 flex items-center justify-between transition-colors duration-300 sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-white/60 text-white shrink-0"
         >
           <div className="relative flex items-center justify-center w-32 h-11 select-none overflow-hidden">
             {/* Celestial Grid & Orbits Background */}

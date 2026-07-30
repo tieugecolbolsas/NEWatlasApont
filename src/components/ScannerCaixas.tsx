@@ -956,6 +956,13 @@ export default function ScannerCaixas() {
     };
 
     try {
+      // Limpa qualquer sessão remanescente da mesma máquina para não deixar sessões antigas presas
+      await supabase
+        .schema('AtlasApontamento')
+        .from('sessoes_ativas_terminal')
+        .delete()
+        .eq('num_maquina', novaSessao.num_maquina);
+
       const { error } = await supabase
         .schema('AtlasApontamento')
         .from('sessoes_ativas_terminal')
@@ -1373,13 +1380,13 @@ export default function ScannerCaixas() {
         {/* LADO ESQUERDO: SCANNER DE QR CODE DE MAQUINA */}
         <div className="lg:col-span-5 flex flex-col gap-6">
           
-          <div className="bg-zinc-950 border border-white/30 rounded-xl p-5 md:p-6 relative overflow-hidden">
+          <div className="bg-zinc-950 border border-white/60 rounded-xl p-5 md:p-6 relative overflow-hidden">
             <div className="flex flex-col gap-4">
               <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-zinc-400 block">
                 ESCANEIE O QR CODE DA MÁQUINA
               </span>
 
-              <div className="relative w-full aspect-[4/3] bg-black rounded-lg overflow-hidden border border-white/30 shadow-2xl flex items-center justify-center @container">
+              <div className="relative w-full aspect-[4/3] bg-black rounded-lg overflow-hidden border border-white/60 shadow-2xl flex items-center justify-center @container">
                 <div id={readerId} className="w-full h-full rounded-xl overflow-hidden [&>video]:object-cover [&_#qr-shaded-region]:hidden" />
                 
                 {!cameraDisponivel && (
@@ -1456,8 +1463,8 @@ export default function ScannerCaixas() {
         {/* LADO DIREITO: HISTÓRICO DE APONTAMENTOS DE HOJE */}
         <div className="lg:col-span-7 flex flex-col">
           
-          <div className="border border-white/30 rounded-xl bg-zinc-950/40 p-5 md:p-6 flex flex-col h-full min-h-[450px]">
-            <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-white/30">
+          <div className="border border-white/60 rounded-xl bg-zinc-950/40 p-5 md:p-6 flex flex-col h-full min-h-[450px]">
+            <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-white/40">
               <div className="flex items-center gap-2">
                 <History className="text-zinc-400" size={16} />
                 <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-300 font-black">
