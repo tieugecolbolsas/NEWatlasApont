@@ -1206,22 +1206,26 @@ export default function Apontamentos() {
               const hasFinalizacaoAntecipada = block.itens.some((i: any) => i.motivo_ocorrencia === 'Finalização Antecipada') || finCount > 0;
 
               const headerBgClass = isExpanded 
-                ? 'bg-emerald-950/30 border-emerald-500/35 text-emerald-400 shadow-lg shadow-emerald-950/50' 
-                : 'bg-[#141414] border-zinc-900 text-zinc-300';
+                ? 'bg-emerald-900/40 text-emerald-300' 
+                : 'bg-emerald-950/16 text-emerald-400';
                 
               const headerBorderClass = isExpanded
-                ? 'border-l-4 border-l-emerald-500 border-t-emerald-500/30 border-r-emerald-500/30 border-b-zinc-900/60'
-                : 'border-l-4 border-l-zinc-800 border-zinc-900';
+                ? 'border-l-4 border-l-emerald-500 border-b border-b-emerald-500/30'
+                : 'border-l-4 border-l-emerald-500/40 border-b border-b-transparent';
+                
+              const wrapperClass = isExpanded
+                ? 'bg-emerald-950/20 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                : 'bg-[#141414] border-zinc-900/50 shadow-black/50';
 
               return (
                 <div 
                   key={block.key} 
-                  className={`rounded-xl border border-zinc-900/50 relative shadow-lg shadow-black/50 mb-4 transition-all duration-200 overflow-hidden ${isExpanded ? 'bg-[#00624c]/10' : 'bg-[#141414]'}`}
+                  className={`rounded-xl border relative mb-4 transition-all duration-200 overflow-hidden ${wrapperClass}`}
                 >
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <button
                     onClick={() => toggleGroup(block.key)}
-                    className={`w-full p-4 hover:bg-zinc-900/50 transition-all duration-200 font-mono focus:outline-none cursor-pointer rounded-t-xl text-left ${headerBgClass} ${headerBorderClass}`}
+                    className={`w-full p-4 hover:bg-zinc-900/40 transition-all duration-200 font-mono focus:outline-none cursor-pointer text-left ${headerBgClass} ${headerBorderClass}`}
                   >
                     {/* Alertas de Notificação (Restaurados no topo) */}
                     {hasObs && (
@@ -1732,17 +1736,18 @@ export default function Apontamentos() {
                               </div>
 
                               {/* Observação correspondente no log */}
-                              {item.observacao && item.observacao.trim() && (
-                                <div className="bg-amber-950/20 border border-amber-900/50 p-3.5 rounded-lg mt-2 text-xs text-amber-100">
-                                  <span className="text-amber-500 font-bold block text-[10px] uppercase tracking-wider mb-1">
-                                    ✉ Observação / Justificativa:
-                                  </span>
-                                  <div className="font-sans italic leading-relaxed text-amber-200 font-medium space-y-1.5">
-                                    {item.observacao.split('|').map((obs: string, idx: number) => (
-                                      <p key={idx}>"{obs.trim()}"</p>
-                                    ))}
-                                  </div>
-                                </div>
+                              {item.observacao && 
+                               item.observacao.trim() !== "" && 
+                               item.observacao !== "EMPTY" && 
+                               item.observacao !== "NULL" && 
+                               item.motivo_ocorrencia !== "Finalização Antecipada" &&
+                               item.motivo_ocorrencia !== "Finalização Automática" && (
+                                 <div className="mt-3 p-3 bg-amber-950/20 border border-amber-500/30 rounded-lg text-[10px] text-amber-400">
+                                   <div className="font-bold uppercase text-[8px] tracking-wider mb-1 flex items-center gap-1">
+                                     ✉ OBSERVAÇÃO / JUSTIFICATIVA:
+                                   </div>
+                                   <span className="italic font-medium">"{item.observacao}"</span>
+                                 </div>
                               )}
 
                               {/* Finalização Antecipada */}
