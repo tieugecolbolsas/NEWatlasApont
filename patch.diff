@@ -1,0 +1,65 @@
+--- src/components/ScannerCaixas.tsx
++++ src/components/ScannerCaixas.tsx
+@@ -1934,51 +1934,20 @@
+             >
+               
+               {/* Header do Form */}
+-              <div className="flex justify-between items-center border-b border-zinc-900 pb-4">
+-                <div className="flex items-center gap-2">
+-                  <ClipboardList className="text-[#00624C]" size={20} />
+-                  <div>
+-                    <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
+-                      Apontar Lote de Produção
+-                    </h3>
+-                    <p className="text-zinc-500 text-[9px] font-mono uppercase tracking-widest mt-0.5">
+-                      Contagem de peças para a Máquina {activeSession.num_maquina} | COD: {activeSession.codigo_manual_curto}
+-                    </p>
+-                  </div>
+-                </div>
++              <div className="flex justify-end mb-2">
+                 <button 
+                   onClick={retomarScanner}
+                   className="p-1 text-zinc-500 hover:text-white transition-colors cursor-pointer"
+                 >
+                   <XCircle size={20} />
+                 </button>
+               </div>
+ 
+               {/* Informações Atuais de Leitura (READ-ONLY) */}
+               <div className="space-y-3 bg-zinc-900/40 p-4 rounded-lg border border-zinc-900/60 font-mono text-[11px] text-zinc-400">
+-                <div className="flex justify-between items-center border-b border-zinc-900/40 pb-2 mb-2">
+-                  <span className="text-[#00624C] text-[9px] font-bold uppercase tracking-widest">Processo Ativo Atualmente</span>
+-                  <div className="flex flex-wrap gap-2 items-center">
+-                    {!showQualidadeForm && !showManutencaoForm && (
+-                      <>
+-                        <button 
+-                          onClick={() => setShowQualidadeForm(true)}
+-                          className="text-[9px] font-bold uppercase tracking-widest text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 transition-colors cursor-pointer"
+-                        >
+-                          Lançar Ajuste (Qualidade)
+-                        </button>
+-                        <button 
+-                          onClick={() => setShowManutencaoForm(true)}
+-                          className="text-[9px] font-bold uppercase tracking-widest text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30 transition-colors cursor-pointer"
+-                        >
+-                          Solicitar Manutenção
+-                        </button>
+-                      </>
+-                    )}
+-                    <span className="text-zinc-500 text-[9px] font-bold ml-1">CÓD: {activeSession.codigo_manual_curto}</span>
+-                  </div>
+-                </div>
++                {/* Linha de Cabeçalho (Manutenção e Código) */}
++                <div className="flex justify-between items-center border-b border-zinc-900/40 pb-3 mb-1">
++                  <span className="text-neutral-500 font-mono text-[9px] font-bold">COD: {activeSession.codigo_manual_curto}</span>
++                  {!showQualidadeForm && !showManutencaoForm && (
++                    <button 
++                      onClick={() => setShowManutencaoForm(true)}
++                      className="bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-400 font-mono font-bold text-[9px] px-2.5 py-1.5 rounded uppercase transition-colors cursor-pointer"
++                    >
++                      🔧 Solicitar Manutenção
++                    </button>
++                  )}
++                </div>
+                 
+                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">

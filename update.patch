@@ -1,0 +1,117 @@
+--- src/components/ScannerCaixas.tsx
++++ src/components/ScannerCaixas.tsx
+@@ -2096,66 +2096,65 @@
+                     
+                     {/* Apontamento de Volumes (Grid de 3 Colunas: Conforme, Ret. Próprio, Ret. Terceiro) */}
+                     <div className="space-y-3.5">
+-                      <span className="text-[9px] font-mono uppercase tracking-widest font-black text-zinc-500 block">
+-                        APONTAMENTO DE VOLUMES
++                      <span className="text-[9px] font-mono text-zinc-500 uppercase font-black tracking-widest block">
++                        Apontamento de Volumes
+                       </span>
+                       
+                       <div className="grid grid-cols-3 gap-2">
+-                        {/* Column 1: Produção Conforme (Emerald Green) */}
++                        {/* Column 1: Conforme (Verde) */}
+                         <div className="space-y-1">
+-                          <label className="text-[8px] text-emerald-500 font-bold uppercase tracking-wider block">CONFORME *</label>
++                          <label className="text-[8px] text-emerald-500 font-bold uppercase tracking-wider block">Conforme *</label>
+                           <div className="flex flex-col gap-1.5">
+                             <input 
+                               type="text" 
+                               inputMode="numeric" 
+                               pattern="[0-9]*" 
+                               placeholder="Pçs" 
+-                              value={prodConforme}
+-                              onChange={(e) => setProdConforme(e.target.value === '' ? '' : Number(e.target.value))}
++                              value={prodConforme === null ? '' : prodConforme}
++                              onChange={(e) => setProdConforme(e.target.value === '' ? null : Number(e.target.value))}
+                               disabled={confirmaBProdConforme}
+                               className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-2 text-xs font-mono text-white text-center focus:outline-none focus:border-emerald-500 disabled:opacity-50" 
+                             />
+                             <button 
+                               type="button" 
+                               onClick={() => setConfirmaBProdConforme(!confirmaBProdConforme)}
+-                              className={`w-full py-1.5 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
++                              className={`w-full py-1 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
+                                 confirmaBProdConforme 
+-                                  ? 'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400' 
+-                                  : 'bg-emerald-950/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-900/40'
++                                  ? 'bg-emerald-950/20 border border-emerald-500/30 text-emerald-400' 
++                                  : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white'
+                               }`}
+                             >
+                               ✓
+                             </button>
+                           </div>
+                         </div>
+ 
+-                        {/* Column 2: Retrabalho Próprio (Amber/Orange) */}
++                        {/* Column 2: Retrabalho Próprio (Laranja) */}
+                         <div className="space-y-1">
+-                          <label className="text-[8px] text-amber-500 font-bold uppercase tracking-wider block">RET. PRÓPRIO</label>
++                          <label className="text-[8px] text-amber-500 font-bold uppercase tracking-wider block">Ret. Próprio</label>
+                           <div className="flex flex-col gap-1.5">
+                             <input 
+                               type="text" 
+                               inputMode="numeric" 
+                               pattern="[0-9]*" 
+-                              placeholder="0" 
++                              placeholder="Próp." 
+                               value={retrabalhoProprio}
+-                              onChange={(e) => setRetrabalhoProprio(e.target.value === '' ? '' : Number(e.target.value))}
++                              onChange={(e) => setRetrabalhoProprio(Number(e.target.value))}
+                               disabled={confirmaBRetrabalhoProprio}
+                               className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                             />
+                             <button 
+                               type="button" 
+                               onClick={() => setConfirmaBRetrabalhoProprio(!confirmaBRetrabalhoProprio)}
+-                              className={`w-full py-1.5 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
++                              className={`w-full py-1 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
+                                 confirmaBRetrabalhoProprio 
+-                                  ? 'bg-amber-600/20 border border-amber-500/30 text-amber-400' 
+-                                  : 'bg-amber-950/20 border border-amber-500/30 text-amber-400 hover:bg-amber-900/40'
++                                  ? 'bg-amber-950/20 border border-amber-500/30 text-amber-400' 
++                                  : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white'
+                               }`}
+                             >
+                               ✓
+                             </button>
+                           </div>
+                         </div>
+ 
+-                        {/* Column 3: Retrabalho Terceiro (Amber/Orange) */}
++                        {/* Column 3: Retrabalho Terceiro (Laranja) */}
+                         <div className="space-y-1">
+-                          <label className="text-[8px] text-amber-500 font-bold uppercase tracking-wider block">RET. TERC.</label>
++                          <label className="text-[8px] text-amber-500 font-bold uppercase tracking-wider block">Ret. Terc.</label>
+                           <div className="flex flex-col gap-1.5">
+                             <input 
+                               type="text" 
+                               inputMode="numeric" 
+                               pattern="[0-9]*" 
+-                              placeholder="0" 
++                              placeholder="Terc." 
+                               value={retrabalhoTerceiro}
+-                              onChange={(e) => setRetrabalhoTerceiro(e.target.value === '' ? '' : Number(e.target.value))}
++                              onChange={(e) => setRetrabalhoTerceiro(Number(e.target.value))}
+                               disabled={confirmaBRetrabalhoTerceiro}
+                               className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                             />
+                             <button 
+                               type="button" 
+                               onClick={() => setConfirmaBRetrabalhoTerceiro(!confirmaBRetrabalhoTerceiro)}
+-                              className={`w-full py-1.5 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
++                              className={`w-full py-1 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
+                                 confirmaBRetrabalhoTerceiro 
+-                                  ? 'bg-amber-600/20 border border-amber-500/30 text-amber-400' 
+-                                  : 'bg-amber-950/20 border border-amber-500/30 text-amber-400 hover:bg-amber-900/40'
++                                  ? 'bg-amber-950/20 border border-amber-500/30 text-amber-400' 
++                                  : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white'
+                               }`}
+                             >
+                               ✓
+                             </button>
+                           </div>
+                         </div>

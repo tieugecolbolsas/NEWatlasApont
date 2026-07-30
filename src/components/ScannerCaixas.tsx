@@ -320,8 +320,8 @@ export default function ScannerCaixas() {
   
   // Campos do Formulário - Apontamento de Contagem (Apontamento de Produção de Sessão Ativa)
   const [prodConforme, setProdConforme] = useState<number | ''>('');
-  const [retrabalhoProprio, setRetrabalhoProprio] = useState<number>(0);
-  const [retrabalhoTerceiro, setRetrabalhoTerceiro] = useState<number>(0);
+  const [retrabalhoProprio, setRetrabalhoProprio] = useState<number | ''>('');
+  const [retrabalhoTerceiro, setRetrabalhoTerceiro] = useState<number | ''>('');
   const [motivoOcorrencia, setMotivoOcorrencia] = useState<string>('Produção Normal');
 
   // Campos do Formulário - Ajuste de Qualidade
@@ -853,6 +853,13 @@ export default function ScannerCaixas() {
     setManutencaoDesc('');
     setShowJustificativaModal(false);
     setJustificativaMotivo('');
+    setProdConforme('');
+    setRetrabalhoProprio('');
+    setRetrabalhoTerceiro('');
+    setCenarioBObservacao('');
+    setConfirmaBProdConforme(false);
+    setConfirmaBRetrabalhoProprio(false);
+    setConfirmaBRetrabalhoTerceiro(false);
     setIsScanning(true);
     isProcessingScan.current = false;
     if (scannerRef.current && scannerRef.current.getState() === 3) {
@@ -1335,6 +1342,16 @@ export default function ScannerCaixas() {
       setIsSaving(false);
     }
   };
+
+  const isConformeEmpty = prodConforme === '' || prodConforme === null;
+  const isRetProprioEmpty = retrabalhoProprio === '' || retrabalhoProprio === null || Number(retrabalhoProprio) === 0;
+  const isRetTerceiroEmpty = retrabalhoTerceiro === '' || retrabalhoTerceiro === null || Number(retrabalhoTerceiro) === 0;
+
+  const isBValid = confirmaBLado && 
+    (isConformeEmpty || confirmaBProdConforme) &&
+    (isRetProprioEmpty || confirmaBRetrabalhoProprio) &&
+    (isRetTerceiroEmpty || confirmaBRetrabalhoTerceiro) &&
+    !(isConformeEmpty && isRetProprioEmpty && isRetTerceiroEmpty);
 
   return (
     <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 overflow-y-auto" id="terminal-mobile-view">
@@ -1917,18 +1934,7 @@ export default function ScannerCaixas() {
               className="bg-zinc-950 border border-zinc-900 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 md:p-6 space-y-4 md:space-y-5 shadow-2xl scrollbar-thin my-auto"
             >
               {/* Header do Form */}
-              <div className="flex justify-between items-center border-b border-zinc-900 pb-4">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="text-[#00624C]" size={20} />
-                  <div>
-                    <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
-                      Apontar Lote de Produção
-                    </h3>
-                    <p className="text-zinc-500 text-[9px] font-mono uppercase tracking-widest mt-0.5">
-                      Contagem de peças para a Máquina {activeSession.num_maquina} | COD: {activeSession.codigo_manual_curto}
-                    </p>
-                  </div>
-                </div>
+              <div className="flex justify-end mb-2">
                 <button 
                   onClick={retomarScanner}
                   className="p-1 text-zinc-500 hover:text-white transition-colors cursor-pointer"
@@ -1939,27 +1945,17 @@ export default function ScannerCaixas() {
 
               {/* Informações Atuais de Leitura (READ-ONLY) */}
               <div className="space-y-3 bg-zinc-900/40 p-4 rounded-lg border border-zinc-900/60 font-mono text-[11px] text-zinc-400">
-                <div className="flex justify-between items-center border-b border-zinc-900/40 pb-2 mb-2">
-                  <span className="text-[#00624C] text-[9px] font-bold uppercase tracking-widest">Processo Ativo Atualmente</span>
-                  <div className="flex flex-wrap gap-2 items-center">
-                    {!showQualidadeForm && !showManutencaoForm && (
-                      <>
-                        <button 
-                          onClick={() => setShowQualidadeForm(true)}
-                          className="text-[9px] font-bold uppercase tracking-widest text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 transition-colors cursor-pointer"
-                        >
-                          Lançar Ajuste (Qualidade)
-                        </button>
-                        <button 
-                          onClick={() => setShowManutencaoForm(true)}
-                          className="text-[9px] font-bold uppercase tracking-widest text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30 transition-colors cursor-pointer"
-                        >
-                          Solicitar Manutenção
-                        </button>
-                      </>
-                    )}
-                    <span className="text-zinc-500 text-[9px] font-bold ml-1">CÓD: {activeSession.codigo_manual_curto}</span>
-                  </div>
+                {/* Linha de Cabeçalho (Manutenção e Código) */}
+                <div className="flex justify-between items-center border-b border-zinc-900/40 pb-3 mb-1">
+                  <span className="text-neutral-500 font-mono text-[9px] font-bold">COD: {activeSession.codigo_manual_curto}</span>
+                  {!showQualidadeForm && !showManutencaoForm && (
+                    <button 
+                      onClick={() => setShowManutencaoForm(true)}
+                      className="bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-400 font-mono font-bold text-[9px] px-2.5 py-1.5 rounded uppercase transition-colors cursor-pointer"
+                    >
+                      🔧 Solicitar Manutenção
+                    </button>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">
@@ -2088,48 +2084,108 @@ export default function ScannerCaixas() {
                   {/* Inputs para digitação */}
                   <div className="space-y-4 font-mono text-xs">
                     
-                    {/* Quantidade Conforme */}
-                    <div className="space-y-1.5">
-                      <label className="text-white font-black text-sm block">
-                        Quantidade Conforme Produzida
-                      </label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="number"
-                          disabled={confirmaBProdConforme}
-                          min="0"
-                          placeholder="Digite o número de peças conformes (ou deixe vazio se retrabalho)"
-                          value={prodConforme}
-                          onChange={(e) => setProdConforme(e.target.value === '' ? '' : Number(e.target.value))}
-                          className="flex-1 h-14 bg-zinc-900 border-2 border-zinc-800 focus:border-[#00624C] text-white text-base font-black rounded px-4 focus:outline-none disabled:opacity-50 disabled:bg-zinc-900/30 disabled:border-emerald-600/30"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setConfirmaBProdConforme(!confirmaBProdConforme)}
-                          className={`p-2.5 rounded border h-14 w-14 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                            confirmaBProdConforme 
-                              ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                              : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                          }`}
-                          title={confirmaBProdConforme ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                        >
-                          <Check size={20} className={confirmaBProdConforme ? "scale-110" : ""} />
-                        </button>
+                    {/* Apontamento de Volumes (Grid de 3 Colunas: Conforme, Ret. Próprio, Ret. Terceiro) */}
+                    <div className="space-y-3.5">
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase font-black tracking-widest block">
+                        Apontamento de Volumes
+                      </span>
+                      
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* Column 1: Conforme (Verde) */}
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-emerald-500 font-bold uppercase tracking-wider block">Conforme *</label>
+                          <div className="flex flex-col gap-1.5">
+                            <input 
+                              type="text" 
+                              inputMode="numeric" 
+                              pattern="[0-9]*" 
+                              placeholder="Pçs" 
+                              value={prodConforme}
+                              onChange={(e) => setProdConforme(e.target.value === '' ? '' : Number(e.target.value))}
+                              disabled={confirmaBProdConforme}
+                              className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-2 text-xs font-mono text-white text-center focus:outline-none focus:border-emerald-500 disabled:opacity-50" 
+                            />
+                            <button 
+                              type="button" 
+                              onClick={() => setConfirmaBProdConforme(!confirmaBProdConforme)}
+                              className={`w-full py-1 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
+                                confirmaBProdConforme 
+                                  ? 'bg-emerald-950/20 border border-emerald-500/30 text-emerald-400' 
+                                  : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white'
+                              }`}
+                            >
+                              ✓
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Column 2: Retrabalho Próprio (Laranja) */}
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-amber-500 font-bold uppercase tracking-wider block">Ret. Próprio</label>
+                          <div className="flex flex-col gap-1.5">
+                            <input 
+                              type="text" 
+                              inputMode="numeric" 
+                              pattern="[0-9]*" 
+                              placeholder="Próp." 
+                              value={retrabalhoProprio}
+                              onChange={(e) => setRetrabalhoProprio(e.target.value === '' ? '' : Number(e.target.value))}
+                              disabled={confirmaBRetrabalhoProprio}
+                              className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                            />
+                            <button 
+                              type="button" 
+                              onClick={() => setConfirmaBRetrabalhoProprio(!confirmaBRetrabalhoProprio)}
+                              className={`w-full py-1 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
+                                confirmaBRetrabalhoProprio 
+                                  ? 'bg-amber-950/20 border border-amber-500/30 text-amber-400' 
+                                  : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white'
+                              }`}
+                            >
+                              ✓
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Column 3: Retrabalho Terceiro (Laranja) */}
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-amber-500 font-bold uppercase tracking-wider block">Ret. Terc.</label>
+                          <div className="flex flex-col gap-1.5">
+                            <input 
+                              type="text" 
+                              inputMode="numeric" 
+                              pattern="[0-9]*" 
+                              placeholder="Terc." 
+                              value={retrabalhoTerceiro}
+                              onChange={(e) => setRetrabalhoTerceiro(e.target.value === '' ? '' : Number(e.target.value))}
+                              disabled={confirmaBRetrabalhoTerceiro}
+                              className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                            />
+                            <button 
+                              type="button" 
+                              onClick={() => setConfirmaBRetrabalhoTerceiro(!confirmaBRetrabalhoTerceiro)}
+                              className={`w-full py-1 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
+                                confirmaBRetrabalhoTerceiro 
+                                  ? 'bg-amber-950/20 border border-amber-500/30 text-amber-400' 
+                                  : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white'
+                              }`}
+                            >
+                              ✓
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-[9px] text-zinc-500">Mapeia diretamente para a coluna producao_conforme. Deixe vazio para apenas lançar retrabalho.</p>
                     </div>
 
-                    {/* Lado (Dropdown: Esquerdo, Direito, Único) 100% editável e destravado */}
-                    <div className="space-y-1.5">
-                      <label className="text-zinc-400 font-bold block">
-                        Lado de Produção <span className="text-[#00624C]">*</span>
-                      </label>
-                      <div className="flex gap-2">
+                    {/* Lado (Dropdown) */}
+                    <div className="flex items-center justify-between bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60">
+                      <span className="text-[9px] font-mono text-zinc-400 uppercase font-bold">Lado de Produção:</span>
+                      <div className="flex items-center gap-2">
                         <select 
                           disabled={confirmaBLado}
                           value={cenarioBLado} 
                           onChange={(e) => setCenarioBLado(e.target.value as any)}
-                          className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] font-bold disabled:opacity-50 disabled:bg-zinc-900/30 disabled:border-emerald-600/30"
+                          className="bg-zinc-900 border border-zinc-800 text-white text-xs font-mono font-bold rounded px-2 py-1 focus:outline-none focus:border-[#00624C] disabled:opacity-50"
                         >
                           <option value="Único">Único</option>
                           <option value="Esquerdo">Esquerdo</option>
@@ -2138,135 +2194,69 @@ export default function ScannerCaixas() {
                         <button
                           type="button"
                           onClick={() => setConfirmaBLado(!confirmaBLado)}
-                          className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                          className={`px-2.5 py-1 rounded border flex items-center justify-center font-bold text-[10px] cursor-pointer transition-all ${
                             confirmaBLado 
-                              ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
+                              ? 'bg-emerald-600/20 border-emerald-500/30 text-emerald-400' 
                               : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                           }`}
-                          title={confirmaBLado ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
+                          title={confirmaBLado ? "Desbloquear Lado" : "Confirmar Lado"}
                         >
-                          <Check size={16} className={confirmaBLado ? "scale-110" : ""} />
+                          ✓
                         </button>
                       </div>
-                      <p className="text-[9px] text-zinc-500">Mude o lado conforme a contagem de peças realizada</p>
                     </div>
 
-                    {/* Retrabalhos Opcionais */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-zinc-400 font-bold block">Retrabalho Próprio</label>
-                        <div className="flex gap-2">
-                          <input 
-                            type="number"
-                            min="0"
-                            disabled={confirmaBRetrabalhoProprio}
-                            value={retrabalhoProprio}
-                            onChange={(e) => setRetrabalhoProprio(Number(e.target.value))}
-                            className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] text-center disabled:opacity-50 disabled:bg-zinc-900/30 disabled:border-emerald-600/30"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setConfirmaBRetrabalhoProprio(!confirmaBRetrabalhoProprio)}
-                            className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                              confirmaBRetrabalhoProprio 
-                                ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                                : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                            }`}
-                            title={confirmaBRetrabalhoProprio ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                          >
-                            <Check size={16} />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-zinc-400 font-bold block">Retrabalho Terceiro</label>
-                        <div className="flex gap-2">
-                          <input 
-                            type="number"
-                            min="0"
-                            disabled={confirmaBRetrabalhoTerceiro}
-                            value={retrabalhoTerceiro}
-                            onChange={(e) => setRetrabalhoTerceiro(Number(e.target.value))}
-                            className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] text-center disabled:opacity-50 disabled:bg-zinc-900/30 disabled:border-emerald-600/30"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setConfirmaBRetrabalhoTerceiro(!confirmaBRetrabalhoTerceiro)}
-                            className={`p-2.5 rounded border h-12 md:h-10 w-12 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                              confirmaBRetrabalhoTerceiro 
-                                ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                                : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                            }`}
-                            title={confirmaBRetrabalhoTerceiro ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                          >
-                            <Check size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Observação (Justificativa de Parada / Treinamento) */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <label className="text-zinc-400 font-bold block">Observação (Justificativa de Parada / Treinamento)</label>
-                        <span className="text-[10px] text-zinc-500 font-mono">{cenarioBObservacao.length}/150</span>
-                      </div>
-                      <input 
-                        type="text"
+                    {/* Observação (Justificativa) */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider block font-bold">
+                        OBSERVAÇÃO (JUSTIFICATIVA)
+                      </label>
+                      <textarea 
                         maxLength={150}
-                        placeholder="Ex: Treinamento ou justificativa de parada (máx 150 caracteres)"
+                        rows={2}
+                        placeholder="Ex: Treinamento ou justificativa de parada..."
                         value={cenarioBObservacao}
                         onChange={(e) => setCenarioBObservacao(e.target.value)}
-                        className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3.5 focus:outline-none focus:border-[#00624C] placeholder-zinc-600"
+                        className="w-full h-16 bg-zinc-900 border border-zinc-800 rounded p-2.5 text-xs text-white focus:outline-none focus:border-[#00624C] resize-none font-mono placeholder-zinc-600"
                       />
                     </div>
 
                   </div>
 
-                  {/* Botões do Form */}
-                  <div className="flex flex-col sm:flex-row gap-3 border-t border-zinc-900 pt-4">
-                    
+                  {/* Botões do Form (Exatamente como o print) */}
+                  <div className="flex flex-col gap-2.5 pt-3 border-t border-zinc-900/40 font-mono">
+                    {/* Botão Principal Verde em Cima */}
                     <button 
-                      onClick={retomarScanner}
-                      className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white font-bold h-12 md:h-10 px-4 rounded text-[10px] font-mono uppercase tracking-widest transition-colors flex justify-center items-center gap-2 cursor-pointer w-full sm:w-auto"
+                      onClick={() => handleSalvarCenarioB(false)}
+                      disabled={isSaving || !isBValid}
+                      className="h-14 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-bold uppercase rounded-lg shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      <XCircle size={14} /> Cancelar
+                      {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                      {!isBValid
+                        ? "CONFIRME TODOS OS CAMPOS"
+                        : "💾 SALVAR E CONTINUAR"}
                     </button>
 
-                    <div className="flex-1 flex flex-col sm:flex-row gap-3">
-                      {/* Botão Finalizar Processo */}
-                      <button 
-                        onClick={handleFinalizarProcessoClick}
-                        disabled={isSaving || !(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro)}
-                        className="flex-1 bg-rose-950/40 hover:bg-rose-900/60 text-rose-200 hover:text-white border border-rose-800/40 font-bold h-12 md:h-10 px-3 rounded text-[10px] font-mono uppercase tracking-widest transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
-                        title="Finaliza o lote atual gravando a contagem e encerra o processo de vez nesta máquina"
-                      >
-                        Finalizar Processo
-                      </button>
-
-                      {/* Botão Salvar e Mudar Processo */}
+                    {/* Duas colunas embaixo */}
+                    <div className="grid grid-cols-2 gap-2.5">
                       <button 
                         onClick={() => handleSalvarCenarioB(true)}
-                        disabled={isSaving || !(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro)}
-                        className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 font-bold h-12 md:h-10 px-3 rounded text-[10px] font-mono uppercase tracking-widest transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
+                        disabled={isSaving || !isBValid}
+                        className="h-12 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-mono font-bold uppercase rounded-lg cursor-pointer flex items-center justify-center disabled:opacity-50"
                         title="Fecha o lote atual e abre o form para configurar um novo processo/operadora para esta máquina"
                       >
-                        Mudar Processo
+                        MUDAR PROCESSO
                       </button>
 
-                      {/* Botão Salvar (Mantém Processo e reinicia ciclo) */}
                       <button 
-                        onClick={() => handleSalvarCenarioB(false)}
-                        disabled={isSaving || !(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro)}
-                        className="flex-1 bg-[#00624C] hover:bg-[#004838] text-white font-black h-12 md:h-10 px-3 rounded text-[10px] font-mono uppercase tracking-widest shadow-lg shadow-[#00624C]/15 transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
+                        onClick={handleFinalizarProcessoClick}
+                        disabled={isSaving || !isBValid}
+                        className="h-12 bg-rose-950/20 hover:bg-rose-900/30 border border-rose-500/20 text-rose-400 text-xs font-mono font-bold uppercase rounded-lg cursor-pointer flex items-center justify-center disabled:opacity-50"
+                        title="Finaliza o lote atual gravando a contagem e encerra o processo de vez nesta máquina"
                       >
-                        {isSaving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
-                        {!(confirmaBProdConforme && confirmaBLado && confirmaBRetrabalhoProprio && confirmaBRetrabalhoTerceiro)
-                          ? "CONFIRME TODOS"
-                          : "SALVAR LOTE"}
+                        FINALIZAR
                       </button>
                     </div>
-
                   </div>
                 </>
               )}
