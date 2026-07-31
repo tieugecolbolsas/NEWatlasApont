@@ -21,7 +21,8 @@ import {
   Sparkles,
   Check,
   Percent,
-  Play
+  Play,
+  Cpu
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getLocalSessionUser } from '../lib/auth';
@@ -1596,8 +1597,29 @@ export default function ScannerCaixas() {
               <div className="space-y-3 font-mono text-xs">
                 
                 {/* 2. Display Bar de Leitura Travada (Substitui Máquina Alvo / Cód. Curto Gerado) */}
-                <div className="bg-zinc-900 border border-white/30 rounded px-4 py-3 text-center text-sm font-bold font-mono text-zinc-300">
-                  N.º {formMaquina} | {formTipoMaquina}
+                <div className="relative overflow-hidden bg-zinc-900/90 border border-zinc-800/80 rounded-lg p-3.5 flex items-center justify-between shadow-inner">
+                  {/* Decorative industrial corner/line */}
+                  <div className="absolute top-0 left-0 w-1 h-full bg-[#00624C]" />
+                  
+                  <div className="flex items-center gap-3 pl-2">
+                    <div className="h-9 w-9 rounded-md bg-zinc-950 border border-zinc-800/80 flex items-center justify-center text-[#00624C] shadow-sm">
+                      <Cpu size={18} className="animate-pulse" />
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block font-bold">MÁQUINA IDENTIFICADA</span>
+                      <span className="font-mono text-xs sm:text-sm font-black text-white tracking-wider">
+                        N.º {formMaquina}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right pr-1">
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block font-bold">TIPO DE EQUIPAMENTO</span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-[#00624C]/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                      <Settings size={10} className="animate-[spin_8s_linear_infinite]" />
+                      {formTipoMaquina || 'RETA'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Nome da Operadora */}
@@ -1618,7 +1640,7 @@ export default function ScannerCaixas() {
                       onBlur={() => {
                         setTimeout(() => setShowOperadoraSuggestions(false), 200);
                       }}
-                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-bold font-mono text-xs"
+                      className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-bold font-mono text-xs font-bold"
                     />
                     <button
                       type="button"
@@ -1629,14 +1651,14 @@ export default function ScannerCaixas() {
                         }
                         setConfirmaOperadora(!confirmaOperadora);
                       }}
-                      className={`p-2.5 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                      className={`rounded border h-12 w-12 md:h-10 md:w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                         confirmaOperadora 
                           ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                           : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                       }`}
                       title={confirmaOperadora ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
                     >
-                      <Check size={16} className={confirmaOperadora ? "scale-110" : ""} />
+                      <Check size={20} className={`transition-transform md:w-4 md:h-4 ${confirmaOperadora ? "scale-110" : ""}`} />
                     </button>
                   </div>
                   {showOperadoraSuggestions && listaOperadoras.filter(op => op.toLowerCase().includes(formOperadora.toLowerCase())).length > 0 && (
@@ -1677,7 +1699,7 @@ export default function ScannerCaixas() {
                       onBlur={() => {
                         setTimeout(() => setShowOperacaoSuggestions(false), 200);
                       }}
-                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs"
+                      className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs"
                     />
                     <button
                       type="button"
@@ -1688,14 +1710,14 @@ export default function ScannerCaixas() {
                         }
                         setConfirmaOperacao(!confirmaOperacao);
                       }}
-                      className={`p-2.5 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                      className={`rounded border h-12 w-12 md:h-10 md:w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                         confirmaOperacao 
                           ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                           : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                       }`}
                       title={confirmaOperacao ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
                     >
-                      <Check size={16} className={confirmaOperacao ? "scale-110" : ""} />
+                      <Check size={20} className={`transition-transform md:w-4 md:h-4 ${confirmaOperacao ? "scale-110" : ""}`} />
                     </button>
                   </div>
                   {showOperacaoSuggestions && (
@@ -1786,7 +1808,7 @@ export default function ScannerCaixas() {
                       placeholder="Ex: 205"
                       value={formLote}
                       onChange={(e) => setFormLote(e.target.value)}
-                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs font-bold"
+                      className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs font-bold"
                     />
                   </div>
                   
@@ -1797,7 +1819,7 @@ export default function ScannerCaixas() {
                       disabled={confirmaLado}
                       value={formLado} 
                       onChange={(e) => setFormLado(e.target.value as any)}
-                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-xs font-bold"
+                      className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-xs font-bold"
                     >
                       <option value="Único">Único</option>
                       <option value="Esquerdo">Esquerdo</option>
@@ -1817,22 +1839,22 @@ export default function ScannerCaixas() {
                       setConfirmaLote(nextState);
                       setConfirmaLado(nextState);
                     }}
-                    className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                    className={`rounded border h-12 w-12 md:h-10 md:w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                       confirmaLote 
                         ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                         : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                     }`}
                     title={confirmaLote ? "Desbloquear Campos (Lote e Lado)" : "Confirmar e Travar Campos (Lote e Lado)"}
                   >
-                    <Check size={16} className={confirmaLote ? "scale-110" : ""} />
+                    <Check size={20} className={`transition-transform md:w-4 md:h-4 ${confirmaLote ? "scale-110" : ""}`} />
                   </button>
                 </div>
 
                 {/* Matéria-Prima Alimentada & Observação */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Matéria-Prima Alimentada *</label>
-                    <div className="flex gap-2">
+                <div className="flex gap-2 items-end">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Matéria-Prima Alimentada *</label>
                       <input 
                         type="number"
                         required
@@ -1849,37 +1871,38 @@ export default function ScannerCaixas() {
                             setFormMateriaPrima('');
                           }
                         }}
-                        className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs font-bold"
+                        className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs font-bold"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setConfirmaMateriaPrima(!confirmaMateriaPrima)}
-                        className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                          confirmaMateriaPrima 
-                            ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                        }`}
-                        title={confirmaMateriaPrima ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                      >
-                        <Check size={16} className={confirmaMateriaPrima ? "scale-110" : ""} />
-                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Observação</label>
+                        <span className="text-[9px] text-zinc-600 font-mono">{formObservacao.length}/150</span>
+                      </div>
+                      <input 
+                        type="text"
+                        maxLength={150}
+                        placeholder="Ex: Treinamento / Parada"
+                        value={formObservacao}
+                        onChange={(e) => setFormObservacao(e.target.value)}
+                        className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs"
+                      />
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center">
-                      <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Observação</label>
-                      <span className="text-[9px] text-zinc-600 font-mono">{formObservacao.length}/150</span>
-                    </div>
-                    <input 
-                      type="text"
-                      maxLength={150}
-                      placeholder="Ex: Treinamento / Parada"
-                      value={formObservacao}
-                      onChange={(e) => setFormObservacao(e.target.value)}
-                      className="w-full h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs"
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmaMateriaPrima(!confirmaMateriaPrima)}
+                    className={`rounded border h-12 w-12 md:h-10 md:w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                      confirmaMateriaPrima 
+                        ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                    }`}
+                    title={confirmaMateriaPrima ? "Desbloquear Campo (Matéria-Prima)" : "Confirmar e Travar Campo (Matéria-Prima)"}
+                  >
+                    <Check size={20} className={`transition-transform md:w-4 md:h-4 ${confirmaMateriaPrima ? "scale-110" : ""}`} />
+                  </button>
                 </div>
 
                 {/* 6. Compact Regime de Hora Extra Toggle Section */}
