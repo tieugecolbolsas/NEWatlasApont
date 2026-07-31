@@ -344,6 +344,18 @@ export default function Apontamentos() {
   const [ocorrencias, setOcorrencias] = useState<any[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // Bloquear rolagem do corpo da página ao abrir a janela lateral
+  useEffect(() => {
+    if (selectedBlockKey) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedBlockKey]);
+
   useEffect(() => {
     const handleRefresh = () => setRefreshTrigger(prev => prev + 1);
     window.addEventListener('refresh-apontamentos', handleRefresh);
