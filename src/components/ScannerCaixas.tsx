@@ -1640,7 +1640,7 @@ export default function ScannerCaixas() {
                       onBlur={() => {
                         setTimeout(() => setShowOperadoraSuggestions(false), 200);
                       }}
-                      className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-bold font-mono text-xs font-bold"
+                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-bold font-mono text-xs"
                     />
                     <button
                       type="button"
@@ -1651,14 +1651,14 @@ export default function ScannerCaixas() {
                         }
                         setConfirmaOperadora(!confirmaOperadora);
                       }}
-                      className={`rounded border h-12 w-12 md:h-10 md:w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                      className={`p-2.5 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                         confirmaOperadora 
                           ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                           : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                       }`}
                       title={confirmaOperadora ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
                     >
-                      <Check size={20} className={`transition-transform md:w-4 md:h-4 ${confirmaOperadora ? "scale-110" : ""}`} />
+                      <Check size={16} className={confirmaOperadora ? "scale-110" : ""} />
                     </button>
                   </div>
                   {showOperadoraSuggestions && listaOperadoras.filter(op => op.toLowerCase().includes(formOperadora.toLowerCase())).length > 0 && (
@@ -1699,7 +1699,7 @@ export default function ScannerCaixas() {
                       onBlur={() => {
                         setTimeout(() => setShowOperacaoSuggestions(false), 200);
                       }}
-                      className="flex-1 h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs"
+                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs"
                     />
                     <button
                       type="button"
@@ -1710,14 +1710,14 @@ export default function ScannerCaixas() {
                         }
                         setConfirmaOperacao(!confirmaOperacao);
                       }}
-                      className={`rounded border h-12 w-12 md:h-10 md:w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                      className={`p-2.5 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                         confirmaOperacao 
                           ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                           : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                       }`}
                       title={confirmaOperacao ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
                     >
-                      <Check size={20} className={`transition-transform md:w-4 md:h-4 ${confirmaOperacao ? "scale-110" : ""}`} />
+                      <Check size={16} className={confirmaOperacao ? "scale-110" : ""} />
                     </button>
                   </div>
                   {showOperacaoSuggestions && (
@@ -1808,7 +1808,7 @@ export default function ScannerCaixas() {
                       placeholder="Ex: 205"
                       value={formLote}
                       onChange={(e) => setFormLote(e.target.value)}
-                      className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs font-bold"
+                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs font-bold"
                     />
                   </div>
                   
@@ -1819,7 +1819,7 @@ export default function ScannerCaixas() {
                       disabled={confirmaLado}
                       value={formLado} 
                       onChange={(e) => setFormLado(e.target.value as any)}
-                      className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-xs font-bold"
+                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-xs font-bold"
                     >
                       <option value="Único">Único</option>
                       <option value="Esquerdo">Esquerdo</option>
@@ -1839,14 +1839,14 @@ export default function ScannerCaixas() {
                       setConfirmaLote(nextState);
                       setConfirmaLado(nextState);
                     }}
-                    className={`rounded border h-12 w-12 md:h-10 md:w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                    className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                       confirmaLote 
                         ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                         : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                     }`}
                     title={confirmaLote ? "Desbloquear Campos (Lote e Lado)" : "Confirmar e Travar Campos (Lote e Lado)"}
                   >
-                    <Check size={20} className={`transition-transform md:w-4 md:h-4 ${confirmaLote ? "scale-110" : ""}`} />
+                    <Check size={16} className={confirmaLote ? "scale-110" : ""} />
                   </button>
                 </div>
 
@@ -1871,7 +1871,7 @@ export default function ScannerCaixas() {
                             setFormMateriaPrima('');
                           }
                         }}
-                        className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs font-bold"
+                        className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs font-bold"
                       />
                     </div>
 
@@ -1886,7 +1886,7 @@ export default function ScannerCaixas() {
                         placeholder="Ex: Treinamento / Parada"
                         value={formObservacao}
                         onChange={(e) => setFormObservacao(e.target.value)}
-                        className="w-full h-12 md:h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs"
+                        className="w-full h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs"
                       />
                     </div>
                   </div>
@@ -1894,14 +1894,14 @@ export default function ScannerCaixas() {
                   <button
                     type="button"
                     onClick={() => setConfirmaMateriaPrima(!confirmaMateriaPrima)}
-                    className={`rounded border h-12 w-12 md:h-10 md:w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
+                    className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                       confirmaMateriaPrima 
                         ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                         : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                     }`}
                     title={confirmaMateriaPrima ? "Desbloquear Campo (Matéria-Prima)" : "Confirmar e Travar Campo (Matéria-Prima)"}
                   >
-                    <Check size={20} className={`transition-transform md:w-4 md:h-4 ${confirmaMateriaPrima ? "scale-110" : ""}`} />
+                    <Check size={16} className={confirmaMateriaPrima ? "scale-110" : ""} />
                   </button>
                 </div>
 
@@ -2114,14 +2114,14 @@ export default function ScannerCaixas() {
                     
                     {/* Apontamento de Volumes (Grid de 3 Colunas: Conforme, Ret. Próprio, Ret. Terceiro) */}
                     <div className="space-y-3.5">
-                      <span className="text-[9px] font-mono text-zinc-500 uppercase font-black tracking-widest block">
+                      <span className="text-[10px] font-mono text-zinc-400 uppercase font-black tracking-wider block">
                         Apontamento de Volumes
                       </span>
                       
                       <div className="grid grid-cols-3 gap-2">
                         {/* Column 1: Conforme (Verde) */}
                         <div className="space-y-1">
-                          <label className="text-[8px] text-emerald-500 font-bold uppercase tracking-wider block">Conforme *</label>
+                          <label className="text-[10px] text-emerald-400 font-black uppercase tracking-wider block">Conforme *</label>
                           <div className="flex flex-col gap-1.5">
                             <input 
                               type="text" 
@@ -2131,25 +2131,25 @@ export default function ScannerCaixas() {
                               value={prodConforme}
                               onChange={(e) => setProdConforme(e.target.value === '' ? '' : Number(e.target.value))}
                               disabled={confirmaBProdConforme}
-                              className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-2 text-xs font-mono text-white text-center focus:outline-none focus:border-emerald-500 disabled:opacity-50" 
+                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-xs font-mono text-white text-center focus:outline-none focus:border-emerald-500 disabled:opacity-50" 
                             />
                             <button 
                               type="button" 
                               onClick={() => setConfirmaBProdConforme(!confirmaBProdConforme)}
-                              className={`w-full py-1 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
+                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all ${
                                 confirmaBProdConforme 
-                                  ? 'bg-emerald-950/20 border border-emerald-500/30 text-emerald-400' 
-                                  : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white'
+                                  ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
+                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                               }`}
                             >
-                              ✓
+                              <Check size={16} className={confirmaBProdConforme ? "scale-110" : ""} />
                             </button>
                           </div>
                         </div>
 
                         {/* Column 2: Retrabalho Próprio (Laranja) */}
                         <div className="space-y-1">
-                          <label className="text-[8px] text-amber-500 font-bold uppercase tracking-wider block">Ret. Próprio</label>
+                          <label className="text-[10px] text-amber-400 font-black uppercase tracking-wider block">Ret. Próprio</label>
                           <div className="flex flex-col gap-1.5">
                             <input 
                               type="text" 
@@ -2159,25 +2159,25 @@ export default function ScannerCaixas() {
                               value={retrabalhoProprio}
                               onChange={(e) => setRetrabalhoProprio(e.target.value === '' ? '' : Number(e.target.value))}
                               disabled={confirmaBRetrabalhoProprio}
-                              className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
                             />
                             <button 
                               type="button" 
                               onClick={() => setConfirmaBRetrabalhoProprio(!confirmaBRetrabalhoProprio)}
-                              className={`w-full py-1 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
+                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all ${
                                 confirmaBRetrabalhoProprio 
-                                  ? 'bg-amber-950/20 border border-amber-500/30 text-amber-400' 
-                                  : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white'
+                                  ? 'bg-amber-600 border-amber-500 text-white shadow-md shadow-amber-600/20' 
+                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                               }`}
                             >
-                              ✓
+                              <Check size={16} className={confirmaBRetrabalhoProprio ? "scale-110" : ""} />
                             </button>
                           </div>
                         </div>
 
                         {/* Column 3: Retrabalho Terceiro (Laranja) */}
                         <div className="space-y-1">
-                          <label className="text-[8px] text-amber-500 font-bold uppercase tracking-wider block">Ret. Terc.</label>
+                          <label className="text-[10px] text-amber-400 font-black uppercase tracking-wider block">Ret. Terc.</label>
                           <div className="flex flex-col gap-1.5">
                             <input 
                               type="text" 
@@ -2187,18 +2187,18 @@ export default function ScannerCaixas() {
                               value={retrabalhoTerceiro}
                               onChange={(e) => setRetrabalhoTerceiro(e.target.value === '' ? '' : Number(e.target.value))}
                               disabled={confirmaBRetrabalhoTerceiro}
-                              className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
                             />
                             <button 
                               type="button" 
                               onClick={() => setConfirmaBRetrabalhoTerceiro(!confirmaBRetrabalhoTerceiro)}
-                              className={`w-full py-1 rounded flex items-center justify-center font-bold text-[10px] cursor-pointer transition-colors ${
+                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all ${
                                 confirmaBRetrabalhoTerceiro 
-                                  ? 'bg-amber-950/20 border border-amber-500/30 text-amber-400' 
-                                  : 'bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white'
+                                  ? 'bg-amber-600 border-amber-500 text-white shadow-md shadow-amber-600/20' 
+                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                               }`}
                             >
-                              ✓
+                              <Check size={16} className={confirmaBRetrabalhoTerceiro ? "scale-110" : ""} />
                             </button>
                           </div>
                         </div>
@@ -2207,13 +2207,13 @@ export default function ScannerCaixas() {
 
                     {/* Lado (Dropdown) */}
                     <div className="flex items-center justify-between bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60">
-                      <span className="text-[9px] font-mono text-zinc-400 uppercase font-bold">Lado de Produção:</span>
+                      <span className="text-[10px] font-mono text-zinc-300 uppercase font-black tracking-wider">Lado de Produção:</span>
                       <div className="flex items-center gap-2">
                         <select 
                           disabled={confirmaBLado}
                           value={cenarioBLado} 
                           onChange={(e) => setCenarioBLado(e.target.value as any)}
-                          className="bg-zinc-900 border border-zinc-800 text-white text-xs font-mono font-bold rounded px-2 py-1 focus:outline-none focus:border-[#00624C] disabled:opacity-50"
+                          className="h-10 bg-zinc-900 border border-zinc-800 text-white text-xs font-mono font-bold rounded px-2 focus:outline-none focus:border-[#00624C] disabled:opacity-50"
                         >
                           <option value="Único">Único</option>
                           <option value="Esquerdo">Esquerdo</option>
@@ -2222,21 +2222,21 @@ export default function ScannerCaixas() {
                         <button
                           type="button"
                           onClick={() => setConfirmaBLado(!confirmaBLado)}
-                          className={`px-2.5 py-1 rounded border flex items-center justify-center font-bold text-[10px] cursor-pointer transition-all ${
+                          className={`h-10 w-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all shrink-0 ${
                             confirmaBLado 
-                              ? 'bg-emerald-600/20 border-emerald-500/30 text-emerald-400' 
+                              ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                               : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
                           }`}
                           title={confirmaBLado ? "Desbloquear Lado" : "Confirmar Lado"}
                         >
-                          ✓
+                          <Check size={16} className={confirmaBLado ? "scale-110" : ""} />
                         </button>
                       </div>
                     </div>
 
                     {/* Observação (Justificativa) */}
                     <div className="space-y-1.5">
-                      <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider block font-bold">
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block font-black">
                         OBSERVAÇÃO (JUSTIFICATIVA)
                       </label>
                       <textarea 

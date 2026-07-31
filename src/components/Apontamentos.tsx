@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useRealtime } from '../lib/realtimeContext';
 import { 
   FileText, 
@@ -338,7 +339,7 @@ export default function Apontamentos() {
   const PAGE_SIZE = 10;
 
   // Accordion expanded blocks keys
-  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [selectedBlockKey, setSelectedBlockKey] = useState<string | null>(null);
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
   const [ocorrencias, setOcorrencias] = useState<any[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -754,9 +755,7 @@ export default function Apontamentos() {
   });
 
   const toggleGroup = (key: string) => {
-    setExpandedKeys(prev => 
-      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-    );
+    setSelectedBlockKey(prev => prev === key ? null : key);
   };
 
   return (
@@ -1096,7 +1095,7 @@ export default function Apontamentos() {
         ) : (
           <div className="space-y-4">
             {groupedBlocks.map((block: any) => {
-              const isExpanded = expandedKeys.includes(block.key);
+              const isExpanded = selectedBlockKey === block.key;
 
               const activeSessionForBlock = activeSessions.find(
                 s => {
@@ -1405,381 +1404,7 @@ export default function Apontamentos() {
                     })()}
                   </button>
 
-                  {/* Detalhes expandidos (Accordion/Sanfona) */}
-                  {isExpanded && (
-                    <div className="border-t border-emerald-500/30 bg-emerald-950/10 px-5 py-5 space-y-4 font-mono text-xs shadow-inner shadow-emerald-500/10 transform-gpu backface-hidden">
-                      {/* Tempo de Produção Destacado */}
-                      {(() => {
-                        let totalBlockMs = block.itens.reduce((acc: number, curr: any) => {
-                          const itemInicio = curr.horario_inicio;
-                          const itemTermino = curr.horario_termino;
-                          if (!itemInicio || !itemTermino) return acc;
-                          
-                          const dInicio = parseTimeToDateToday(itemInicio, curr.data);
-                          const dTermino = parseTimeToDateToday(itemTermino, curr.data);
-                          if (!dInicio || !dTermino) return acc;
-                          
-                          let diffMs = dTermino.getTime() - dInicio.getTime();
-                          if (diffMs < 0) return acc;
-                          
-                          // Refeição padrão: 12:00:00 to 13:20:00
-                          let baseDateStr = curr.data || new Date().toISOString().split('T')[0];
-                          if (baseDateStr.includes('/')) {
-                            const parts = baseDateStr.split('/');
-                            if (parts.length === 3) {
-                              baseDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                            }
-                          }
-                          const dAlmocoInicio = new Date(`${baseDateStr}T12:00:00`);
-                          const dAlmocoFim = new Date(`${baseDateStr}T13:20:00`);
-                          
-                          if (dInicio <= dAlmocoInicio && dTermino >= dAlmocoFim) {
-                            diffMs = Math.max(0, diffMs - (80 * 60 * 1000));
-                          }
-                          
-                          return acc + diffMs;
-                        }, 0);
-
-                        // Se a sessão está ativa, adiciona o tempo decorrido ao vivo
-                        if (isSessionActive && activeSessionForBlock && activeSessionForBlock.horario_inicio) {
-                          const dInicio = parseTimeToDateToday(activeSessionForBlock.horario_inicio, block.data);
-                          if (dInicio) {
-                            let diffMs = now.getTime() - dInicio.getTime();
-                            if (diffMs > 0) {
-                              let baseDateStr = block.data || new Date().toISOString().split('T')[0];
-                              if (baseDateStr.includes('/')) {
-                                const parts = baseDateStr.split('/');
-                                if (parts.length === 3) {
-                                  baseDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                                }
-                              }
-                              const dAlmocoInicio = new Date(`${baseDateStr}T12:00:00`);
-                              const dAlmocoFim = new Date(`${baseDateStr}T13:20:00`);
-                              if (dInicio <= dAlmocoInicio && now >= dAlmocoFim) {
-                                diffMs = Math.max(0, diffMs - (80 * 60 * 1000));
-                              }
-                              totalBlockMs += diffMs;
-                            }
-                          }
-                        }
-
-                        const totalMinutes = Math.round(totalBlockMs / 60000);
-                        const hrs = Math.floor(totalMinutes / 60);
-                        const mins = totalMinutes % 60;
-                        const tempoProducaoStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins} min`;
-
-                        // Ritmo e Estimativa
-                        const todayParts = new Date().toISOString().split('T')[0].split('-');
-                        const todayFormatted = `${todayParts[2]}/${todayParts[1]}/${todayParts[0]}`;
-                        const isToday = block.data === todayFormatted;
-
-                        let earliestStart: Date | null = null;
-                        let latestEnd: Date | null = null;
-                        block.itens.forEach((item: any) => {
-                          const hIni = item.horario_inicio;
-                          if (hIni) {
-                            const d = parseTimeToDateToday(hIni, item.data);
-                            if (d && (!earliestStart || d < earliestStart)) {
-                              earliestStart = d;
-                            }
-                          }
-                          const hTerm = item.horario_termino || item.created_at || item.timestamp;
-                          if (hTerm) {
-                            const d = parseTimeToDateToday(hTerm, item.data);
-                            if (d && (!latestEnd || d > latestEnd)) {
-                              latestEnd = d;
-                            }
-                          }
-                        });
-
-                        const horaAtual = isToday ? now : (latestEnd || now);
-                        const elapsedMs = earliestStart ? Math.max(60 * 1000, horaAtual.getTime() - earliestStart.getTime()) : 0;
-                        const elapsedHours = elapsedMs / (3600 * 1000);
-                        const soma = block.somaTotal || 0;
-                        const rhythm = elapsedHours > 0 ? (soma / elapsedHours) : 0;
-
-                        let metaAlvo = 1000;
-                        if (soma >= 1000 && soma < 1200) {
-                          metaAlvo = 1200;
-                        } else if (soma >= 1200) {
-                          metaAlvo = 1500;
-                        }
-
-                        const faltam = Math.max(0, metaAlvo - soma);
-                        const isMetaBatida = soma >= metaAlvo;
-
-                        let estimativaStr = '';
-                        if (isMetaBatida) {
-                          estimativaStr = 'Meta Batida!';
-                        } else if (rhythm <= 0) {
-                          estimativaStr = 'Sem produção ativa para estimar';
-                        } else {
-                          const hoursRemaining = faltam / rhythm;
-                          const estHrs = Math.floor(hoursRemaining);
-                          const estMins = Math.round((hoursRemaining - estHrs) * 60);
-                          estimativaStr = `Tempo estimado para bater meta: ${estHrs}h ${estMins}min`;
-                        }
-
-                        return (
-                          <div className="space-y-3">
-                            <div className="bg-emerald-950/20 border border-emerald-900/50 p-4 rounded-xl space-y-4 shadow-lg shadow-emerald-900/20">
-                              {/* Top 3-Column Grid */}
-                              <div className="grid grid-cols-3 gap-2.5 text-center">
-                                
-                                {/* Block 1: Qualidade (Red/Refugo) */}
-                                <div className="bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60 flex flex-col justify-between h-[68px]">
-                                  <span className="text-[8px] text-rose-500 font-bold uppercase tracking-wider">Qualidade</span>
-                                  <span className="text-[11px] text-zinc-300 font-mono font-bold leading-none mt-1">
-                                    Refugo: <span className="text-rose-500 font-black">{block.somaRefugo}</span>
-                                  </span>
-                                </div>
-                                
-                                {/* Block 2: Ritmo de Produção (Green) */}
-                                <div className="bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60 flex flex-col justify-between h-[68px]">
-                                  <span className="text-[8px] text-emerald-500 font-bold uppercase tracking-wider">Ritmo</span>
-                                  <span className="text-[11px] text-zinc-300 font-mono font-bold leading-none mt-1">
-                                    <span className="text-emerald-500 font-black">{rhythm.toFixed(1)}</span> P/h
-                                  </span>
-                                </div>
-                                
-                                {/* Block 3: Controle de Matéria-Prima (Blue/Sky) */}
-                                {(() => {
-                                  const matInicial = Number(block.materia_prima_inicial) || Number(block.somaMateriaPrima) || 0;
-                                  const materia_prima_restante = matInicial - (block.somaTotal || 0);
-                                  const isMateriaPrimaFinalizada = materia_prima_restante <= 0;
-                                  
-                                  let tempoMateriaPrimaRestante = '';
-                                  if (rhythm <= 0) {
-                                    tempoMateriaPrimaRestante = 'Aguardando';
-                                  } else {
-                                    const hrsRemaining = materia_prima_restante / rhythm;
-                                    const estHrs = Math.floor(hrsRemaining);
-                                    const estMins = Math.round((hrsRemaining - estHrs) * 60);
-                                    tempoMateriaPrimaRestante = `${estHrs}h ${estMins}m`;
-                                  }
-
-                                  return (
-                                    <div className="bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60 flex flex-col justify-between h-[68px]">
-                                      <span className="text-[8px] text-sky-500 font-bold uppercase tracking-wider">M.P. Restante</span>
-                                      {matInicial <= 0 ? (
-                                        <span className="text-[10px] text-zinc-500 font-mono font-bold leading-none mt-1">
-                                          N/A
-                                        </span>
-                                      ) : isMateriaPrimaFinalizada ? (
-                                        <span className="text-[10px] text-rose-400 font-mono font-bold leading-none mt-1">
-                                          Finalizada!
-                                        </span>
-                                      ) : (
-                                        <div className="space-y-0.5 mt-1 leading-none">
-                                          <span className="text-[11px] text-zinc-300 font-mono font-bold block">{materia_prima_restante} pçs</span>
-                                          <span className="text-[8px] text-sky-500 font-bold block">Acaba: {tempoMateriaPrimaRestante}</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })()}
-                                
-                              </div>
-                              
-                              {/* Bottom Reworks Row */}
-                              <div className="flex justify-between text-[10px] font-mono font-bold text-zinc-500 pt-2.5 border-t border-zinc-900/60">
-                                <span className="text-amber-500">Ret. Próprio: <span className="text-zinc-300">{block.somaRetrabalhoProprio} pçs</span></span>
-                                <span className="text-amber-500">Ret. Terceiro: <span className="text-zinc-300">{block.somaRetrabalhoTerceiro} pçs</span></span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })()}
-
-                      <div className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider mb-2 flex items-center gap-1.5 pt-1">
-                        <Layers size={11} className="text-[#00624C]" /> Contagens Individuais no Bloco ({block.itens.filter((item: any) => Number(item.producao_conforme || item.quantidade || 0) > 0).length})
-                      </div>
-                      <div className="pt-2">
-                        {(() => {
-                          const sortedBlockItens = [...block.itens].sort((a, b) => {
-                            const getTimeString = (item: any) => {
-                              const t = item.horario_termino || item.created_at || item.timestamp || item.horario_inicio || '';
-                              if (!t) return '00:00';
-                              if (t.includes('T') || t.includes('-')) {
-                                try {
-                                  const d = new Date(t);
-                                  if (!isNaN(d.getTime())) {
-                                    return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                                  }
-                                } catch (e) {}
-                              }
-                              return t;
-                            };
-                            return getTimeString(b).localeCompare(getTimeString(a));
-                          });
-                          const displayItens = sortedBlockItens.filter((item: any) => {
-                            const conforme = Number(item.producao_conforme || item.quantidade || 0);
-                            return conforme > 0;
-                          });
-
-                          if (displayItens.length === 0) {
-                            return (
-                              <div key="empty-counts" className="flex flex-col items-center justify-center p-8 bg-zinc-900/20 border border-dashed border-zinc-800 rounded-lg text-zinc-500 text-center gap-2">
-                                <span className="text-xs font-bold font-sans tracking-wide">
-                                  Aguardando primeira contagem do processo...
-                                </span>
-                              </div>
-                            );
-                          }
-
-                          return displayItens.map((item: any, itemIdx: number) => {
-                            const formatTimeStr = (t: string) => {
-                              if (!t) return '-';
-                              if (t.includes('T') || t.includes('-')) {
-                                try {
-                                  return new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                                } catch (e) {
-                                  return t;
-                                }
-                              }
-                              return t.slice(0, 5); // display "HH:MM"
-                            };
-
-                            const hTermino = item.horario_termino;
-                            const formattedTime = formatTimeStr(hTermino);
-                            const hInicio = item.horario_inicio || '';
-                            const formattedTimeInicio = hInicio ? formatTimeStr(hInicio) : '';
-                            
-                            // Cálculo estático com lógica de almoço para o registro específico
-                            const tempoProducaoReg = hInicio && hTermino ? getRegistroProductionTime(hInicio, hTermino, item.data) : '';
-
-                          const conforme = item.producao_conforme || item.quantidade || 0;
-                          const status = item.status || 'validado';
-                          const statusStr = String(status).toLowerCase();
-                          const isLegacyRealtime = statusStr === 'realtime';
-
-                          const rePr = item.retrabalho_proprio || 0;
-                          const reTe = item.retrabalho_terceiro || 0;
-                          const ocorrencia = item.motivo_ocorrencia;
-                          const lote = item.lote || 'N/A';
-                          const lado = item.lado || 'Único';
-                          const tipoMaq = item.tipo_maquina || 'Manual';
-                          
-                          // Hora extra vem sempre "Não" por padrão, exceto se banco retornar exatamente 's'
-                          const horaExtra = item.hora_extra === 's' ? 'Sim' : 'Não';
-
-                          const regNumber = displayItens.length - itemIdx;
-                          
-                          // Lógica de desduplicação de observações acumuladas (exibe apenas as novas observações para este registro)
-                          const obsArray = (item.observacao || '').split('|').map((o: string) => o.trim()).filter((o: string) => o !== "" && o !== "EMPTY" && o !== "NULL");
-                          const prevItem = displayItens[itemIdx + 1];
-                          const prevObsArray = prevItem ? (prevItem.observacao || '').split('|').map((o: string) => o.trim()).filter((o: string) => o !== "" && o !== "EMPTY" && o !== "NULL") : [];
-                          const newObs = obsArray.filter((o: string) => !prevObsArray.includes(o));
-
-                          return (
-                            <div 
-                              key={item.id || itemIdx} 
-                              className="bg-[#04120c]/60 border border-emerald-900/40 rounded-xl p-4 space-y-3 shadow-lg shadow-black/50 mb-3 last:mb-0 relative overflow-clip transform-gpu backface-hidden"
-                            >
-                              {/* Linha de Título Gigante */}
-                              <div className="border-b border-zinc-950 pb-3 flex flex-col gap-3">
-                                <div className="flex justify-between items-start gap-2">
-                                  <div className="flex items-center gap-2.5">
-                                    <span className="bg-blue-950/40 text-blue-400 text-xs font-black px-2 py-0.5 rounded border border-blue-900/50 shadow-sm shadow-blue-900/20">
-                                      #{regNumber}
-                                    </span>
-                                    <div className="text-base font-black text-emerald-400 tracking-wide flex items-center gap-1.5 leading-none">
-                                      <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                                      {conforme} Peças Conformes
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    {isSessionActive && itemIdx === 0 ? (
-                                      <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                                        ÚLTIMO REGISTRO
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                </div>
-                                
-                                {/* HORÁRIO EM DESTAQUE */}
-                                <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-800/80 px-3 py-1.5 rounded-lg w-fit">
-                                  <Clock size={12} className="text-brand" />
-                                  <span className="text-zinc-100 font-bold text-xs tracking-wider">
-                                    {formattedTimeInicio ? `${formattedTimeInicio} - ${formattedTime}` : formattedTime}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Badges Adicionais (Status, Ocorrência) */}
-                              {((ocorrencia && ocorrencia !== 'Produção Normal') || (!isLegacyRealtime && status !== 'validado')) && (
-                                <div className="flex flex-wrap gap-2">
-                                  {ocorrencia && ocorrencia !== 'Produção Normal' && (
-                                    <span className="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                                      Ocorrência: {ocorrencia}
-                                    </span>
-                                  )}
-                                  {!isLegacyRealtime && status !== 'validado' && (
-                                    <span className={`text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded border ${
-                                      status === 'rejeitado'
-                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                    }`}>
-                                      {status}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Grid de Informações Técnicas */}
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] sm:text-xs text-zinc-400 font-mono">
-                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
-                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Duração</span>
-                                  <span className="text-[#00624C] font-bold text-[10px] sm:text-xs">{tempoProducaoReg || '0h 0m'}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
-                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Lote/Lado</span>
-                                  <span className="text-zinc-300 text-[10px] sm:text-xs">{lote} ({lado})</span>
-                                </div>
-                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
-                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Máquina</span>
-                                  <span className="text-zinc-300 text-[10px] sm:text-xs">{tipoMaq}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-zinc-950/40 pb-1">
-                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Hora Extra</span>
-                                  <span className="text-zinc-300 text-[10px] sm:text-xs">{horaExtra}</span>
-                                </div>
-                              </div>
-
-                              {/* Observação correspondente no log */}
-                              {newObs.length > 0 && 
-                               item.motivo_ocorrencia !== "Finalização Antecipada" &&
-                               item.motivo_ocorrencia !== "Finalização Automática" && (
-                                 <div className="mt-3 p-3 bg-amber-950/20 border border-amber-500/30 rounded-lg text-[10px] text-amber-400 shadow-inner shadow-amber-900/10">
-                                   <div className="font-bold uppercase text-[8px] tracking-wider mb-1 flex items-center gap-1">
-                                     ✉ OBSERVAÇÃO / JUSTIFICATIVA:
-                                   </div>
-                                   <div className="flex flex-col gap-1.5">
-                                     {newObs.map((obs: string, oIdx: number) => (
-                                       <span key={oIdx} className="italic font-medium">"{obs}"</span>
-                                     ))}
-                                   </div>
-                                 </div>
-                              )}
-
-                              {/* Finalização Antecipada */}
-                              {itemIdx === 0 && blockFinalizacoes.length > 0 && blockFinalizacoes.map((fin: any, fIdx: number) => (
-                                <div key={`fin-${fIdx}`} className="bg-rose-950/20 border border-rose-900/50 p-3.5 rounded-lg mt-2 text-xs text-rose-100">
-                                  <span className="text-rose-500 font-bold block text-[10px] uppercase tracking-wider mb-1">
-                                    ✉ Motivo da Finalização Antecipada:
-                                  </span>
-                                  <p className="font-sans italic leading-relaxed text-rose-200 font-medium">
-                                    "{fin.descricao?.trim()}"
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        });
-                        })()}
-                      </div>
-                    </div>
-                  )}
+                  {/* Detalhes expandidos movidos para a gaveta lateral */}
                 </div>
               );
             })}
@@ -1821,6 +1446,467 @@ export default function Apontamentos() {
           </div>
         )}
       </div>
+
+      {/* GAVETA LATERAL DE DETALHES (SIDE DRAWER) */}
+      <AnimatePresence>
+        {selectedBlockKey && (() => {
+          const selectedBlock = groupedBlocks.find((b: any) => b.key === selectedBlockKey);
+          if (!selectedBlock) return null;
+
+          const activeSessionForBlock = activeSessions.find(
+            s => {
+              const sMaq = (s.num_maquina || '').split('|')[0].trim().toLowerCase();
+              const bMaq = (selectedBlock.num_maquina || '').split('|')[0].trim().toLowerCase();
+              return sMaq === bMaq && 
+                     s.operacao_nome?.trim().toLowerCase() === selectedBlock.operacao_nome?.trim().toLowerCase();
+            }
+          );
+          const isSessionActive = !!activeSessionForBlock;
+
+          const blockFinalizacoes = ocorrencias.filter(o => {
+            const oMaq = (o.num_maquina || '').split('|')[0].trim().toLowerCase();
+            const bMaq = (selectedBlock.num_maquina || '').split('|')[0].trim().toLowerCase();
+            const oOper = o.operacao_nome?.trim().toLowerCase();
+            const bOper = selectedBlock.operacao_nome?.trim().toLowerCase();
+            return oMaq === bMaq && oOper === bOper && o.tipo_ocorrencia === 'Finalização Antecipada';
+          });
+
+          return (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedBlockKey(null)}
+                className="fixed inset-0 bg-black z-50 pointer-events-auto cursor-pointer"
+              />
+
+              {/* Drawer Panel */}
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed right-0 top-0 bottom-0 w-full max-w-lg md:max-w-xl bg-zinc-900 border-l border-zinc-800 shadow-2xl z-50 flex flex-col pointer-events-auto"
+              >
+                {/* Drawer Header */}
+                <div className="p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#00624C] font-mono text-xs font-bold uppercase tracking-wider bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/40">
+                        MÁQUINA {selectedBlock.num_maquina || 'N/A'}
+                      </span>
+                      <span className="text-zinc-500 font-mono text-xs">
+                        {selectedBlock.data}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-black text-white font-mono uppercase tracking-widest">
+                      {selectedBlock.operacao_nome || 'PROCESSO'}
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setSelectedBlockKey(null)}
+                    className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Drawer Content (Scrollable) */}
+                <div 
+                  className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-thin scrollbar-thumb-[#5A189A] scrollbar-track-transparent scrollbar-thumb-rounded-full"
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#5A189A transparent'
+                  }}
+                >
+                  {/* 1. Resumo do Bloco */}
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+                      Resumo do Bloco
+                    </h4>
+
+                    {(() => {
+                      let totalBlockMs = selectedBlock.itens.reduce((acc: number, curr: any) => {
+                        const itemInicio = curr.horario_inicio;
+                        const itemTermino = curr.horario_termino;
+                        if (!itemInicio || !itemTermino) return acc;
+                        
+                        const dInicio = parseTimeToDateToday(itemInicio, curr.data);
+                        const dTermino = parseTimeToDateToday(itemTermino, curr.data);
+                        if (!dInicio || !dTermino) return acc;
+                        
+                        let diffMs = dTermino.getTime() - dInicio.getTime();
+                        if (diffMs < 0) return acc;
+                        
+                        let baseDateStr = curr.data || new Date().toISOString().split('T')[0];
+                        if (baseDateStr.includes('/')) {
+                          const parts = baseDateStr.split('/');
+                          if (parts.length === 3) {
+                            baseDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                          }
+                        }
+                        const dAlmocoInicio = new Date(`${baseDateStr}T12:00:00`);
+                        const dAlmocoFim = new Date(`${baseDateStr}T13:20:00`);
+                        
+                        if (dInicio <= dAlmocoInicio && dTermino >= dAlmocoFim) {
+                          diffMs = Math.max(0, diffMs - (80 * 60 * 1000));
+                        }
+                        
+                        return acc + diffMs;
+                      }, 0);
+
+                      if (isSessionActive && activeSessionForBlock && activeSessionForBlock.horario_inicio) {
+                        const dInicio = parseTimeToDateToday(activeSessionForBlock.horario_inicio, selectedBlock.data);
+                        if (dInicio) {
+                          let diffMs = now.getTime() - dInicio.getTime();
+                          if (diffMs > 0) {
+                            let baseDateStr = selectedBlock.data || new Date().toISOString().split('T')[0];
+                            if (baseDateStr.includes('/')) {
+                              const parts = baseDateStr.split('/');
+                              if (parts.length === 3) {
+                                baseDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                              }
+                            }
+                            const dAlmocoInicio = new Date(`${baseDateStr}T12:00:00`);
+                            const dAlmocoFim = new Date(`${baseDateStr}T13:20:00`);
+                            if (dInicio <= dAlmocoInicio && now >= dAlmocoFim) {
+                              diffMs = Math.max(0, diffMs - (80 * 60 * 1000));
+                            }
+                            totalBlockMs += diffMs;
+                          }
+                        }
+                      }
+
+                      const totalMinutes = Math.round(totalBlockMs / 60000);
+                      const hrs = Math.floor(totalMinutes / 60);
+                      const mins = totalMinutes % 60;
+                      const tempoProducaoStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins} min`;
+
+                      const todayParts = new Date().toISOString().split('T')[0].split('-');
+                      const todayFormatted = `${todayParts[2]}/${todayParts[1]}/${todayParts[0]}`;
+                      const isToday = selectedBlock.data === todayFormatted;
+
+                      let earliestStart: Date | null = null;
+                      let latestEnd: Date | null = null;
+                      selectedBlock.itens.forEach((item: any) => {
+                        const hIni = item.horario_inicio;
+                        if (hIni) {
+                          const d = parseTimeToDateToday(hIni, item.data);
+                          if (d && (!earliestStart || d < earliestStart)) {
+                            earliestStart = d;
+                          }
+                        }
+                        const hTerm = item.horario_termino || item.created_at || item.timestamp;
+                        if (hTerm) {
+                          const d = parseTimeToDateToday(hTerm, item.data);
+                          if (d && (!latestEnd || d > latestEnd)) {
+                            latestEnd = d;
+                          }
+                        }
+                      });
+
+                      const horaAtual = isToday ? now : (latestEnd || now);
+                      const elapsedMs = earliestStart ? Math.max(60 * 1000, horaAtual.getTime() - earliestStart.getTime()) : 0;
+                      const elapsedHours = elapsedMs / (3600 * 1000);
+                      const soma = selectedBlock.somaTotal || 0;
+                      const rhythm = elapsedHours > 0 ? (soma / elapsedHours) : 0;
+
+                      let metaAlvo = 1000;
+                      if (soma >= 1000 && soma < 1200) {
+                        metaAlvo = 1200;
+                      } else if (soma >= 1200) {
+                        metaAlvo = 1500;
+                      }
+
+                      const percent = Math.min(100, (soma / metaAlvo) * 100);
+                      const progColor = percent >= 100 ? 'bg-emerald-500' : percent >= 50 ? 'bg-amber-500' : 'bg-rose-500';
+
+                      return (
+                        <div className="space-y-4">
+                          {/* Indicadores do Bloco */}
+                          <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl space-y-4 shadow-lg">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="bg-zinc-900/60 p-3 rounded-lg border border-zinc-800 flex flex-col justify-between">
+                                <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Tempo de Produção</span>
+                                <span className="text-sm text-zinc-100 font-mono font-bold mt-1">
+                                  {tempoProducaoStr}
+                                </span>
+                              </div>
+                              <div className="bg-zinc-900/60 p-3 rounded-lg border border-zinc-800 flex flex-col justify-between">
+                                <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Peças Conformes</span>
+                                <span className="text-sm text-emerald-400 font-mono font-bold mt-1">
+                                  {soma} pçs
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Grid 3 Colunas original */}
+                            <div className="grid grid-cols-3 gap-2.5 text-center">
+                              {/* Block 1: Qualidade (Red/Refugo) */}
+                              <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800 flex flex-col justify-between h-[68px]">
+                                <span className="text-[8px] text-rose-500 font-bold uppercase tracking-wider">Qualidade</span>
+                                <span className="text-[11px] text-zinc-300 font-mono font-bold leading-none mt-1">
+                                  Refugo: <span className="text-rose-500 font-black">{selectedBlock.somaRefugo}</span>
+                                </span>
+                              </div>
+                              
+                              {/* Block 2: Ritmo de Produção (Green) */}
+                              <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800 flex flex-col justify-between h-[68px]">
+                                <span className="text-[8px] text-emerald-500 font-bold uppercase tracking-wider">Ritmo</span>
+                                <span className="text-[11px] text-zinc-300 font-mono font-bold leading-none mt-1">
+                                  <span className="text-emerald-500 font-black">{rhythm.toFixed(1)}</span> P/h
+                                </span>
+                              </div>
+                              
+                              {/* Block 3: Controle de Matéria-Prima (Blue/Sky) */}
+                              {(() => {
+                                const matInicial = Number(selectedBlock.materia_prima_inicial) || Number(selectedBlock.somaMateriaPrima) || 0;
+                                const materia_prima_restante = matInicial - (selectedBlock.somaTotal || 0);
+                                const isMateriaPrimaFinalizada = materia_prima_restante <= 0;
+                                
+                                let tempoMateriaPrimaRestante = '';
+                                if (rhythm <= 0) {
+                                  tempoMateriaPrimaRestante = 'Aguardando';
+                                } else {
+                                  const hrsRemaining = materia_prima_restante / rhythm;
+                                  const estHrs = Math.floor(hrsRemaining);
+                                  const estMins = Math.round((hrsRemaining - estHrs) * 60);
+                                  tempoMateriaPrimaRestante = `${estHrs}h ${estMins}m`;
+                                }
+
+                                return (
+                                  <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800 flex flex-col justify-between h-[68px]">
+                                    <span className="text-[8px] text-sky-500 font-bold uppercase tracking-wider">M.P. Restante</span>
+                                    {matInicial <= 0 ? (
+                                      <span className="text-[10px] text-zinc-500 font-mono font-bold leading-none mt-1">
+                                        N/A
+                                      </span>
+                                    ) : isMateriaPrimaFinalizada ? (
+                                      <span className="text-[10px] text-rose-400 font-mono font-bold leading-none mt-1">
+                                        Finalizada!
+                                      </span>
+                                    ) : (
+                                      <div className="space-y-0.5 mt-1 leading-none">
+                                        <span className="text-[11px] text-zinc-300 font-mono font-bold block">{materia_prima_restante} pçs</span>
+                                        <span className="text-[8px] text-sky-500 font-bold block">Acaba: {tempoMateriaPrimaRestante}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+                            </div>
+
+                            {/* Progress bar Meta */}
+                            <div className="space-y-1 pt-1">
+                              <div className="flex justify-between text-[10px] font-mono font-bold text-zinc-400">
+                                <span>Progresso da Meta</span>
+                                <span>{soma} / {metaAlvo} ({percent.toFixed(0)}%)</span>
+                              </div>
+                              <div className="w-full bg-zinc-900 rounded-full h-1.5 border border-zinc-800 overflow-clip">
+                                <div className={`${progColor} h-full rounded-full transition-all duration-500`} style={{ width: `${percent}%` }}></div>
+                              </div>
+                            </div>
+                            
+                            {/* Bottom Reworks Row */}
+                            <div className="flex justify-between text-[10px] font-mono font-bold text-zinc-500 pt-2.5 border-t border-zinc-800">
+                              <span className="text-amber-500">Ret. Próprio: <span className="text-zinc-300">{selectedBlock.somaRetrabalhoProprio} pçs</span></span>
+                              <span className="text-amber-500">Ret. Terceiro: <span className="text-zinc-300">{selectedBlock.somaRetrabalhoTerceiro} pçs</span></span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* 2. Contagens Individuais no Bloco */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+                      <Layers size={12} className="text-[#00624C]" />
+                      <span>Contagens Individuais no Bloco ({selectedBlock.itens.filter((item: any) => Number(item.producao_conforme || item.quantidade || 0) > 0).length})</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {(() => {
+                        const sortedBlockItens = [...selectedBlock.itens].sort((a, b) => {
+                          const getTimeString = (item: any) => {
+                            const t = item.horario_termino || item.created_at || item.timestamp || item.horario_inicio || '';
+                            if (!t) return '00:00';
+                            if (t.includes('T') || t.includes('-')) {
+                              try {
+                                const d = new Date(t);
+                                if (!isNaN(d.getTime())) {
+                                  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                }
+                              } catch (e) {}
+                            }
+                            return t;
+                          };
+                          return getTimeString(b).localeCompare(getTimeString(a));
+                        });
+                        
+                        const displayItens = sortedBlockItens.filter((item: any) => {
+                          const conforme = Number(item.producao_conforme || item.quantidade || 0);
+                          return conforme > 0;
+                        });
+
+                        if (displayItens.length === 0) {
+                          return (
+                            <div className="flex flex-col items-center justify-center p-8 bg-zinc-950 border border-dashed border-zinc-800 rounded-lg text-zinc-500 text-center gap-2">
+                              <span className="text-xs font-bold tracking-wide">
+                                Aguardando primeira contagem do processo...
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        return displayItens.map((item: any, itemIdx: number) => {
+                          const formatTimeStr = (t: string) => {
+                            if (!t) return '-';
+                            if (t.includes('T') || t.includes('-')) {
+                              try {
+                                return new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                              } catch (e) {
+                                return t;
+                              }
+                            }
+                            return t.slice(0, 5);
+                          };
+
+                          const hTermino = item.horario_termino;
+                          const formattedTime = formatTimeStr(hTermino);
+                          const hInicio = item.horario_inicio || '';
+                          const formattedTimeInicio = hInicio ? formatTimeStr(hInicio) : '';
+                          
+                          const tempoProducaoReg = hInicio && hTermino ? getRegistroProductionTime(hInicio, hTermino, item.data) : '';
+
+                          const conforme = item.producao_conforme || item.quantidade || 0;
+                          const status = item.status || 'validado';
+                          const statusStr = String(status).toLowerCase();
+                          const isLegacyRealtime = statusStr === 'realtime';
+
+                          const ocorrencia = item.motivo_ocorrencia;
+                          const lote = item.lote || 'N/A';
+                          const lado = item.lado || 'Único';
+                          const tipoMaq = item.tipo_maquina || 'Manual';
+                          const horaExtra = item.hora_extra === 's' ? 'Sim' : 'Não';
+
+                          const regNumber = displayItens.length - itemIdx;
+                          
+                          const obsArray = (item.observacao || '').split('|').map((o: string) => o.trim()).filter((o: string) => o !== "" && o !== "EMPTY" && o !== "NULL");
+                          const prevItem = displayItens[itemIdx + 1];
+                          const prevObsArray = prevItem ? (prevItem.observacao || '').split('|').map((o: string) => o.trim()).filter((o: string) => o !== "" && o !== "EMPTY" && o !== "NULL") : [];
+                          const newObs = obsArray.filter((o: string) => !prevObsArray.includes(o));
+
+                          return (
+                            <div 
+                              key={item.id || itemIdx} 
+                              className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-3 shadow-lg relative overflow-clip"
+                            >
+                              <div className="border-b border-zinc-900 pb-3 flex flex-col gap-3">
+                                <div className="flex justify-between items-start gap-2">
+                                  <div className="flex items-center gap-2.5">
+                                    <span className="bg-zinc-900 text-zinc-400 text-xs font-black px-2 py-0.5 rounded border border-zinc-800 shadow-sm">
+                                      #{regNumber}
+                                    </span>
+                                    <div className="text-base font-black text-emerald-400 tracking-wide flex items-center gap-1.5 leading-none">
+                                      <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                                      {conforme} Peças Conformes
+                                    </div>
+                                  </div>
+                                  <div>
+                                    {isSessionActive && itemIdx === 0 ? (
+                                      <span className="text-blue-400 bg-blue-950/20 border border-blue-500/30 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                                        ÚLTIMO REGISTRO
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg w-fit">
+                                  <Clock size={12} className="text-[#00624C]" />
+                                  <span className="text-zinc-100 font-bold text-xs tracking-wider">
+                                    {formattedTimeInicio ? `${formattedTimeInicio} - ${formattedTime}` : formattedTime}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {((ocorrencia && ocorrencia !== 'Produção Normal') || (!isLegacyRealtime && status !== 'validado')) && (
+                                <div className="flex flex-wrap gap-2">
+                                  {ocorrencia && ocorrencia !== 'Produção Normal' && (
+                                    <span className="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                                      Ocorrência: {ocorrencia}
+                                    </span>
+                                  )}
+                                  {!isLegacyRealtime && status !== 'validado' && (
+                                    <span className={`text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded border ${
+                                      status === 'rejeitado'
+                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                    }`}>
+                                      {status}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] sm:text-xs text-zinc-400 font-mono">
+                                <div className="flex justify-between border-b border-zinc-900 pb-1">
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Duração</span>
+                                  <span className="text-[#00624C] font-bold text-[10px] sm:text-xs">{tempoProducaoReg || '0h 0m'}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-zinc-900 pb-1">
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Lote/Lado</span>
+                                  <span className="text-zinc-300 text-[10px] sm:text-xs">{lote} ({lado})</span>
+                                </div>
+                                <div className="flex justify-between border-b border-zinc-900 pb-1">
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Máquina</span>
+                                  <span className="text-zinc-300 text-[10px] sm:text-xs">{tipoMaq}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-zinc-900 pb-1">
+                                  <span className="text-zinc-600 font-bold uppercase text-[8px] sm:text-[11px]">Hora Extra</span>
+                                  <span className="text-zinc-300 text-[10px] sm:text-xs">{horaExtra}</span>
+                                </div>
+                              </div>
+
+                              {newObs.length > 0 && 
+                               item.motivo_ocorrencia !== "Finalização Antecipada" &&
+                               item.motivo_ocorrencia !== "Finalização Automática" && (
+                                 <div className="mt-3 p-3 bg-amber-950/20 border border-amber-500/30 rounded-lg text-[10px] text-amber-400 shadow-inner shadow-amber-900/10">
+                                   <div className="font-bold uppercase text-[8px] tracking-wider mb-1 flex items-center gap-1">
+                                     ✉ OBSERVAÇÃO / JUSTIFICATIVA:
+                                   </div>
+                                   <div className="flex flex-col gap-1.5">
+                                     {newObs.map((obs: string, oIdx: number) => (
+                                       <span key={oIdx} className="italic font-medium">"{obs}"</span>
+                                     ))}
+                                   </div>
+                                 </div>
+                              )}
+
+                              {itemIdx === 0 && blockFinalizacoes.length > 0 && blockFinalizacoes.map((fin: any, fIdx: number) => (
+                                <div key={`fin-${fIdx}`} className="bg-rose-950/20 border border-rose-900/50 p-3.5 rounded-lg mt-2 text-xs text-rose-100">
+                                  <span className="text-rose-500 font-bold block text-[10px] uppercase tracking-wider mb-1">
+                                    ✉ Motivo da Finalização Antecipada:
+                                  </span>
+                                  <p className="font-sans italic leading-relaxed text-rose-200 font-medium">
+                                    "{fin.descricao?.trim()}"
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          );
+        })()}
+      </AnimatePresence>
 
     </div>
   );
