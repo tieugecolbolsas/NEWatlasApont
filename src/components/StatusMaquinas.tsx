@@ -103,6 +103,8 @@ export default function StatusMaquinas() {
   const [machines, setMachines] = useState<Maquina[]>([]);
   const [todayRegistros, setTodayRegistros] = useState<any[]>([]);
   const [colaboradoras, setColaboradoras] = useState<string[]>([]);
+  const [cronogramaPausas, setCronogramaPausas] = useState<any[]>([]);
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [operacoes, setOperacoes] = useState<{ forracao: string[], orelha: string[], diversos: string[] }>({
     forracao: [],
     orelha: [],
@@ -285,6 +287,15 @@ export default function StatusMaquinas() {
       const recordsList = registrosData || [];
       setTodayRegistros(recordsList);
 
+      // 3.5 Fetch cronograma de pausas
+      const { data: pausasData, error: pausasError } = await supabase
+        .schema('SupervisorProd')
+        .from('vw_cronograma_pausas')
+        .select('*');
+      if (!pausasError && pausasData) {
+        setCronogramaPausas(pausasData);
+      }
+
       // Create lookup maps
       const sessoesMap = new Map();
       (sessoesData || []).forEach((row: any) => {
@@ -389,6 +400,8 @@ export default function StatusMaquinas() {
     fetchColaboradoras();
     fetchProcessos();
 
+    const timeInterval = setInterval(() => setCurrentTime(new Date()), 1000);
+
     // Setup Realtime Subscriptions to sessoes_ativas_terminal and registros_producao_terminal
     const statusChannel = supabase
       .channel('sessoes_ativas_channel_status')
@@ -429,6 +442,7 @@ export default function StatusMaquinas() {
       supabase.removeChannel(statusChannel);
       supabase.removeChannel(caixasChannel);
       clearInterval(interval);
+      clearInterval(timeInterval);
     };
   }, []);
 
@@ -1015,10 +1029,30 @@ export default function StatusMaquinas() {
             </thead>
             <tbody className="divide-y divide-white/20 text-xs">
               {paginatedMachines.map((m) => {
-                const isProducing = m.status === 'produzindo';
-                const isPaused = m.status === 'pausada';
-                const isMaintenance = m.status === 'manutencao';
-                const isOffline = m.status === 'offline';
+                let overrideStatus = m.status as string;
+                let statusName = overrideStatus;
+                if (overrideStatus === 'produzindo' || overrideStatus === 'pausada') {
+                  const opPausas = cronogramaPausas.find(p => p.operadora_nome && m.operadora && p.operadora_nome.trim().toUpperCase() === m.operadora.trim().toUpperCase());
+                  if (opPausas) {
+                    const ct = currentTime;
+                    const cTimeString = `${String(ct.getHours()).padStart(2, '0')}:${String(ct.getMinutes()).padStart(2, '0')}:${String(ct.getSeconds()).padStart(2, '0')}`;
+                    const checkInterval = (start, end) => {
+                      if (!start || !end) return false;
+                      return cTimeString >= start && cTimeString <= end;
+                    };
+                    if (checkInterval(opPausas.cafe_manha_inicio, opPausas.cafe_manha_fim) || checkInterval(opPausas.cafe_tarde_inicio, opPausas.cafe_tarde_fim)) {
+                      overrideStatus = 'pausada';
+                      statusName = 'pausa p/ café';
+                    } else if (checkInterval(opPausas.almoco_inicio, opPausas.almoco_fim)) {
+                      overrideStatus = 'pausada';
+                      statusName = 'pausa p/ almoço';
+                    }
+                  }
+                }
+                const isProducing = overrideStatus === 'produzindo';
+                const isPaused = overrideStatus === 'pausada';
+                const isMaintenance = overrideStatus === 'manutencao';
+                const isOffline = overrideStatus === 'offline';
 
                 return (
                   <tr
@@ -1040,7 +1074,7 @@ export default function StatusMaquinas() {
                           }`} />
                         </span>
                         <span className="text-[8px] font-mono font-bold uppercase tracking-widest text-zinc-500 md:whitespace-nowrap max-md:whitespace-normal max-md:break-words">
-                          {isOffline ? 'DESLIGADA' : m.status.toUpperCase()}
+                          {isOffline ? 'DESLIGADA' : statusName.toUpperCase()}
                         </span>
                       </div>
                     </td>
