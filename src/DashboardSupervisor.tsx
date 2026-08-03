@@ -28,7 +28,6 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
   const handleQuickScan = (code: string) => {
     setIsQuickQRModalOpen(false);
     setPendingScanCode(code);
-    setActivePath('/scanner-caixas');
   };
 
   const renderContent = () => {
@@ -222,6 +221,16 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
         onClose={() => setIsQuickQRModalOpen(false)} 
         onScan={handleQuickScan} 
       />
+
+      {/* OVERLAY DO PROCESSAMENTO DE QR CODE SEM MUDAR DE PÁGINA */}
+      {pendingScanCode && activePath !== '/scanner-caixas' && (
+        <div className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-md flex items-center justify-center p-2">
+          <ScannerCaixas 
+            pendingScanCode={pendingScanCode}
+            onClearPendingScanCode={() => setPendingScanCode('')}
+          />
+        </div>
+      )}
     </RealtimeProvider>
   );
 }

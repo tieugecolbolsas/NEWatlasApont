@@ -881,6 +881,9 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode 
     if (scannerRef.current && scannerRef.current.getState() === 3) {
       scannerRef.current.resume();
     }
+    if (onClearPendingScanCode) {
+      onClearPendingScanCode();
+    }
   };
 
   // ==========================================
