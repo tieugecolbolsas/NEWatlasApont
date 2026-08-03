@@ -52,6 +52,15 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
     <RealtimeProvider addToast={addToast}>
       <div className="w-full min-h-screen flex flex-col md:flex-row relative z-10 overflow-x-hidden md:overflow-hidden bg-transparent">
         
+        {activePath !== '/scanner-caixas' && pendingScanCode && (
+          <ScannerCaixas
+            pendingScanCode={pendingScanCode}
+            onClearPendingScanCode={() => setPendingScanCode('')}
+            isOverlayMode={true}
+            onCloseOverlay={() => setPendingScanCode('')}
+          />
+        )}
+        
         {/* MOBILE BAR (Hidden on Desktop) */}
         <div 
           id="dashboard-mobile-bar"
@@ -221,16 +230,6 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
         onClose={() => setIsQuickQRModalOpen(false)} 
         onScan={handleQuickScan} 
       />
-
-      {/* OVERLAY DO PROCESSAMENTO DE QR CODE SEM MUDAR DE PÁGINA */}
-      {pendingScanCode && activePath !== '/scanner-caixas' && (
-        <div className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-md flex items-center justify-center p-2">
-          <ScannerCaixas 
-            pendingScanCode={pendingScanCode}
-            onClearPendingScanCode={() => setPendingScanCode('')}
-          />
-        </div>
-      )}
     </RealtimeProvider>
   );
 }

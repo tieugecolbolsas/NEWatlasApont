@@ -134,9 +134,11 @@ const getSafeErrorMessage = (err: any) => {
 export interface ScannerCaixasProps {
   pendingScanCode?: string;
   onClearPendingScanCode?: () => void;
+  isOverlayMode?: boolean;
+  onCloseOverlay?: () => void;
 }
 
-export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode }: ScannerCaixasProps = {}) {
+export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode, isOverlayMode, onCloseOverlay }: ScannerCaixasProps = {}) {
   // Estados do Banco e Histórico de registros
   const [historicoHoje, setHistoricoHoje] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -360,6 +362,8 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode 
 
     init();
     
+    if (isOverlayMode) return; // Do not start camera in overlay mode
+
     if (!scannerRef.current) {
       scannerRef.current = new Html5Qrcode(readerId);
       
@@ -881,8 +885,8 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode 
     if (scannerRef.current && scannerRef.current.getState() === 3) {
       scannerRef.current.resume();
     }
-    if (onClearPendingScanCode) {
-      onClearPendingScanCode();
+    if (isOverlayMode && onCloseOverlay) {
+      onCloseOverlay();
     }
   };
 
@@ -1380,24 +1384,25 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode 
     !(isConformeEmpty && isRetProprioEmpty && isRetTerceiroEmpty);
 
   return (
-    <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 overflow-y-auto" id="terminal-mobile-view">
-      
-      {/* HEADER PRINCIPAL */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-mono text-xl font-bold uppercase tracking-[0.15em] text-[#00624C] flex items-center gap-2">
-             TERMINAL DE APONTAMENTO
-          </h2>
-          <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest mt-1">
-            LEITURA DE QR CODE E APONTAMENTOS DE PRODUÇÃO EM TEMPO REAL
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <>
+      <div className={`flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 overflow-y-auto ${isOverlayMode ? 'hidden' : ''}`} id="terminal-mobile-view">
         
-        {/* LADO ESQUERDO: SCANNER DE QR CODE DE MAQUINA */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
+        {/* HEADER PRINCIPAL */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="font-mono text-xl font-bold uppercase tracking-[0.15em] text-[#00624C] flex items-center gap-2">
+               TERMINAL DE APONTAMENTO
+            </h2>
+            <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest mt-1">
+              LEITURA DE QR CODE E APONTAMENTOS DE PRODUÇÃO EM TEMPO REAL
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* LADO ESQUERDO: SCANNER DE QR CODE DE MAQUINA */}
+          <div className="lg:col-span-5 flex flex-col gap-6">
           
           <div className="bg-zinc-950 border border-white/60 rounded-xl p-5 md:p-6 relative overflow-hidden">
             <div className="flex flex-col gap-4">
@@ -1576,6 +1581,8 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode 
           </div>
 
         </div>
+
+      </div>
 
       </div>
 
@@ -2424,6 +2431,6 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode 
         )}
       </AnimatePresence>
 
-    </div>
+    </>
   );
 }
