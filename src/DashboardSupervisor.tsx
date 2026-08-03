@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, ChevronLeft } from 'lucide-react';
+import { Menu, X, ChevronLeft, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
 import Sidebar, { menuItems } from './Sidebar';
@@ -21,6 +21,7 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [activePath, setActivePath] = useState<string>('/apontamentos');
+  const [isQuickQRModalOpen, setIsQuickQRModalOpen] = useState(false);
 
   const renderContent = () => {
     switch (activePath) {
@@ -42,9 +43,9 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
         {/* MOBILE BAR (Hidden on Desktop) */}
         <div 
           id="dashboard-mobile-bar"
-          className="md:hidden w-full h-14 px-4 flex items-center justify-between transition-colors duration-300 sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-white/60 text-white shrink-0"
+          className="md:hidden w-full h-14 px-3 flex items-center justify-between transition-colors duration-300 sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-white/60 text-white shrink-0"
         >
-          <div className="relative flex items-center justify-center w-32 h-11 select-none overflow-hidden">
+          <div className="relative flex items-center justify-center w-32 h-11 select-none overflow-hidden -ml-3">
             {/* Celestial Grid & Orbits Background */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
               <svg 
@@ -110,6 +111,14 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              id="mobile-qr-scan-btn"
+              onClick={() => setIsQuickQRModalOpen(true)}
+              className="p-1.5 rounded-lg text-[#00624C] hover:bg-neutral-900 border border-neutral-800 flex items-center justify-center transition-colors cursor-pointer"
+              title="Escanear QR Code"
+            >
+              <QrCode className="w-5 h-5" />
+            </button>
             <button 
               id="mobile-menu-toggle-btn"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -192,6 +201,14 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
             <span className="text-right text-[#00624C]">SISTEMA OPERACIONAL VER. 0.0.1 alpha</span>
           </footer>
         </main>
+
+        {/* QUICK QR CODE SCANNER MODAL (MOBILE) */}
+        {isQuickQRModalOpen && (
+          <ScannerCaixas 
+            quickScanMode={true} 
+            onCloseQuickScan={() => setIsQuickQRModalOpen(false)} 
+          />
+        )}
       </div>
     </RealtimeProvider>
   );

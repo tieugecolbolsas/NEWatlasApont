@@ -22,7 +22,9 @@ import {
   Check,
   Percent,
   Play,
-  Cpu
+  Cpu,
+  QrCode,
+  X
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getLocalSessionUser } from '../lib/auth';
@@ -131,7 +133,12 @@ const getSafeErrorMessage = (err: any) => {
   return 'Ocorreu um erro interno ao processar a operação. Os dados foram salvos offline se possível.';
 };
 
-export default function ScannerCaixas() {
+export interface ScannerCaixasProps {
+  quickScanMode?: boolean;
+  onCloseQuickScan?: () => void;
+}
+
+export default function ScannerCaixas({ quickScanMode = false, onCloseQuickScan }: ScannerCaixasProps = {}) {
   // Estados do Banco e Histórico de registros
   const [historicoHoje, setHistoricoHoje] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -211,7 +218,249 @@ export default function ScannerCaixas() {
     }
     
     // Cleanup on unmount
-    return () => {
+    if (quickScanMode && !showScenarioA && !activeSession && !showManutencaoForm && !showJustificativaModal) {
+    if (quickScanMode && !showScenarioA && !activeSession && !showManutencaoForm && !showJustificativaModal) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-zinc-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
+        {/* MODAL APENAS COM O LEITOR DE QR CODE */}
+        <div className="w-full max-w-md bg-zinc-900 border border-white/60 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative">
+          <div className="flex items-center justify-between pb-3 border-b border-white/20">
+            <div className="flex items-center gap-2">
+              <ScanLine className="w-5 h-5 text-[#00624C]" />
+              <div>
+                <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
+                  LEITOR DE QR CODE
+                </h3>
+                <p className="text-[10px] font-mono text-zinc-400">
+                  APROXIME A CÂMERA DO QR CODE DA MÁQUINA
+                </p>
+              </div>
+            </div>
+            {onCloseQuickScan && (
+              <button
+                type="button"
+                onClick={onCloseQuickScan}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          <div className="relative w-full aspect-[4/3] bg-black rounded-xl overflow-hidden border border-white/60 shadow-inner flex items-center justify-center @container">
+            <div id={readerId} className="w-full h-full rounded-xl overflow-hidden [&>video]:object-cover [&_#qr-shaded-region]:hidden" />
+            
+            {!cameraDisponivel && (
+              <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 text-center bg-zinc-950 z-20">
+                <Camera size={40} className={permissaoNegada ? "text-red-500 mb-2" : "text-zinc-700 mb-2"} />
+                <span className={`text-[10px] font-mono uppercase tracking-wider ${permissaoNegada ? 'text-red-400 font-bold' : 'text-zinc-500'}`}>
+                  {permissaoNegada ? 'PERMISSÃO DE CÂMERA NEGADA' : 'CÂMERA INDISPONÍVEL OU INICIALIZANDO'}
+                </span>
+                <p className={`text-[10px] max-w-xs mt-1 font-sans ${permissaoNegada ? 'text-red-300' : 'text-zinc-500'}`}>
+                  {permissaoNegada 
+                    ? 'Conceda permissão de câmera no navegador.'
+                    : 'Use a digitação de código ou número da máquina abaixo.'}
+                </p>
+              </div>
+            )}
+            
+            {/* Mira visual */}
+            {cameraDisponivel && (
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+                <div className="w-[70cqmin] h-[70cqmin] border-2 border-dashed border-[#00624C]/80 rounded-xl"></div>
+              </div>
+            )}
+            
+            {/* Indicador de Varredura */}
+            {isScanning && cameraDisponivel && (
+              <div className="absolute top-3 left-3 bg-[#09090b]/90 border border-zinc-800 px-2.5 py-1 rounded flex items-center gap-1.5 z-10 backdrop-blur-sm pointer-events-none">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase tracking-widest animate-pulse">
+                  Varredura Ativa...
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* PAINEL DE ENTRADA MANUAL */}
+          <div className="pt-2 border-t border-white/20 space-y-2">
+            <span className="text-[9px] font-mono uppercase tracking-widest font-bold text-zinc-400 block">
+              Número da Máquina ou Código Curto
+            </span>
+            
+            <form onSubmit={simularCodigoManual} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Ex: 11 ou 11|Reta"
+                value={manualCodeInput}
+                onChange={(e) => setManualCodeInput(e.target.value)}
+                className="flex-1 bg-zinc-950 border border-white/40 rounded px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-[#00624C]"
+              />
+              <button
+                type="button"
+                onClick={handlePasteShortCode}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded text-[10px] font-mono uppercase cursor-pointer transition-colors"
+                title="Colar da área de transferência"
+              >
+                COLAR
+              </button>
+              <button
+                type="submit"
+                disabled={isSearchingSessao}
+                className="px-4 py-1.5 bg-[#00624C] hover:bg-[#004838] text-white rounded text-[10px] font-mono font-bold uppercase cursor-pointer transition-colors"
+              >
+                {isSearchingSessao ? <Loader2 className="animate-spin" size={12} /> : 'PROCESSAR'}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* ALERTA CUSTOMIZADO */}
+        {customAlert && customAlert.show && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+            <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-sm w-full space-y-4 text-center shadow-2xl">
+              <span className={`text-[10px] font-mono font-bold uppercase tracking-widest block ${customAlert.type === 'success' ? 'text-emerald-400' : customAlert.type === 'warning' ? 'text-amber-400' : 'text-rose-400'}`}>
+                {customAlert.type === 'success' ? 'SUCESSO' : customAlert.type === 'warning' ? 'ATENÇÃO' : 'ERRO'}
+              </span>
+              <p className="text-xs font-sans text-zinc-200">{customAlert.message}</p>
+              <button
+                type="button"
+                onClick={() => setCustomAlert(null)}
+                className="w-full py-2 bg-[#00624C] text-white font-mono text-xs font-bold rounded uppercase hover:bg-[#004838]"
+              >
+                FECHAR
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+      <div className="fixed inset-0 z-[100] bg-zinc-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
+        {/* MODAL APENAS COM O LEITOR DE QR CODE */}
+        <div className="w-full max-w-md bg-zinc-900 border border-white/60 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative">
+          <div className="flex items-center justify-between pb-3 border-b border-white/20">
+            <div className="flex items-center gap-2">
+              <ScanLine className="w-5 h-5 text-[#00624C]" />
+              <div>
+                <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
+                  LEITOR DE QR CODE
+                </h3>
+                <p className="text-[10px] font-mono text-zinc-400">
+                  APROXIME A CÂMERA DO QR CODE DA MÁQUINA
+                </p>
+              </div>
+            </div>
+            {onCloseQuickScan && (
+              <button
+                type="button"
+                onClick={onCloseQuickScan}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          <div className="relative w-full aspect-[4/3] bg-black rounded-xl overflow-hidden border border-white/60 shadow-inner flex items-center justify-center @container">
+            <div id={readerId} className="w-full h-full rounded-xl overflow-hidden [&>video]:object-cover [&_#qr-shaded-region]:hidden" />
+            
+            {!cameraDisponivel && (
+              <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 text-center bg-zinc-950 z-20">
+                <Camera size={40} className={permissaoNegada ? "text-red-500 mb-2" : "text-zinc-700 mb-2"} />
+                <span className={`text-[10px] font-mono uppercase tracking-wider ${permissaoNegada ? 'text-red-400 font-bold' : 'text-zinc-500'}`}>
+                  {permissaoNegada ? 'PERMISSÃO DE CÂMERA NEGADA' : 'CÂMERA INDISPONÍVEL OU INICIALIZANDO'}
+                </span>
+                <p className={`text-[10px] max-w-xs mt-1 font-sans ${permissaoNegada ? 'text-red-300' : 'text-zinc-500'}`}>
+                  {permissaoNegada 
+                    ? 'Conceda permissão de câmera no navegador.'
+                    : 'Use a digitação de código ou número da máquina abaixo.'}
+                </p>
+              </div>
+            )}
+            
+            {/* Mira visual */}
+            {cameraDisponivel && (
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+                <div className="w-[70cqmin] h-[70cqmin] border-2 border-dashed border-[#00624C]/80 rounded-xl"></div>
+              </div>
+            )}
+            
+            {/* Indicador de Varredura */}
+            {isScanning && cameraDisponivel && (
+              <div className="absolute top-3 left-3 bg-[#09090b]/90 border border-zinc-800 px-2.5 py-1 rounded flex items-center gap-1.5 z-10 backdrop-blur-sm pointer-events-none">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase tracking-widest animate-pulse">
+                  Varredura Ativa...
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* PAINEL DE ENTRADA MANUAL */}
+          <div className="pt-2 border-t border-white/20 space-y-2">
+            <span className="text-[9px] font-mono uppercase tracking-widest font-bold text-zinc-400 block">
+              Número da Máquina ou Código Curto
+            </span>
+            
+            <form onSubmit={simularCodigoManual} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Ex: 11 ou 11|Reta"
+                value={manualCodeInput}
+                onChange={(e) => setManualCodeInput(e.target.value)}
+                className="flex-1 bg-zinc-950 border border-white/40 rounded px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-[#00624C]"
+              />
+              <button
+                type="button"
+                onClick={handlePasteShortCode}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded text-[10px] font-mono uppercase cursor-pointer transition-colors"
+                title="Colar da área de transferência"
+              >
+                COLAR
+              </button>
+              <button
+                type="submit"
+                disabled={isSearchingSessao}
+                className="px-4 py-1.5 bg-[#00624C] hover:bg-[#004838] text-white rounded text-[10px] font-mono font-bold uppercase cursor-pointer transition-colors"
+              >
+                {isSearchingSessao ? <Loader2 className="animate-spin" size={12} /> : 'PROCESSAR'}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* ALERTA CUSTOMIZADO */}
+        {customAlert && customAlert.show && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+            <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-sm w-full space-y-4 text-center shadow-2xl">
+              <span className={`text-[10px] font-mono font-bold uppercase tracking-widest block ${customAlert.type === 'success' ? 'text-emerald-400' : customAlert.type === 'warning' ? 'text-amber-400' : 'text-rose-400'}`}>
+                {customAlert.type === 'success' ? 'SUCESSO' : customAlert.type === 'warning' ? 'ATENÇÃO' : 'ERRO'}
+              </span>
+              <p className="text-xs font-sans text-zinc-200">{customAlert.message}</p>
+              <button
+                type="button"
+                onClick={() => setCustomAlert(null)}
+                className="w-full py-2 bg-[#00624C] text-white font-mono text-xs font-bold rounded uppercase hover:bg-[#004838]"
+              >
+                FECHAR
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return () => {
       document.body.style.overflow = 'unset';
       document.body.style.touchAction = 'unset';
     };
@@ -866,6 +1115,9 @@ export default function ScannerCaixas() {
     if (scannerRef.current && scannerRef.current.getState() === 3) {
       scannerRef.current.resume();
     }
+    if (quickScanMode && onCloseQuickScan) {
+      onCloseQuickScan();
+    }
   };
 
   // ==========================================
@@ -1360,6 +1612,127 @@ export default function ScannerCaixas() {
     (isRetProprioEmpty || confirmaBRetrabalhoProprio) &&
     (isRetTerceiroEmpty || confirmaBRetrabalhoTerceiro) &&
     !(isConformeEmpty && isRetProprioEmpty && isRetTerceiroEmpty);
+
+  if (quickScanMode && !showScenarioA && !activeSession && !showManutencaoForm && !showJustificativaModal) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-zinc-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
+        {/* MODAL APENAS COM O LEITOR DE QR CODE */}
+        <div className="w-full max-w-md bg-zinc-900 border border-white/60 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative">
+          <div className="flex items-center justify-between pb-3 border-b border-white/20">
+            <div className="flex items-center gap-2">
+              <ScanLine className="w-5 h-5 text-[#00624C]" />
+              <div>
+                <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
+                  LEITOR DE QR CODE
+                </h3>
+                <p className="text-[10px] font-mono text-zinc-400">
+                  APROXIME A CÂMERA DO QR CODE DA MÁQUINA
+                </p>
+              </div>
+            </div>
+            {onCloseQuickScan && (
+              <button
+                type="button"
+                onClick={onCloseQuickScan}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          <div className="relative w-full aspect-[4/3] bg-black rounded-xl overflow-hidden border border-white/60 shadow-inner flex items-center justify-center @container">
+            <div id={readerId} className="w-full h-full rounded-xl overflow-hidden [&>video]:object-cover [&_#qr-shaded-region]:hidden" />
+            
+            {!cameraDisponivel && (
+              <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 text-center bg-zinc-950 z-20">
+                <Camera size={40} className={permissaoNegada ? "text-red-500 mb-2" : "text-zinc-700 mb-2"} />
+                <span className={`text-[10px] font-mono uppercase tracking-wider ${permissaoNegada ? 'text-red-400 font-bold' : 'text-zinc-500'}`}>
+                  {permissaoNegada ? 'PERMISSÃO DE CÂMERA NEGADA' : 'CÂMERA INDISPONÍVEL OU INICIALIZANDO'}
+                </span>
+                <p className={`text-[10px] max-w-xs mt-1 font-sans ${permissaoNegada ? 'text-red-300' : 'text-zinc-500'}`}>
+                  {permissaoNegada 
+                    ? 'Conceda permissão de câmera no navegador.'
+                    : 'Use a digitação de código ou número da máquina abaixo.'}
+                </p>
+              </div>
+            )}
+            
+            {/* Mira visual */}
+            {cameraDisponivel && (
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+                <div className="w-[70cqmin] h-[70cqmin] border-2 border-dashed border-[#00624C]/80 rounded-xl"></div>
+              </div>
+            )}
+            
+            {/* Indicador de Varredura */}
+            {isScanning && cameraDisponivel && (
+              <div className="absolute top-3 left-3 bg-[#09090b]/90 border border-zinc-800 px-2.5 py-1 rounded flex items-center gap-1.5 z-10 backdrop-blur-sm pointer-events-none">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase tracking-widest animate-pulse">
+                  Varredura Ativa...
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* PAINEL DE ENTRADA MANUAL */}
+          <div className="pt-2 border-t border-white/20 space-y-2">
+            <span className="text-[9px] font-mono uppercase tracking-widest font-bold text-zinc-400 block">
+              Número da Máquina ou Código Curto
+            </span>
+            
+            <form onSubmit={simularCodigoManual} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Ex: 11 ou 11|Reta"
+                value={manualCodeInput}
+                onChange={(e) => setManualCodeInput(e.target.value)}
+                className="flex-1 bg-zinc-950 border border-white/40 rounded px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-[#00624C]"
+              />
+              <button
+                type="button"
+                onClick={handlePasteShortCode}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded text-[10px] font-mono uppercase cursor-pointer transition-colors"
+                title="Colar da área de transferência"
+              >
+                COLAR
+              </button>
+              <button
+                type="submit"
+                disabled={isSearchingSessao}
+                className="px-4 py-1.5 bg-[#00624C] hover:bg-[#004838] text-white rounded text-[10px] font-mono font-bold uppercase cursor-pointer transition-colors"
+              >
+                {isSearchingSessao ? <Loader2 className="animate-spin" size={12} /> : 'PROCESSAR'}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* ALERTA CUSTOMIZADO */}
+        {customAlert && customAlert.show && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+            <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 max-w-sm w-full space-y-4 text-center shadow-2xl">
+              <span className={`text-[10px] font-mono font-bold uppercase tracking-widest block ${customAlert.type === 'success' ? 'text-emerald-400' : customAlert.type === 'warning' ? 'text-amber-400' : 'text-rose-400'}`}>
+                {customAlert.type === 'success' ? 'SUCESSO' : customAlert.type === 'warning' ? 'ATENÇÃO' : 'ERRO'}
+              </span>
+              <p className="text-xs font-sans text-zinc-200">{customAlert.message}</p>
+              <button
+                type="button"
+                onClick={() => setCustomAlert(null)}
+                className="w-full py-2 bg-[#00624C] text-white font-mono text-xs font-bold rounded uppercase hover:bg-[#004838]"
+              >
+                FECHAR
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 overflow-y-auto" id="terminal-mobile-view">
