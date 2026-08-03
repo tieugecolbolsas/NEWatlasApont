@@ -24,10 +24,12 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
   const [activePath, setActivePath] = useState<string>('/apontamentos');
   const [isQuickQRModalOpen, setIsQuickQRModalOpen] = useState(false);
   const [pendingScanCode, setPendingScanCode] = useState('');
+  const [isScannerOverlayOpen, setIsScannerOverlayOpen] = useState(false);
 
   const handleQuickScan = (code: string) => {
     setIsQuickQRModalOpen(false);
     setPendingScanCode(code);
+    setIsScannerOverlayOpen(true);
   };
 
   const renderContent = () => {
@@ -52,12 +54,15 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
     <RealtimeProvider addToast={addToast}>
       <div className="w-full min-h-screen flex flex-col md:flex-row relative z-10 overflow-x-hidden md:overflow-hidden bg-transparent">
         
-        {activePath !== '/scanner-caixas' && pendingScanCode && (
+        {activePath !== '/scanner-caixas' && isScannerOverlayOpen && (
           <ScannerCaixas
             pendingScanCode={pendingScanCode}
             onClearPendingScanCode={() => setPendingScanCode('')}
             isOverlayMode={true}
-            onCloseOverlay={() => setPendingScanCode('')}
+            onCloseOverlay={() => {
+              setIsScannerOverlayOpen(false);
+              setPendingScanCode('');
+            }}
           />
         )}
         

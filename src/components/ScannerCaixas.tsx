@@ -743,12 +743,12 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
           if (registros && registros.length > 0) {
             // Se for localizado lá, processo já encerrado
             showAlert('warning', "Este processo já foi encerrado. Para iniciar um novo, escaneie o QR Code ou digite o número da máquina.");
-            retomarScanner();
+            retomarScanner(false);
             return;
           } else {
             // Se o código não existir em nenhuma das duas tabelas
             showAlert('error', "Código inválido. Verifique o código e tente novamente.");
-            retomarScanner();
+            retomarScanner(false);
             return;
           }
         }
@@ -837,7 +837,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
     } catch (err: any) {
       console.error('[Terminal Supabase] Erro ao buscar sessões ativas:', err);
       showAlert('error', `Erro ao consultar sessões ativas: ${err.message || err}`);
-      retomarScanner();
+      retomarScanner(false);
     } finally {
       setIsSearchingSessao(false);
       setManualCodeInput('');
@@ -865,7 +865,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
     }
   };
 
-  const retomarScanner = () => {
+  const retomarScanner = (fecharOverlay = true) => {
     setActiveSession(null);
     setShowScenarioA(false);
     setShowQualidadeForm(false);
@@ -885,7 +885,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
     if (scannerRef.current && scannerRef.current.getState() === 3) {
       scannerRef.current.resume();
     }
-    if (isOverlayMode && onCloseOverlay) {
+    if (fecharOverlay && isOverlayMode && onCloseOverlay) {
       onCloseOverlay();
     }
   };
@@ -994,7 +994,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
       if (error) throw error;
 
       showAlert('success', `Sessão do terminal iniciada com sucesso real para a máquina ${novaSessao.num_maquina}!`);
-      retomarScanner();
+      retomarScanner(false);
       await carregarBaseDeDados();
       window.dispatchEvent(new CustomEvent('refresh-apontamentos'));
     } catch (err: any) {
@@ -1008,7 +1008,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
       };
       setOfflineSessoes(prev => [...prev, fallbackSessao]);
       showAlert('warning', safeErrorMsg + ` Sessão iniciada temporariamente offline para a máquina ${novaSessao.num_maquina}.`);
-      retomarScanner();
+      retomarScanner(false);
     } finally {
       setIsSaving(false);
     }
@@ -1052,7 +1052,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
       if (error) throw error;
 
       showAlert('success', `Ajuste de Qualidade lançado com sucesso na máquina ${activeSession.num_maquina}!`);
-      retomarScanner();
+      retomarScanner(false);
       await carregarBaseDeDados();
       window.dispatchEvent(new CustomEvent('refresh-apontamentos'));
     } catch (err: any) {
@@ -1066,7 +1066,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
       };
       setHistoricoHoje(prev => [fallbackQualidade, ...prev]);
       showAlert('warning', safeErrorMsg + ` Ajuste de qualidade lançado offline na máquina ${activeSession.num_maquina}.`);
-      retomarScanner();
+      retomarScanner(false);
     } finally {
       setIsSaving(false);
     }
@@ -1261,7 +1261,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
       // 3. Verifica fluxo: Mudar Processo, Finalizar Processo Completo ou Recriação Automática
       if (finalizarProcessoCompleto) {
         showAlert('success', `Apontamento finalizado e encerrado com sucesso na máquina ${activeSession.num_maquina}!`);
-        retomarScanner();
+        retomarScanner(false);
       } else if (!mudarProcesso) {
         // Recria sessão ativa com mesmos parâmetros e novo horario_inicio
         const novaSessaoRecriada = {
@@ -1287,7 +1287,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
         if (errRecreate) throw errRecreate;
 
         showAlert('success', `Apontamento gravado com sucesso! Próximo ciclo de contagem iniciado na máquina ${activeSession.num_maquina}.`);
-        retomarScanner();
+        retomarScanner(false);
       } else {
         // Salva e Mudar Processo: Transiciona o modal B diretamente para o formulário A (Início de Processo)
         const maquinaAtual = activeSession.num_maquina;
@@ -1328,7 +1328,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
       if (finalizarProcessoCompleto) {
         showAlert('warning', safeErrorMsg + ` Apontamento finalizado offline (em memória) na máquina ${activeSession.num_maquina}.`);
-        retomarScanner();
+        retomarScanner(false);
       } else if (!mudarProcesso) {
         // Recria sessão ativa offline na memória
         const novaSessaoRecriada = {
@@ -1348,7 +1348,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
         };
         setOfflineSessoes(prev => [...prev, novaSessaoRecriada]);
         showAlert('warning', safeErrorMsg + ` Apontamento salvo offline (em memória). Próximo ciclo iniciado na máquina ${activeSession.num_maquina}.`);
-        retomarScanner();
+        retomarScanner(false);
       } else {
         // Salva e Mudar Processo
         const maquinaAtual = activeSession.num_maquina;
@@ -2359,7 +2359,12 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
               </div>
 
               <button
-                onClick={() => setCustomAlert(null)}
+                onClick={() => {
+                  setCustomAlert(null);
+                  if (isOverlayMode && onCloseOverlay && !showScenarioA && !activeSession) {
+                    onCloseOverlay();
+                  }
+                }}
                 className="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded text-[10px] font-mono font-bold uppercase tracking-widest transition-colors cursor-pointer"
               >
                 Ok, Entendido
