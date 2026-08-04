@@ -25,6 +25,13 @@ export default function App() {
   useEffect(() => {
     const checkActiveSession = async () => {
       try {
+        // Tenta recuperar do localStorage primeiro para manter o estado completo (com role e displayName)
+        const localUser = getLocalSessionUser();
+        if (localUser) {
+          setUser(localUser);
+          return;
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
           handleLogout(false);
@@ -32,13 +39,19 @@ export default function App() {
           // Mapeia tanto a sessão local customizada quanto o formato padrão do Supabase
           const sessionUser = (session as any).user || session;
           if (sessionUser && (sessionUser.email || sessionUser.uid)) {
-            setUser({
+            const email = (sessionUser.email || 'operator@eugecol.com').toLowerCase();
+            const calculatedRole = email.includes('apontamento') ? 'colaboradora' : 'admin';
+
+            const restoredUser = {
               uid: sessionUser.id || sessionUser.uid || 'local-user',
               email: sessionUser.email || 'operator@eugecol.com',
-              role: sessionUser.role || 'colaboradora',
+              role: sessionUser.role || calculatedRole,
               createdAt: sessionUser.created_at || sessionUser.createdAt || new Date().toISOString(),
               ...sessionUser
-            } as UserSession);
+            } as UserSession;
+
+            setUser(restoredUser);
+            setLocalSessionUser(restoredUser);
           } else {
             handleLogout(false);
           }

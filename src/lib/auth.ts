@@ -71,8 +71,14 @@ export async function loginHibrido(emailRaw: string, passwordRaw: string): Promi
   const email = emailRaw.toLowerCase().trim();
   const password = passwordRaw;
 
+  // Regra de negócios para níveis de acesso do Atlas:
+  // - Logins contendo "apontamento" no e-mail (como gerusa.apontamento@eugecol.com.br, silvana.apontamento@eugecol.com.br)
+  //   são classificados como 'colaboradora' (veem somente o que eles mesmos apontaram/escanearam).
+  // - Qualquer outro login que não possua "apontamento" é considerado 'admin' (pode visualizar tudo).
+  const isUserColaboradora = email.includes('apontamento');
+
   // Controle Dinâmico de Nível de Acesso (Privilégios)
-  const role: 'admin' | 'colaboradora' = email.includes('admin') ? 'admin' : 'colaboradora';
+  const role: 'admin' | 'colaboradora' = isUserColaboradora ? 'colaboradora' : 'admin';
 
   // 1. TENTATIVA COM FIREBASE AUTH (Se configurado de verdade)
   if (firebaseAuth) {
@@ -148,3 +154,33 @@ export async function loginHibrido(emailRaw: string, passwordRaw: string): Promi
 
   throw new Error('Não foi possível conectar aos servidores de autenticação do Atlas.');
 }
+
+/**
+ * Registra um novo usuário no Supabase Auth para a Eugecol
+ */
+export async function criarUsuarioHibrido(emailRaw: string, passwordRaw: string): Promise<any> {
+  const email = emailRaw.toLowerCase().trim();
+  const password = passwordRaw;
+
+  console.log('[Atlas Auth] Tentando cadastrar novo usuário via Supabase...');
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) {
+    throw new Error(error.message || 'Erro ao criar usuário no Supabase.');
+  }
+  return data;
+}
+
+/**
+ * Altera a senha do usuário atualmente autenticado no Supabase Auth
+ */
+export async function alterarSenhaHibrido(passwordRaw: string): Promise<any> {
+  const password = passwordRaw;
+
+  console.log('[Atlas Auth] Tentando atualizar a senha do usuário no Supabase...');
+  const { data, error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    throw new Error(error.message || 'Erro ao alterar a senha no Supabase.');
+  }
+  return data;
+}
+

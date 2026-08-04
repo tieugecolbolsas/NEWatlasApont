@@ -444,10 +444,19 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
   async function carregarBaseDeDados() {
     setIsLoadingHistory(true);
     try {
-      const { data, error } = await supabase
+      const userObj = getLocalSessionUser() as any;
+      const userId = userObj?.id || userObj?.uid;
+
+      let query = supabase
         .schema('AtlasApontamento')
         .from('registros_producao_terminal')
         .select('*');
+
+      if (userId && userObj?.role !== 'admin') {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 

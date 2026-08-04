@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X, ChevronLeft, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
@@ -25,6 +25,18 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
   const [isQuickQRModalOpen, setIsQuickQRModalOpen] = useState(false);
   const [pendingScanCode, setPendingScanCode] = useState('');
   const [isScannerOverlayOpen, setIsScannerOverlayOpen] = useState(false);
+
+  // Lock background scrolling when mobile navigation sidebar is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
 
   const handleQuickScan = (code: string) => {
     setIsQuickQRModalOpen(false);
@@ -154,6 +166,20 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
             </button>
           </div>
         </div>
+
+        {/* Mobile Sidebar Backdrop - Click outside to close & blur/darken background */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="md:hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-30 pointer-events-auto"
+            />
+          )}
+        </AnimatePresence>
 
         <Sidebar 
           user={{ email: userEmail }}

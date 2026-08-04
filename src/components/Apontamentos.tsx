@@ -472,11 +472,16 @@ export default function Apontamentos() {
       }
 
       // Query standard supported fields
-      const { data, error } = await supabase
+      let query = supabase
         .schema('AtlasApontamento')
         .from('registros_producao_terminal')
-        .select('*')
-        .eq('user_id', userId);
+        .select('*');
+
+      if (userObj?.role !== 'admin') {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -553,15 +558,11 @@ export default function Apontamentos() {
         return dateB - dateA;
       });
 
-      // Total count of filtered items
+      // Total count of filtered raw items
       setTotalCount(processed.length);
 
-      // 6. Paginate
-      const from = page * PAGE_SIZE;
-      const to = from + PAGE_SIZE;
-      const paginated = processed.slice(from, to);
-
-      setRegistros(paginated);
+      // Set all filtered records so grouping works across complete dataset
+      setRegistros(processed);
     } catch (err: any) {
       console.error('[Apontamentos] Erro ao carregar histórico:', err);
       addToast(`Erro ao carregar histórico: ${err.message || err}`, 'error');
@@ -1114,7 +1115,7 @@ export default function Apontamentos() {
           </div>
         ) : (
           <div className="space-y-4">
-            {groupedBlocks.map((block: any) => {
+            {groupedBlocks.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((block: any) => {
               const isExpanded = selectedBlockKey === block.key;
 
               const activeSessionForBlock = activeSessions.find(
@@ -1447,7 +1448,7 @@ export default function Apontamentos() {
                             {/* Refugo */}
                             {refugoCount > 0 ? (
                               <div className="bg-rose-950/30 border border-rose-500/30 rounded px-2 py-1.5 flex flex-col justify-center col-span-2 sm:col-span-1">
-                                <span className="text-[7px] text-rose-400/80 uppercase font-bold tracking-wider">Refugo (Sucata)</span>
+                                <span className="text-[7px] text-rose-400/80 uppercase font-bold tracking-wider">Refugo</span>
                                 <span className="text-xs text-rose-400 font-bold leading-tight mt-0.5">
                                   {refugoCount} <span className="text-[9px] text-rose-400/70 font-normal">pçs</span>
                                 </span>
@@ -1478,14 +1479,14 @@ export default function Apontamentos() {
         )}
 
         {/* Controles de Paginação */}
-        {totalCount > PAGE_SIZE && (
+        {groupedBlocks.length > PAGE_SIZE && (
           <div className="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-zinc-900/80 gap-3 font-mono text-xs text-zinc-400">
             <div>
               Mostrando <span className="text-white font-bold">{page * PAGE_SIZE + 1}</span> a{' '}
               <span className="text-white font-bold">
-                {Math.min((page + 1) * PAGE_SIZE, totalCount)}
+                {Math.min((page + 1) * PAGE_SIZE, groupedBlocks.length)}
               </span>{' '}
-              de <span className="text-white font-bold">{totalCount}</span> registros
+              de <span className="text-white font-bold">{groupedBlocks.length}</span> {groupedBlocks.length === 1 ? 'processo' : 'processos'}
             </div>
             <div className="flex gap-2">
               <button
@@ -1496,7 +1497,7 @@ export default function Apontamentos() {
                 Anterior
               </button>
               <button
-                disabled={(page + 1) * PAGE_SIZE >= totalCount || isLoading}
+                disabled={(page + 1) * PAGE_SIZE >= groupedBlocks.length || isLoading}
                 onClick={() => setPage(p => p + 1)}
                 className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-40 border border-zinc-800 hover:text-white rounded transition-colors uppercase text-[10px] font-bold cursor-pointer"
               >
