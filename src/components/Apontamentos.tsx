@@ -700,10 +700,10 @@ export default function Apontamentos() {
     const reTe = Number(reg.retrabalho_terceiro || 0);
     const refugo = Number(reg.refugo || 0);
 
-    // Total Contado considera todas as peças contadas sem subtrações
-    const itemTotalContado = pecasBrutas + rePr + reTe + refugo;
-    // Prod. Conforme subtrai estritamente Refugo e Retrabalho Próprio (Retrabalho Terceiro NÃO subtrai)
-    const itemProdConforme = Math.max(0, itemTotalContado - rePr - refugo);
+    // Total Contado é o total bruto apontado pelo operador (ex: 100 peças)
+    const itemTotalContado = pecasBrutas;
+    // Prod. Conforme subtrai estritamente Refugo e Retrabalho Próprio do Total Contado (ex: 100 - 1 - 1 = 98 peças)
+    const itemProdConforme = Math.max(0, pecasBrutas - rePr - refugo);
 
       if (!groups[key]) {
         groups[key] = {
@@ -1403,34 +1403,61 @@ export default function Apontamentos() {
                       const isMetaBatida = somaProdConforme >= metaAlvo;
 
                       return (
-                        <div className="border-t border-zinc-900/60 pt-3 space-y-2">
-                          <div className="flex justify-between items-end">
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider">Produção Acumulada</span>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className={`text-sm font-black leading-none ${textColor}`} title="Prod. Conforme (Todas as peças menos refugo e retrabalho próprio)">
-                                  {somaProdConforme} Pçs <span className="text-[9px] text-emerald-400/80 font-normal uppercase">(Conforme)</span>
+                        <div className="border-t border-zinc-900/80 pt-3 space-y-2.5 text-left">
+                          {/* Meta & Título */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-zinc-500 text-[9px] uppercase font-bold tracking-wider">Produção Acumulada</span>
+                              {isMetaBatida && (
+                                <span className="text-[8px] text-emerald-400 bg-emerald-950/60 border border-emerald-500/40 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                                  ✓ Meta Batida
                                 </span>
-                                <span className="text-xs font-bold leading-none text-zinc-400" title="Total Contado (Todas as peças contadas)">
-                                  / {somaTotalContado} Pçs <span className="text-[9px] text-zinc-500 font-normal uppercase">(Total)</span>
-                                </span>
-                                {refugoCount > 0 && (
-                                  <span className="text-[9px] text-rose-400 font-bold bg-rose-950/40 border border-rose-500/30 px-1.5 py-0.5 rounded">
-                                    Refugo: {refugoCount}
-                                  </span>
-                                )}
-                                {isMetaBatida && (
-                                  <span className="text-[8px] text-emerald-500 bg-emerald-950/30 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold uppercase">✓ Meta Batida</span>
-                                )}
-                              </div>
+                              )}
                             </div>
-                            <div className="flex flex-col items-end font-mono text-[9px] text-zinc-400">
-                              <span className="text-zinc-600 block text-[7px] uppercase font-bold mb-0.5">Meta Diária</span>
-                              <span>{somaProdConforme} / {metaAlvo} ({percent.toFixed(0)}%)</span>
+                            <div className="flex items-center gap-1 font-mono text-[9px] text-zinc-400">
+                              <span className="text-zinc-500 text-[8px] uppercase font-bold">Meta Diária:</span>
+                              <span className="font-bold text-zinc-200">{somaProdConforme} / {metaAlvo}</span>
+                              <span className={`font-bold ${textColor}`}>({percent.toFixed(0)}%)</span>
                             </div>
                           </div>
-                          <div className="w-full bg-zinc-950 rounded-full h-1 border border-zinc-900 overflow-clip transform-gpu backface-hidden">
+
+                          {/* Progress Bar */}
+                          <div className="w-full bg-zinc-950 rounded-full h-1.5 border border-zinc-900 overflow-hidden transform-gpu backface-hidden">
                             <div className={`${progColor} h-full rounded-full transition-all duration-500`} style={{ width: `${percent}%` }}></div>
+                          </div>
+
+                          {/* Metrics Breakdown Grid (Pills limpas e organizadas) */}
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5 font-mono">
+                            {/* Conforme */}
+                            <div className="bg-emerald-950/30 border border-emerald-500/30 rounded px-2 py-1.5 flex flex-col justify-center">
+                              <span className="text-[7px] text-emerald-400/80 uppercase font-bold tracking-wider">Prod. Conforme</span>
+                              <span className="text-xs text-emerald-400 font-black leading-tight mt-0.5">
+                                {somaProdConforme} <span className="text-[9px] text-emerald-400/70 font-normal">pçs</span>
+                              </span>
+                            </div>
+
+                            {/* Total Contado */}
+                            <div className="bg-zinc-950/80 border border-zinc-800 rounded px-2 py-1.5 flex flex-col justify-center">
+                              <span className="text-[7px] text-zinc-400 uppercase font-bold tracking-wider">Total Apontado</span>
+                              <span className="text-xs text-zinc-200 font-bold leading-tight mt-0.5">
+                                {somaTotalContado} <span className="text-[9px] text-zinc-500 font-normal">pçs</span>
+                              </span>
+                            </div>
+
+                            {/* Refugo */}
+                            {refugoCount > 0 ? (
+                              <div className="bg-rose-950/30 border border-rose-500/30 rounded px-2 py-1.5 flex flex-col justify-center col-span-2 sm:col-span-1">
+                                <span className="text-[7px] text-rose-400/80 uppercase font-bold tracking-wider">Refugo (Sucata)</span>
+                                <span className="text-xs text-rose-400 font-bold leading-tight mt-0.5">
+                                  {refugoCount} <span className="text-[9px] text-rose-400/70 font-normal">pçs</span>
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="bg-zinc-950/40 border border-zinc-900 rounded px-2 py-1.5 flex flex-col justify-center col-span-2 sm:col-span-1 opacity-60">
+                                <span className="text-[7px] text-zinc-600 uppercase font-bold tracking-wider">Refugo</span>
+                                <span className="text-xs text-zinc-500 font-medium leading-tight mt-0.5">0 pçs</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

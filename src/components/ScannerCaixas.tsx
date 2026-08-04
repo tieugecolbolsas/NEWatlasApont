@@ -1554,11 +1554,27 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                       {/* Resultados da Produção */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 border-t border-white/20 text-[10px] font-mono gap-2">
                         <div className="flex flex-wrap gap-3">
-                          <div className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                            <span className="text-zinc-500 text-[9px] uppercase">Conforme:</span>
-                            <span className="text-emerald-400 font-bold">{registro.producao_conforme} pçs</span>
-                          </div>
+                          {(() => {
+                            const tot = Number(registro.producao_conforme || 0);
+                            const ref = Number(registro.refugo || 0);
+                            const rePr = Number(registro.retrabalho_proprio || 0);
+                            const conf = Math.max(0, tot - ref - rePr);
+
+                            return (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                  <span className="text-zinc-500 text-[9px] uppercase">Conforme:</span>
+                                  <span className="text-emerald-400 font-bold">{conf} pçs</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full bg-zinc-500" />
+                                  <span className="text-zinc-500 text-[9px] uppercase">Total:</span>
+                                  <span className="text-zinc-300 font-bold">{tot} pçs</span>
+                                </div>
+                              </>
+                            );
+                          })()}
                           {registro.refugo > 0 && (
                             <div className="flex items-center gap-1">
                               <span className="w-2 h-2 rounded-full bg-rose-500" />

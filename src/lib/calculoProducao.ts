@@ -25,22 +25,22 @@ export function calcularMetricasProducao(records: any[], metaPecas: number = 120
       // Ignorar entregas de matéria-prima, pois não representam peças produzidas
       if (r?.motivo_ocorrencia === 'MATERIA_PRIMA') return;
 
-      const conf = Number(r?.producao_conforme !== undefined ? r.producao_conforme : (r?.quantidade || 0));
+      const totalApontado = Number(r?.producao_conforme !== undefined ? r.producao_conforme : (r?.quantidade || 0));
       const ref = Number(r?.refugo || 0);
       const rePr = Number(r?.retrabalho_proprio || 0);
       const reTe = Number(r?.retrabalho_terceiro || 0);
 
-      somaConf += conf;
+      somaConf += totalApontado;
       somaRefugo += ref;
       somaRePr += rePr;
       somaReTe += reTe;
     });
   }
 
-  // Total Contado considera todas as peças movimentadas/apontadas
-  const totalContado = Math.max(0, somaConf + somaRePr + somaReTe + somaRefugo);
+  // Total Contado é a soma total bruta das peças registradas/apontadas
+  const totalContado = Math.max(0, somaConf);
 
-  // Prod. Conforme subtrai estritamente Refugo e Retrabalho Próprio
+  // Prod. Conforme subtrai estritamente Refugo e Retrabalho Próprio do Total Contado
   const prodConforme = Math.max(0, totalContado - somaRePr - somaRefugo);
 
   // Produtividade/Eficiência em % calculada apenas sobre Prod. Conforme

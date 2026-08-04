@@ -81,7 +81,7 @@ const generateDynamicHourlyChartData = (records: any[]) => {
       cumRTerceiros += Number(r.retrabalho_terceiro) || 0;
     });
 
-    const cumTotalContado = Math.max(0, cumConformes + cumRProprio + cumRTerceiros + cumRefugo);
+    const cumTotalContado = cumConformes;
     const cumProdConforme = Math.max(0, cumTotalContado - cumRProprio - cumRefugo);
 
     // Hide future hours to prevent lines from dropping flat unnecessarily
