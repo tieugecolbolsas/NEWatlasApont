@@ -200,6 +200,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
   // Estados de Confirmação Individual de Segurança (Apontamento de Contagem)
   const [confirmaBProdConforme, setConfirmaBProdConforme] = useState(false);
+  const [confirmaBRefugo, setConfirmaBRefugo] = useState(false);
   const [confirmaBLado, setConfirmaBLado] = useState(false);
   const [confirmaBRetrabalhoProprio, setConfirmaBRetrabalhoProprio] = useState(false);
   const [confirmaBRetrabalhoTerceiro, setConfirmaBRetrabalhoTerceiro] = useState(false);
@@ -242,7 +243,12 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
     if (activeSession) {
       setCenarioBLado(activeSession.lado || 'Único');
       setCenarioBObservacao('');
+      setProdConforme('');
+      setRefugo('');
+      setRetrabalhoProprio('');
+      setRetrabalhoTerceiro('');
       setConfirmaBProdConforme(false);
+      setConfirmaBRefugo(false);
       setConfirmaBLado(false);
       setConfirmaBRetrabalhoProprio(false);
       setConfirmaBRetrabalhoTerceiro(false);
@@ -338,6 +344,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
   
   // Campos do Formulário - Apontamento de Contagem (Apontamento de Produção de Sessão Ativa)
   const [prodConforme, setProdConforme] = useState<number | ''>('');
+  const [refugo, setRefugo] = useState<number | ''>('');
   const [retrabalhoProprio, setRetrabalhoProprio] = useState<number | ''>('');
   const [retrabalhoTerceiro, setRetrabalhoTerceiro] = useState<number | ''>('');
   const [motivoOcorrencia, setMotivoOcorrencia] = useState<string>('Produção Normal');
@@ -1193,10 +1200,10 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
   // ==========================================
   const handleSalvarCenarioB = async (mudarProcesso: boolean = false, finalizarProcessoCompleto: boolean = false) => {
     const isConformeEmpty = prodConforme === '';
-    const hasRetrabalho = (Number(retrabalhoProprio) > 0 || Number(retrabalhoTerceiro) > 0);
+    const hasRetrabalho = (Number(refugo) > 0 || Number(retrabalhoProprio) > 0 || Number(retrabalhoTerceiro) > 0);
 
     if (isConformeEmpty && !hasRetrabalho) {
-      showAlert('warning', "Por favor, preencha a Quantidade Conforme ou informe algum valor de Retrabalho.");
+      showAlert('warning', "Por favor, preencha a Quantidade Conforme ou informe algum valor de Refugo ou Retrabalho.");
       return;
     }
 
@@ -1233,7 +1240,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
       producao_conforme: isConformeEmpty ? null : Number(prodConforme),
       retrabalho_proprio: Number(retrabalhoProprio) || 0,
       retrabalho_terceiro: Number(retrabalhoTerceiro) || 0,
-      refugo: 0,
+      refugo: Number(refugo) || 0,
       motivo_ocorrencia: 'Produção Normal',
       user_id: userId,
       materia_prima_inicial: Number(activeSession.materia_prima_inicial) || 0,
@@ -1374,14 +1381,16 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
   };
 
   const isConformeEmpty = prodConforme === '' || prodConforme === null;
+  const isRefugoEmpty = refugo === '' || refugo === null || Number(refugo) === 0;
   const isRetProprioEmpty = retrabalhoProprio === '' || retrabalhoProprio === null || Number(retrabalhoProprio) === 0;
   const isRetTerceiroEmpty = retrabalhoTerceiro === '' || retrabalhoTerceiro === null || Number(retrabalhoTerceiro) === 0;
 
   const isBValid = confirmaBLado && 
     (isConformeEmpty || confirmaBProdConforme) &&
+    (isRefugoEmpty || confirmaBRefugo) &&
     (isRetProprioEmpty || confirmaBRetrabalhoProprio) &&
     (isRetTerceiroEmpty || confirmaBRetrabalhoTerceiro) &&
-    !(isConformeEmpty && isRetProprioEmpty && isRetTerceiroEmpty);
+    !(isConformeEmpty && isRefugoEmpty && isRetProprioEmpty && isRetTerceiroEmpty);
 
   return (
     <>
@@ -1550,6 +1559,13 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                             <span className="text-zinc-500 text-[9px] uppercase">Conforme:</span>
                             <span className="text-emerald-400 font-bold">{registro.producao_conforme} pçs</span>
                           </div>
+                          {registro.refugo > 0 && (
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-rose-500" />
+                              <span className="text-zinc-500 text-[9px] uppercase">Refugo:</span>
+                              <span className="text-rose-400 font-bold">{registro.refugo} pçs</span>
+                            </div>
+                          )}
                           {(registro.retrabalho_proprio > 0 || registro.retrabalho_terceiro > 0) && (
                             <div className="flex items-center gap-3">
                               <span className="text-zinc-500 text-[9px] uppercase">Retrabalho (P/T):</span>
@@ -2143,7 +2159,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                         Apontamento de Volumes
                       </span>
                       
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {/* Column 1: Conforme (Verde) */}
                         <div className="space-y-1">
                           <label className="text-[10px] text-emerald-400 font-black uppercase tracking-wider block">Conforme *</label>
@@ -2172,7 +2188,35 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                           </div>
                         </div>
 
-                        {/* Column 2: Retrabalho Próprio (Laranja) */}
+                        {/* Column 2: Refugo (Rose/Vermelho) */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-rose-400 font-black uppercase tracking-wider block">Refugo</label>
+                          <div className="flex flex-col gap-1.5">
+                            <input 
+                              type="text" 
+                              inputMode="numeric" 
+                              pattern="[0-9]*" 
+                              placeholder="Refugo" 
+                              value={refugo}
+                              onChange={(e) => setRefugo(e.target.value === '' ? '' : Number(e.target.value))}
+                              disabled={confirmaBRefugo}
+                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-xs font-mono text-white text-center focus:outline-none focus:border-rose-500 disabled:opacity-50" 
+                            />
+                            <button 
+                              type="button" 
+                              onClick={() => setConfirmaBRefugo(!confirmaBRefugo)}
+                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all ${
+                                confirmaBRefugo 
+                                  ? 'bg-rose-600 border-rose-500 text-white shadow-md shadow-rose-600/20' 
+                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                              }`}
+                            >
+                              <Check size={16} className={confirmaBRefugo ? "scale-110" : ""} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Column 3: Retrabalho Próprio (Laranja) */}
                         <div className="space-y-1">
                           <label className="text-[10px] text-amber-400 font-black uppercase tracking-wider block">Ret. Próprio</label>
                           <div className="flex flex-col gap-1.5">
@@ -2200,7 +2244,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                           </div>
                         </div>
 
-                        {/* Column 3: Retrabalho Terceiro (Laranja) */}
+                        {/* Column 4: Retrabalho Terceiro (Laranja) */}
                         <div className="space-y-1">
                           <label className="text-[10px] text-amber-400 font-black uppercase tracking-wider block">Ret. Terc.</label>
                           <div className="flex flex-col gap-1.5">
