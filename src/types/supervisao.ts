@@ -7,8 +7,13 @@ export interface Maquina {
   processo: string;
   status: StatusOperacional;
   ultima_atualizacao: string; // ISO string
-  eficiencia: number; // e.g. 94.5
-  pecas_produzidas: number;
+  eficiencia: number; // e.g. 94.5 (calculada sobre Prod. Conforme)
+  pecas_produzidas: number; // Mantido para compatibilidade, equivale a Prod. Conforme
+  prod_conforme?: number; // Prod. Conforme = Total Contado - Refugo - Retrabalho Próprio
+  total_contado?: number; // Total Contado = Todas as peças sem subtrações
+  refugo?: number; // Contador de Refugo
+  retrabalho_proprio?: number; // Retrabalho Próprio
+  retrabalho_terceiro?: number; // Retrabalho de Terceiros
 }
 
 export interface Apontamento {

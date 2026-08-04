@@ -699,7 +699,11 @@ export default function Apontamentos() {
     const rePr = Number(reg.retrabalho_proprio || 0);
     const reTe = Number(reg.retrabalho_terceiro || 0);
     const refugo = Number(reg.refugo || 0);
-    const pecasLiquidas = Math.max(0, pecasBrutas - (rePr + reTe + refugo));
+
+    // Total Contado considera todas as peças contadas sem subtrações
+    const itemTotalContado = pecasBrutas + rePr + reTe + refugo;
+    // Prod. Conforme subtrai estritamente Refugo e Retrabalho Próprio (Retrabalho Terceiro NÃO subtrai)
+    const itemProdConforme = Math.max(0, itemTotalContado - rePr - refugo);
 
       if (!groups[key]) {
         groups[key] = {
@@ -710,6 +714,8 @@ export default function Apontamentos() {
           operacao_nome: operacao,
           colaboradora: reg.operadora_nome || reg.operadora || 'Desconhecida',
           processo: reg.tipo_maquina || reg.processo || 'Processo',
+          somaTotalContado: 0,
+          somaProdConforme: 0,
           somaTotal: 0,
           somaRefugo: 0,
           somaRetrabalho: 0,
@@ -730,7 +736,9 @@ export default function Apontamentos() {
       if (isMateriaPrima) {
         groups[key].somaMateriaPrima += pecasBrutas;
       } else {
-        groups[key].somaTotal += pecasLiquidas;
+        groups[key].somaTotalContado += itemTotalContado;
+        groups[key].somaProdConforme += itemProdConforme;
+        groups[key].somaTotal += itemProdConforme;
         groups[key].somaRefugo += refugo;
         groups[key].somaRetrabalho += (rePr + reTe);
         groups[key].somaRetrabalhoProprio += rePr;
@@ -1361,24 +1369,27 @@ export default function Apontamentos() {
 
                     {/* Linha 4: Produção Acumulada, Meta e Barra de Progresso */}
                     {(() => {
-                      const soma = block.somaTotal || 0;
+                      const somaProdConforme = block.somaProdConforme !== undefined ? block.somaProdConforme : (block.somaTotal || 0);
+                      const somaTotalContado = block.somaTotalContado !== undefined ? block.somaTotalContado : somaProdConforme;
+                      const refugoCount = block.somaRefugo || 0;
+
                       let metaAlvo = 1000;
                       let progColor = 'bg-zinc-300';
-                      let textColor = 'text-zinc-300';
+                      let textColor = 'text-emerald-400';
                       
-                      if (soma < 1000) {
+                      if (somaProdConforme < 1000) {
                         metaAlvo = 1000;
-                        if (soma < 500) {
+                        if (somaProdConforme < 500) {
                           progColor = 'bg-red-500';
                           textColor = 'text-red-500';
-                        } else if (soma < 750) {
+                        } else if (somaProdConforme < 750) {
                           progColor = 'bg-orange-500';
                           textColor = 'text-orange-500';
                         } else {
                           progColor = 'bg-yellow-500';
                           textColor = 'text-yellow-500';
                         }
-                      } else if (soma < 1200) {
+                      } else if (somaProdConforme < 1200) {
                         metaAlvo = 1200;
                         progColor = 'bg-emerald-500';
                         textColor = 'text-emerald-500';
@@ -1388,16 +1399,26 @@ export default function Apontamentos() {
                         textColor = 'text-emerald-500';
                       }
                       
-                      const percent = Math.min(100, (soma / metaAlvo) * 100);
-                      const isMetaBatida = soma >= metaAlvo;
+                      const percent = Math.min(100, (somaProdConforme / metaAlvo) * 100);
+                      const isMetaBatida = somaProdConforme >= metaAlvo;
 
                       return (
                         <div className="border-t border-zinc-900/60 pt-3 space-y-2">
                           <div className="flex justify-between items-end">
-                            <div className="flex flex-col">
+                            <div className="flex flex-col gap-0.5">
                               <span className="text-zinc-500 text-[8px] uppercase font-bold tracking-wider">Produção Acumulada</span>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className={`text-base font-black leading-none ${textColor}`}>{soma} Pçs</span>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className={`text-sm font-black leading-none ${textColor}`} title="Prod. Conforme (Todas as peças menos refugo e retrabalho próprio)">
+                                  {somaProdConforme} Pçs <span className="text-[9px] text-emerald-400/80 font-normal uppercase">(Conforme)</span>
+                                </span>
+                                <span className="text-xs font-bold leading-none text-zinc-400" title="Total Contado (Todas as peças contadas)">
+                                  / {somaTotalContado} Pçs <span className="text-[9px] text-zinc-500 font-normal uppercase">(Total)</span>
+                                </span>
+                                {refugoCount > 0 && (
+                                  <span className="text-[9px] text-rose-400 font-bold bg-rose-950/40 border border-rose-500/30 px-1.5 py-0.5 rounded">
+                                    Refugo: {refugoCount}
+                                  </span>
+                                )}
                                 {isMetaBatida && (
                                   <span className="text-[8px] text-emerald-500 bg-emerald-950/30 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold uppercase">✓ Meta Batida</span>
                                 )}
@@ -1405,7 +1426,7 @@ export default function Apontamentos() {
                             </div>
                             <div className="flex flex-col items-end font-mono text-[9px] text-zinc-400">
                               <span className="text-zinc-600 block text-[7px] uppercase font-bold mb-0.5">Meta Diária</span>
-                              <span>{soma} / {metaAlvo} ({percent.toFixed(0)}%)</span>
+                              <span>{somaProdConforme} / {metaAlvo} ({percent.toFixed(0)}%)</span>
                             </div>
                           </div>
                           <div className="w-full bg-zinc-950 rounded-full h-1 border border-zinc-900 overflow-clip transform-gpu backface-hidden">
@@ -1622,34 +1643,41 @@ export default function Apontamentos() {
                       const horaAtual = isToday ? now : (latestEnd || now);
                       const elapsedMs = earliestStart ? Math.max(60 * 1000, horaAtual.getTime() - earliestStart.getTime()) : 0;
                       const elapsedHours = elapsedMs / (3600 * 1000);
-                      const soma = selectedBlock.somaTotal || 0;
-                      const rhythm = elapsedHours > 0 ? (soma / elapsedHours) : 0;
+                      const somaProdConforme = selectedBlock.somaProdConforme !== undefined ? selectedBlock.somaProdConforme : (selectedBlock.somaTotal || 0);
+                      const somaTotalContado = selectedBlock.somaTotalContado !== undefined ? selectedBlock.somaTotalContado : somaProdConforme;
+                      const rhythm = elapsedHours > 0 ? (somaProdConforme / elapsedHours) : 0;
 
                       let metaAlvo = 1000;
-                      if (soma >= 1000 && soma < 1200) {
+                      if (somaProdConforme >= 1000 && somaProdConforme < 1200) {
                         metaAlvo = 1200;
-                      } else if (soma >= 1200) {
+                      } else if (somaProdConforme >= 1200) {
                         metaAlvo = 1500;
                       }
 
-                      const percent = Math.min(100, (soma / metaAlvo) * 100);
+                      const percent = Math.min(100, (somaProdConforme / metaAlvo) * 100);
                       const progColor = percent >= 100 ? 'bg-emerald-500' : percent >= 50 ? 'bg-amber-500' : 'bg-rose-500';
 
                       return (
                         <div className="space-y-4">
                           {/* Indicadores do Bloco */}
                           <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl space-y-4 shadow-lg">
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="bg-zinc-900/60 p-3 rounded-lg border border-zinc-800 flex flex-col justify-between">
-                                <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Tempo de Produção</span>
-                                <span className="text-sm text-zinc-100 font-mono font-bold mt-1">
-                                  {tempoProducaoStr}
+                            <div className="grid grid-cols-3 gap-2.5">
+                              <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800 flex flex-col justify-between">
+                                <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-wider">Prod. Conforme</span>
+                                <span className="text-xs text-emerald-400 font-mono font-black mt-1">
+                                  {somaProdConforme} pçs
                                 </span>
                               </div>
-                              <div className="bg-zinc-900/60 p-3 rounded-lg border border-zinc-800 flex flex-col justify-between">
-                                <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Peças Conformes</span>
-                                <span className="text-sm text-emerald-400 font-mono font-bold mt-1">
-                                  {soma} pçs
+                              <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800 flex flex-col justify-between">
+                                <span className="text-[8px] text-zinc-400 font-bold uppercase tracking-wider">Total Contado</span>
+                                <span className="text-xs text-zinc-200 font-mono font-bold mt-1">
+                                  {somaTotalContado} pçs
+                                </span>
+                              </div>
+                              <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800 flex flex-col justify-between">
+                                <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Tempo Operação</span>
+                                <span className="text-xs text-zinc-100 font-mono font-bold mt-1">
+                                  {tempoProducaoStr}
                                 </span>
                               </div>
                             </div>
@@ -1714,7 +1742,7 @@ export default function Apontamentos() {
                             <div className="space-y-1 pt-1">
                               <div className="flex justify-between text-[10px] font-mono font-bold text-zinc-400">
                                 <span>Progresso da Meta</span>
-                                <span>{soma} / {metaAlvo} ({percent.toFixed(0)}%)</span>
+                                <span>{somaProdConforme} / {metaAlvo} ({percent.toFixed(0)}%)</span>
                               </div>
                               <div className="w-full bg-zinc-900 rounded-full h-1.5 border border-zinc-800 overflow-clip">
                                 <div className={`${progColor} h-full rounded-full transition-all duration-500`} style={{ width: `${percent}%` }}></div>

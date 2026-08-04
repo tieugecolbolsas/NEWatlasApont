@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useRealtime } from '../lib/realtimeContext';
 import { Maquina } from '../types/supervisao';
 import { supabase } from '../lib/supabase';
+import { calcularMetricasProducao } from '../lib/calculoProducao';
 import { 
   LineChart, 
   Line, 
@@ -80,12 +81,16 @@ const generateDynamicHourlyChartData = (records: any[]) => {
       cumRTerceiros += Number(r.retrabalho_terceiro) || 0;
     });
 
+    const cumTotalContado = Math.max(0, cumConformes + cumRProprio + cumRTerceiros + cumRefugo);
+    const cumProdConforme = Math.max(0, cumTotalContado - cumRProprio - cumRefugo);
+
     // Hide future hours to prevent lines from dropping flat unnecessarily
     const isFuture = bucket.hour > currentHour;
 
     return {
       name: bucket.label,
-      "Conformes (Boas)": isFuture ? null : cumConformes,
+      "Prod. Conforme": isFuture ? null : cumProdConforme,
+      "Total Contado": isFuture ? null : cumTotalContado,
       "Refugo (Sucata)": isFuture ? null : cumRefugo,
       "Retrabalho Próprio": isFuture ? null : cumRProprio,
       "Retrabalho Terceiros": isFuture ? null : cumRTerceiros,
@@ -305,23 +310,25 @@ export default function StatusMaquinas() {
         }
       });
 
-      const pecasMap = new Map();
+      const machineRecordsMap = new Map<string, any[]>();
       recordsList.forEach((row: any) => {
         const num = String(row.num_maquina || '').trim().toUpperCase();
         if (num) {
-          const current = pecasMap.get(num) || 0;
-          pecasMap.set(num, current + (Number(row.producao_conforme) || 0));
+          if (!machineRecordsMap.has(num)) {
+            machineRecordsMap.set(num, []);
+          }
+          machineRecordsMap.get(num)!.push(row);
         }
       });
 
-      // 4. Combine master list with active sessions and today's pieces
+      // 4. Combine master list with active sessions and today's pieces using official Atlas calculation standard
       const parsedRows: Maquina[] = (baseData || []).map((baseRow: any) => {
         const numero = String(baseRow.num_maquina !== undefined ? baseRow.num_maquina : '').trim().toUpperCase();
         const activeSessao = sessoesMap.get(numero);
 
         const status = activeSessao ? 'produzindo' : 'offline';
-        const pecas = pecasMap.get(numero) || 0;
-        const oee = Math.min(100, (pecas / 1200) * 100);
+        const mRecords = machineRecordsMap.get(numero) || [];
+        const mMetrics = calcularMetricasProducao(mRecords, 1200);
 
         // Operator name: active session name if exists, otherwise fallback to master default operator
         const operadora = activeSessao 
@@ -340,8 +347,13 @@ export default function StatusMaquinas() {
           processo,
           status: status as any,
           ultima_atualizacao: (activeSessao && activeSessao.created_at) || new Date().toISOString(),
-          eficiencia: Number(oee),
-          pecas_produzidas: Number(pecas)
+          eficiencia: mMetrics.produtividade,
+          pecas_produzidas: mMetrics.prodConforme,
+          prod_conforme: mMetrics.prodConforme,
+          total_contado: mMetrics.totalContado,
+          refugo: mMetrics.refugo,
+          retrabalho_proprio: mMetrics.retrabalhoProprio,
+          retrabalho_terceiro: mMetrics.retrabalhoTerceiro
         };
       });
 
@@ -1025,6 +1037,30 @@ export default function StatusMaquinas() {
                     {sortField === 'operadora' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
                   </div>
                 </th>
+                <th className="py-4 px-3 md:px-4 cursor-pointer hover:text-white transition-colors text-right" onClick={() => handleSort('prod_conforme')}>
+                  <div className="flex items-center justify-end gap-1">
+                    <span className="text-emerald-400">PROD. CONFORME</span>
+                    {sortField === 'prod_conforme' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
+                  </div>
+                </th>
+                <th className="py-4 px-3 md:px-4 cursor-pointer hover:text-white transition-colors text-right" onClick={() => handleSort('total_contado')}>
+                  <div className="flex items-center justify-end gap-1">
+                    <span>TOTAL CONTADO</span>
+                    {sortField === 'total_contado' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
+                  </div>
+                </th>
+                <th className="py-4 px-3 md:px-4 cursor-pointer hover:text-white transition-colors text-right" onClick={() => handleSort('refugo')}>
+                  <div className="flex items-center justify-end gap-1">
+                    <span className="text-rose-400">REFUGO</span>
+                    {sortField === 'refugo' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
+                  </div>
+                </th>
+                <th className="py-4 px-3 md:px-4 cursor-pointer hover:text-white transition-colors text-right" onClick={() => handleSort('eficiencia')}>
+                  <div className="flex items-center justify-end gap-1">
+                    <span>PRODUTIVIDADE</span>
+                    {sortField === 'eficiencia' && (sortDirection === 'asc' ? ' ▲' : ' ▼')}
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/20 text-xs">
@@ -1053,6 +1089,11 @@ export default function StatusMaquinas() {
                 const isPaused = overrideStatus === 'pausada';
                 const isMaintenance = overrideStatus === 'manutencao';
                 const isOffline = overrideStatus === 'offline';
+
+                const prodConforme = m.prod_conforme !== undefined ? m.prod_conforme : (m.pecas_produzidas || 0);
+                const totalContado = m.total_contado !== undefined ? m.total_contado : prodConforme;
+                const refugoVal = m.refugo || 0;
+                const prodPct = m.eficiencia || 0;
 
                 return (
                   <tr
@@ -1100,6 +1141,36 @@ export default function StatusMaquinas() {
                     {/* Operator */}
                     <td className="py-3 px-3 md:px-6 md:whitespace-nowrap max-md:whitespace-normal max-md:break-words font-sans font-bold text-zinc-200 uppercase tracking-wide">
                       {isOffline ? '-' : (m.operadora || 'NÃO DESIGNADA')}
+                    </td>
+
+                    {/* Prod. Conforme */}
+                    <td className="py-3 px-3 md:px-4 text-right font-mono font-black text-emerald-400">
+                      {isOffline ? '-' : `${prodConforme} pçs`}
+                    </td>
+
+                    {/* Total Contado */}
+                    <td className="py-3 px-3 md:px-4 text-right font-mono font-bold text-zinc-300">
+                      {isOffline ? '-' : `${totalContado} pçs`}
+                    </td>
+
+                    {/* Refugo */}
+                    <td className="py-3 px-3 md:px-4 text-right font-mono font-bold text-rose-400">
+                      {isOffline ? '-' : `${refugoVal} pçs`}
+                    </td>
+
+                    {/* Produtividade (%) */}
+                    <td className="py-3 px-3 md:px-4 text-right font-mono font-bold">
+                      {isOffline ? '-' : (
+                        <span className={`px-2 py-0.5 rounded text-[10px] border ${
+                          prodPct >= 80 
+                            ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/30' 
+                            : prodPct >= 50 
+                            ? 'bg-amber-950/40 text-amber-400 border-amber-500/30' 
+                            : 'bg-rose-950/40 text-rose-400 border-rose-500/30'
+                        }`}>
+                          {prodPct.toFixed(1)}%
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
