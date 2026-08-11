@@ -452,7 +452,9 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
         .from('registros_producao_terminal')
         .select('*');
 
-      if (userId && userObj?.role !== 'admin') {
+      const userEmail = (userObj?.email || '').toLowerCase();
+      const isColaboradora = userEmail.includes('apontamento') || userObj?.role === 'colaboradora';
+      if (userId && isColaboradora) {
         query = query.eq('user_id', userId);
       }
 
@@ -1631,22 +1633,22 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
       {/* ======================================================= */}
       <AnimatePresence>
         {showScenarioA && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-3 sm:p-4 pt-[72px] pb-12 sm:pt-[80px] backdrop-blur-sm overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-zinc-950 border border-white/30 rounded-xl w-full max-w-md max-h-[92vh] overflow-y-auto p-3.5 sm:p-5 space-y-3 sm:space-y-4 shadow-2xl scrollbar-thin my-auto"
+              className="bg-zinc-950 border border-white/30 rounded-xl w-full max-w-md overflow-visible p-4 sm:p-5 space-y-4 sm:space-y-5 shadow-2xl mx-auto my-0"
             >
               {/* Header do Form */}
               <div className="flex justify-between items-center border-b border-white/30 pb-3">
                 <div className="flex items-center gap-2">
                   <Layers className="text-[#00624C]" size={20} />
                   <div>
-                    <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
+                    <h3 className="font-mono text-lg font-bold uppercase tracking-wider text-white">
                       Inicializar Terminal
                     </h3>
-                    <p className="text-zinc-500 text-[9px] font-mono uppercase tracking-widest mt-0.5">
+                    <p className="text-zinc-500 text-lg font-mono uppercase tracking-widest mt-0.5">
                       Nova sessão para a Máquina {formMaquina}
                     </p>
                   </div>
@@ -1660,7 +1662,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
               </div>
 
               {/* Formulário */}
-              <div className="space-y-3 font-mono text-xs">
+              <div className="space-y-3 font-mono text-lg">
                 
                 {/* 2. Display Bar de Leitura Travada (Substitui Máquina Alvo / Cód. Curto Gerado) */}
                 <div className="relative overflow-hidden bg-zinc-900/90 border border-zinc-800/80 rounded-lg p-3.5 flex items-center justify-between shadow-inner">
@@ -1672,16 +1674,16 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                       <Cpu size={18} className="animate-pulse" />
                     </div>
                     <div>
-                      <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block font-bold">MÁQUINA IDENTIFICADA</span>
-                      <span className="font-mono text-xs sm:text-sm font-black text-white tracking-wider">
+                      <span className="text-lg font-mono text-zinc-500 uppercase tracking-widest block font-bold">MÁQUINA IDENTIFICADA</span>
+                      <span className="font-mono text-lg sm:text-lg font-black text-white tracking-wider">
                         N.º {formMaquina}
                       </span>
                     </div>
                   </div>
                   
                   <div className="text-right pr-1">
-                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block font-bold">TIPO DE EQUIPAMENTO</span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-[#00624C]/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                    <span className="text-lg font-mono text-zinc-500 uppercase tracking-widest block font-bold">TIPO DE EQUIPAMENTO</span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-lg font-bold font-mono bg-[#00624C]/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
                       <Settings size={10} className="animate-[spin_8s_linear_infinite]" />
                       {formTipoMaquina || 'RETA'}
                     </span>
@@ -1690,7 +1692,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
                 {/* Nome da Operadora */}
                 <div className="space-y-1 relative">
-                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operadora *</label>
+                  <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operadora *</label>
                   <div className="flex gap-2">
                     <input 
                       type="text"
@@ -1706,7 +1708,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                       onBlur={() => {
                         setTimeout(() => setShowOperadoraSuggestions(false), 200);
                       }}
-                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-bold font-mono text-xs"
+                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-bold font-mono text-lg"
                     />
                     <button
                       type="button"
@@ -1738,7 +1740,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                               setShowOperadoraSuggestions(false);
                             }
                           }}
-                          className="px-3 py-2 text-zinc-300 hover:bg-[#00624C] hover:text-white cursor-pointer transition-colors text-left font-mono text-xs"
+                          className="px-3 py-2 text-zinc-300 hover:bg-[#00624C] hover:text-white cursor-pointer transition-colors text-left font-mono text-lg"
                         >
                           {op}
                         </div>
@@ -1749,7 +1751,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
                 {/* Nome da Operação */}
                 <div className="space-y-1 relative">
-                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operação *</label>
+                  <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operação *</label>
                   <div className="flex gap-2">
                     <input 
                       type="text"
@@ -1765,7 +1767,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                       onBlur={() => {
                         setTimeout(() => setShowOperacaoSuggestions(false), 200);
                       }}
-                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs"
+                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-lg"
                     />
                     <button
                       type="button"
@@ -1806,7 +1808,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                         const totalFiltered = filtered.length;
                         
                         if (totalFiltered === 0) {
-                          return <div className="p-2 text-zinc-500 text-xs font-mono">Nenhuma operação encontrada</div>;
+                          return <div className="p-2 text-zinc-500 text-lg font-mono">Nenhuma operação encontrada</div>;
                         }
                         
                         const sortedEntries = (Object.entries(grouped) as [string, string[]][]).sort(([catA], [catB]) => {
@@ -1825,7 +1827,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                         return (
                           <select
                             size={Math.min(8, totalFiltered + Object.keys(grouped).length)}
-                            className="w-full bg-transparent text-zinc-300 font-mono text-xs focus:outline-none border-none cursor-pointer"
+                            className="w-full bg-transparent text-zinc-300 font-mono text-lg focus:outline-none border-none cursor-pointer"
                             onChange={(e) => {
                               if (e.target.value) {
                                 setFormOperacao(e.target.value);
@@ -1842,7 +1844,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                                   <option 
                                     key={op} 
                                     value={op} 
-                                    className="text-zinc-300 font-mono text-xs bg-zinc-900 px-3 py-1.5 hover:bg-[#00624C] hover:text-white cursor-pointer"
+                                    className="text-zinc-300 font-mono text-lg bg-zinc-900 px-3 py-1.5 hover:bg-[#00624C] hover:text-white cursor-pointer"
                                     onClick={() => {
                                       setFormOperacao(op);
                                       setShowOperacaoSuggestions(false);
@@ -1864,7 +1866,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                 <div className="flex gap-2 items-end">
                   {/* Lote Input (numeric keypad trigger) */}
                   <div className="space-y-1 flex-1">
-                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lote de Produção *</label>
+                    <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lote de Produção *</label>
                     <input 
                       type="text" 
                       inputMode="numeric" 
@@ -1874,18 +1876,18 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                       placeholder="Ex: 205"
                       value={formLote}
                       onChange={(e) => setFormLote(e.target.value)}
-                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-xs font-bold"
+                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-lg font-bold"
                     />
                   </div>
                   
                   {/* Lado Select Dropdown */}
                   <div className="space-y-1 flex-1">
-                    <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lado</label>
+                    <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lado</label>
                     <select 
                       disabled={confirmaLado}
                       value={formLado} 
                       onChange={(e) => setFormLado(e.target.value as any)}
-                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-xs font-bold"
+                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-lg font-bold"
                     >
                       <option value="Único">Único</option>
                       <option value="Esquerdo">Esquerdo</option>
@@ -1920,7 +1922,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                 <div className="flex gap-2 items-end">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Matéria-Prima Alimentada *</label>
+                      <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Matéria-Prima Alimentada *</label>
                       <input 
                         type="number"
                         required
@@ -1937,14 +1939,14 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                             setFormMateriaPrima('');
                           }
                         }}
-                        className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs font-bold"
+                        className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-lg font-bold"
                       />
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block">Observação</label>
-                        <span className="text-[9px] text-zinc-600 font-mono">{formObservacao.length}/150</span>
+                        <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Observação</label>
+                        <span className="text-lg text-zinc-600 font-mono">{formObservacao.length}/150</span>
                       </div>
                       <input 
                         type="text"
@@ -1952,7 +1954,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                         placeholder="Ex: Treinamento / Parada"
                         value={formObservacao}
                         onChange={(e) => setFormObservacao(e.target.value)}
-                        className="w-full h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-xs"
+                        className="w-full h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-lg"
                       />
                     </div>
                   </div>
@@ -1974,13 +1976,13 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                 {/* 6. Compact Regime de Hora Extra Toggle Section */}
                 <div className="bg-zinc-900/30 px-3 py-2 border border-zinc-800 rounded flex justify-between items-center">
                   <div>
-                    <span className="font-bold text-zinc-300 text-[11px] block">Regime de Hora Extra?</span>
-                    <span className="text-[9px] text-zinc-500 font-mono">Determina se o tempo conta como HE</span>
+                    <span className="font-bold text-zinc-300 text-lg block">Regime de Hora Extra?</span>
+                    <span className="text-lg text-zinc-500 font-mono">Determina se o tempo conta como HE</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFormHoraExtra(!formHoraExtra)}
-                    className={`px-3 h-8 rounded font-bold font-mono uppercase transition-all flex items-center justify-center gap-1 cursor-pointer text-[10px] ${
+                    className={`px-3 h-8 rounded font-bold font-mono uppercase transition-all flex items-center justify-center gap-1 cursor-pointer text-lg ${
                       formHoraExtra 
                         ? 'bg-[#00624C] text-white shadow-md shadow-[#00624C]/20' 
                         : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
@@ -1998,7 +2000,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                 <button 
                   type="button"
                   onClick={retomarScanner}
-                  className="h-14 text-sm font-mono font-bold uppercase text-zinc-400 hover:text-white rounded-lg border border-zinc-800 bg-transparent cursor-pointer transition-all flex items-center justify-center gap-2"
+                  className="h-14 text-lg font-mono font-bold uppercase text-zinc-400 hover:text-white rounded-lg border border-zinc-800 bg-transparent cursor-pointer transition-all flex items-center justify-center gap-2"
                 >
                   <XCircle size={16} />
                   Cancelar
@@ -2007,7 +2009,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                   type="button"
                   onClick={handleSalvarCenarioA}
                   disabled={isSaving || !(confirmaOperadora && confirmaOperacao && confirmaLote && confirmaLado && confirmaTipoMaquina && confirmaMateriaPrima)}
-                  className="h-14 text-sm font-mono font-bold uppercase text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg shadow-lg shadow-emerald-600/10 cursor-pointer transition-all flex items-center justify-center gap-2 text-center"
+                  className="h-14 text-lg font-mono font-bold uppercase text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg shadow-lg shadow-emerald-600/10 cursor-pointer transition-all flex items-center justify-center gap-2 text-center"
                 >
                   {isSaving ? <Loader2 className="animate-spin" size={16} /> : null}
                   {!(confirmaOperadora && confirmaOperacao && confirmaLote && confirmaLado && confirmaTipoMaquina && confirmaMateriaPrima)
@@ -2022,23 +2024,23 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
       <AnimatePresence>
         {activeSession && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-3 sm:p-4 pt-[72px] pb-12 sm:pt-[80px] backdrop-blur-sm overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-zinc-950 border border-white/30 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 md:p-6 space-y-4 shadow-2xl scrollbar-thin my-auto"
+              className="bg-zinc-950 border border-white/30 rounded-xl w-full max-w-md overflow-visible p-4 sm:p-5 md:p-6 space-y-5 shadow-2xl mx-auto my-0"
             >
               {/* Informações Atuais de Leitura (READ-ONLY) */}
-              <div className="space-y-3 bg-zinc-900/40 p-4 rounded-lg border border-white/30 font-mono text-[11px] text-zinc-400">
+              <div className="space-y-3 bg-zinc-900/40 p-4 rounded-lg border border-white/30 font-mono text-lg text-zinc-400">
                 {/* Linha de Cabeçalho (Manutenção e Código) */}
                 <div className="flex justify-between items-center border-b border-white/20 pb-3 mb-1">
-                  <span className="text-neutral-500 font-mono text-[9px] font-bold">COD: {activeSession.codigo_manual_curto}</span>
+                  <span className="text-neutral-500 font-mono text-lg font-bold">COD: {activeSession.codigo_manual_curto}</span>
                   <div className="flex items-center gap-3">
                     {!showQualidadeForm && !showManutencaoForm && (
                       <button 
                         onClick={() => setShowManutencaoForm(true)}
-                        className="bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-400 font-mono font-bold text-[9px] px-2.5 py-1.5 rounded uppercase transition-colors cursor-pointer"
+                        className="bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-400 font-mono font-bold text-lg px-2.5 py-1.5 rounded uppercase transition-colors cursor-pointer"
                       >
                         🔧 Solicitar Manutenção
                       </button>
@@ -2055,7 +2057,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">
                   <div>
                     <span className="text-zinc-600 block text-[8px] uppercase font-bold">Máquina</span>
-                    <strong className="text-zinc-100 font-bold text-xs">{activeSession.num_maquina}</strong>
+                    <strong className="text-zinc-100 font-bold text-lg">{activeSession.num_maquina}</strong>
                   </div>
                   <div>
                     <span className="text-zinc-600 block text-[8px] uppercase font-bold">Operadora</span>
@@ -2084,7 +2086,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
               {showQualidadeForm ? (
                 // FORMULÁRIO DE QUALIDADE
-                <div className="space-y-4 font-mono text-xs">
+                <div className="space-y-4 font-mono text-lg">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-zinc-400 font-bold block">Retrabalho Próprio</label>
@@ -2121,14 +2123,14 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                   <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-zinc-900">
                     <button 
                       onClick={() => setShowQualidadeForm(false)}
-                      className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white font-bold h-12 md:h-10 px-4 rounded text-[10px] font-mono uppercase tracking-widest transition-colors flex justify-center items-center gap-2 cursor-pointer w-full sm:w-auto"
+                      className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white font-bold h-12 md:h-10 px-4 rounded text-lg font-mono uppercase tracking-widest transition-colors flex justify-center items-center gap-2 cursor-pointer w-full sm:w-auto"
                     >
                       Voltar
                     </button>
                     <button 
                       onClick={handleSalvarQualidade}
                       disabled={isSaving || (retrabalhoProprio === 0 && retrabalhoTerceiro === 0 && qualidadeRefugo === 0)}
-                      className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-black h-12 md:h-10 px-3 rounded text-[10px] font-mono uppercase tracking-widest shadow-lg shadow-amber-600/15 transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
+                      className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-black h-12 md:h-10 px-3 rounded text-lg font-mono uppercase tracking-widest shadow-lg shadow-amber-600/15 transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
                     >
                       {isSaving ? <Loader2 className="animate-spin" size={14} /> : <AlertCircle size={14} />}
                       Salvar Ajuste de Qualidade
@@ -2137,11 +2139,11 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                 </div>
               ) : showManutencaoForm ? (
                 // FORMULÁRIO DE MANUTENÇÃO
-                <div className="space-y-4 font-mono text-xs">
+                <div className="space-y-4 font-mono text-lg">
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
                       <label className="text-rose-400 font-bold block">Descrever Problema da Máquina (Opcional)</label>
-                      <span className="text-[10px] text-zinc-500 font-mono">{manutencaoDesc.length}/150</span>
+                      <span className="text-lg text-zinc-500 font-mono">{manutencaoDesc.length}/150</span>
                     </div>
                     <textarea 
                       maxLength={150}
@@ -2157,7 +2159,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                     <button 
                       onClick={handleConfirmarManutencao}
                       disabled={isSaving}
-                      className="h-14 w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-mono font-bold uppercase rounded-lg shadow-lg shadow-rose-600/10 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="h-14 w-full bg-rose-600 hover:bg-rose-700 text-white text-lg font-mono font-bold uppercase rounded-lg shadow-lg shadow-rose-600/10 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isSaving ? <Loader2 className="animate-spin" size={16} /> : <AlertCircle size={16} />}
                       CONFIRMAR CHAMADO DE MANUTENÇÃO
@@ -2167,7 +2169,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                         setShowManutencaoForm(false);
                         setManutencaoDesc('');
                       }}
-                      className="h-12 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-mono font-bold uppercase rounded-lg cursor-pointer flex justify-center items-center gap-2 w-full"
+                      className="h-12 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-lg font-mono font-bold uppercase rounded-lg cursor-pointer flex justify-center items-center gap-2 w-full"
                     >
                       Voltar
                     </button>
@@ -2176,18 +2178,18 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
               ) : (
                 <>
                   {/* Inputs para digitação */}
-                  <div className="space-y-4 font-mono text-xs">
+                  <div className="space-y-4 font-mono text-lg">
                     
                     {/* Apontamento de Volumes (Grid de 3 Colunas: Conforme, Ret. Próprio, Ret. Terceiro) */}
                     <div className="space-y-3.5">
-                      <span className="text-[10px] font-mono text-zinc-400 uppercase font-black tracking-wider block">
+                      <span className="text-lg font-mono text-zinc-400 uppercase font-black tracking-wider block">
                         Apontamento de Volumes
                       </span>
                       
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {/* Column 1: Conforme (Verde) */}
                         <div className="space-y-1">
-                          <label className="text-[10px] text-emerald-400 font-black uppercase tracking-wider block">Conforme *</label>
+                          <label className="text-lg text-emerald-400 font-black uppercase tracking-wider block">Conforme *</label>
                           <div className="flex flex-col gap-1.5">
                             <input 
                               type="text" 
@@ -2197,12 +2199,12 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                               value={prodConforme}
                               onChange={(e) => setProdConforme(e.target.value === '' ? '' : Number(e.target.value))}
                               disabled={confirmaBProdConforme}
-                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-xs font-mono text-white text-center focus:outline-none focus:border-emerald-500 disabled:opacity-50" 
+                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-lg font-mono text-white text-center focus:outline-none focus:border-emerald-500 disabled:opacity-50" 
                             />
                             <button 
                               type="button" 
                               onClick={() => setConfirmaBProdConforme(!confirmaBProdConforme)}
-                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all ${
+                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all ${
                                 confirmaBProdConforme 
                                   ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                                   : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
@@ -2215,7 +2217,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
                         {/* Column 2: Refugo (Rose/Vermelho) */}
                         <div className="space-y-1">
-                          <label className="text-[10px] text-rose-400 font-black uppercase tracking-wider block">Refugo</label>
+                          <label className="text-lg text-rose-400 font-black uppercase tracking-wider block">Refugo</label>
                           <div className="flex flex-col gap-1.5">
                             <input 
                               type="text" 
@@ -2225,12 +2227,12 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                               value={refugo}
                               onChange={(e) => setRefugo(e.target.value === '' ? '' : Number(e.target.value))}
                               disabled={confirmaBRefugo}
-                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-xs font-mono text-white text-center focus:outline-none focus:border-rose-500 disabled:opacity-50" 
+                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-lg font-mono text-white text-center focus:outline-none focus:border-rose-500 disabled:opacity-50" 
                             />
                             <button 
                               type="button" 
                               onClick={() => setConfirmaBRefugo(!confirmaBRefugo)}
-                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all ${
+                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all ${
                                 confirmaBRefugo 
                                   ? 'bg-rose-600 border-rose-500 text-white shadow-md shadow-rose-600/20' 
                                   : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
@@ -2243,7 +2245,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
                         {/* Column 3: Retrabalho Próprio (Laranja) */}
                         <div className="space-y-1">
-                          <label className="text-[10px] text-amber-400 font-black uppercase tracking-wider block">Ret. Próprio</label>
+                          <label className="text-lg text-amber-400 font-black uppercase tracking-wider block">Ret. Próprio</label>
                           <div className="flex flex-col gap-1.5">
                             <input 
                               type="text" 
@@ -2253,12 +2255,12 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                               value={retrabalhoProprio}
                               onChange={(e) => setRetrabalhoProprio(e.target.value === '' ? '' : Number(e.target.value))}
                               disabled={confirmaBRetrabalhoProprio}
-                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-lg font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
                             />
                             <button 
                               type="button" 
                               onClick={() => setConfirmaBRetrabalhoProprio(!confirmaBRetrabalhoProprio)}
-                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all ${
+                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all ${
                                 confirmaBRetrabalhoProprio 
                                   ? 'bg-amber-600 border-amber-500 text-white shadow-md shadow-amber-600/20' 
                                   : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
@@ -2271,7 +2273,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
                         {/* Column 4: Retrabalho Terceiro (Laranja) */}
                         <div className="space-y-1">
-                          <label className="text-[10px] text-amber-400 font-black uppercase tracking-wider block">Ret. Terc.</label>
+                          <label className="text-lg text-amber-400 font-black uppercase tracking-wider block">Ret. Terc.</label>
                           <div className="flex flex-col gap-1.5">
                             <input 
                               type="text" 
@@ -2281,12 +2283,12 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                               value={retrabalhoTerceiro}
                               onChange={(e) => setRetrabalhoTerceiro(e.target.value === '' ? '' : Number(e.target.value))}
                               disabled={confirmaBRetrabalhoTerceiro}
-                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-xs font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-lg font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
                             />
                             <button 
                               type="button" 
                               onClick={() => setConfirmaBRetrabalhoTerceiro(!confirmaBRetrabalhoTerceiro)}
-                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all ${
+                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all ${
                                 confirmaBRetrabalhoTerceiro 
                                   ? 'bg-amber-600 border-amber-500 text-white shadow-md shadow-amber-600/20' 
                                   : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
@@ -2301,13 +2303,13 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
                     {/* Lado (Dropdown) */}
                     <div className="flex items-center justify-between bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60">
-                      <span className="text-[10px] font-mono text-zinc-300 uppercase font-black tracking-wider">Lado de Produção:</span>
+                      <span className="text-lg font-mono text-zinc-300 uppercase font-black tracking-wider">Lado de Produção:</span>
                       <div className="flex items-center gap-2">
                         <select 
                           disabled={confirmaBLado}
                           value={cenarioBLado} 
                           onChange={(e) => setCenarioBLado(e.target.value as any)}
-                          className="h-10 bg-zinc-900 border border-zinc-800 text-white text-xs font-mono font-bold rounded px-2 focus:outline-none focus:border-[#00624C] disabled:opacity-50"
+                          className="h-10 bg-zinc-900 border border-zinc-800 text-white text-lg font-mono font-bold rounded px-2 focus:outline-none focus:border-[#00624C] disabled:opacity-50"
                         >
                           <option value="Único">Único</option>
                           <option value="Esquerdo">Esquerdo</option>
@@ -2316,7 +2318,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                         <button
                           type="button"
                           onClick={() => setConfirmaBLado(!confirmaBLado)}
-                          className={`h-10 w-10 rounded border flex items-center justify-center font-bold text-xs cursor-pointer transition-all shrink-0 ${
+                          className={`h-10 w-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all shrink-0 ${
                             confirmaBLado 
                               ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
                               : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
@@ -2330,7 +2332,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
                     {/* Observação (Justificativa) */}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block font-black">
+                      <label className="text-lg font-mono text-zinc-400 uppercase tracking-wider block font-black">
                         OBSERVAÇÃO (JUSTIFICATIVA)
                       </label>
                       <textarea 
@@ -2339,7 +2341,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                         placeholder="Ex: Treinamento ou justificativa de parada..."
                         value={cenarioBObservacao}
                         onChange={(e) => setCenarioBObservacao(e.target.value)}
-                        className="w-full h-16 bg-zinc-900 border border-zinc-800 rounded p-2.5 text-xs text-white focus:outline-none focus:border-[#00624C] resize-none font-mono placeholder-zinc-600"
+                        className="w-full h-16 bg-zinc-900 border border-zinc-800 rounded p-2.5 text-lg text-white focus:outline-none focus:border-[#00624C] resize-none font-mono placeholder-zinc-600"
                       />
                     </div>
 
@@ -2351,7 +2353,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                     <button 
                       onClick={() => handleSalvarCenarioB(false)}
                       disabled={isSaving || !isBValid}
-                      className="h-14 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-bold uppercase rounded-lg shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="h-14 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-mono font-bold uppercase rounded-lg shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                       {!isBValid
@@ -2364,7 +2366,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                       <button 
                         onClick={() => handleSalvarCenarioB(true)}
                         disabled={isSaving || !isBValid}
-                        className="h-12 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-mono font-bold uppercase rounded-lg cursor-pointer flex items-center justify-center disabled:opacity-50"
+                        className="h-12 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-lg font-mono font-bold uppercase rounded-lg cursor-pointer flex items-center justify-center disabled:opacity-50"
                         title="Fecha o lote atual e abre o form para configurar um novo processo/operadora para esta máquina"
                       >
                         MUDAR PROCESSO
@@ -2373,7 +2375,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                       <button 
                         onClick={handleFinalizarProcessoClick}
                         disabled={isSaving || !isBValid}
-                        className="h-12 bg-rose-950/20 hover:bg-rose-900/30 border border-rose-500/20 text-rose-400 text-xs font-mono font-bold uppercase rounded-lg cursor-pointer flex items-center justify-center disabled:opacity-50"
+                        className="h-12 bg-rose-950/20 hover:bg-rose-900/30 border border-rose-500/20 text-rose-400 text-lg font-mono font-bold uppercase rounded-lg cursor-pointer flex items-center justify-center disabled:opacity-50"
                         title="Finaliza o lote atual gravando a contagem e encerra o processo de vez nesta máquina"
                       >
                         FINALIZAR
@@ -2414,7 +2416,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                   </div>
                 )}
                 
-                <h4 className={`font-mono text-xs uppercase tracking-widest font-black ${
+                <h4 className={`font-mono text-lg uppercase tracking-widest font-black ${
                   customAlert.type === 'success' ? 'text-emerald-400' :
                   customAlert.type === 'warning' ? 'text-amber-400' : 'text-rose-400'
                 }`}>
@@ -2422,7 +2424,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                    customAlert.type === 'warning' ? 'AVISO / ATENÇÃO' : 'FALHA REJEITADA'}
                 </h4>
                 
-                <p className="text-zinc-300 font-mono text-xs leading-relaxed uppercase">
+                <p className="text-zinc-300 font-mono text-lg leading-relaxed uppercase">
                   {customAlert.message}
                 </p>
               </div>
@@ -2434,7 +2436,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                     onCloseOverlay();
                   }
                 }}
-                className="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded text-[10px] font-mono font-bold uppercase tracking-widest transition-colors cursor-pointer"
+                className="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded text-lg font-mono font-bold uppercase tracking-widest transition-colors cursor-pointer"
               >
                 Ok, Entendido
               </button>
@@ -2458,16 +2460,16 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                   <AlertCircle size={28} />
                 </div>
                 
-                <h4 className="font-mono text-sm uppercase tracking-widest font-black text-rose-500">
+                <h4 className="font-mono text-lg uppercase tracking-widest font-black text-rose-500">
                   ATENÇÃO: ALERTA DE TURNO ATIVO
                 </h4>
                 
-                <p className="text-zinc-300 font-mono text-xs leading-relaxed uppercase">
+                <p className="text-zinc-300 font-mono text-lg leading-relaxed uppercase">
                   Atenção: O turno ainda não encerrou. Descreva o motivo da finalização antecipada:
                 </p>
 
                 <div className="w-full text-left space-y-1">
-                  <div className="flex justify-between items-center text-[10px] text-zinc-500 font-mono">
+                  <div className="flex justify-between items-center text-lg text-zinc-500 font-mono">
                     <span>Justificativa</span>
                     <span>{justificativaMotivo.length}/150</span>
                   </div>
@@ -2477,7 +2479,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                     placeholder="Descreva aqui o motivo detalhado (máx 150 caracteres)..."
                     value={justificativaMotivo}
                     onChange={(e) => setJustificativaMotivo(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 text-white rounded p-3 text-xs focus:outline-none focus:border-rose-500 placeholder-zinc-600 resize-none font-mono"
+                    className="w-full bg-zinc-900 border border-zinc-800 text-white rounded p-3 text-lg focus:outline-none focus:border-rose-500 placeholder-zinc-600 resize-none font-mono"
                   />
                 </div>
               </div>
@@ -2488,14 +2490,14 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                     setShowJustificativaModal(false);
                     setJustificativaMotivo('');
                   }}
-                  className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white rounded text-[10px] font-mono font-bold uppercase tracking-widest transition-colors cursor-pointer"
+                  className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white rounded text-lg font-mono font-bold uppercase tracking-widest transition-colors cursor-pointer"
                 >
                   Voltar
                 </button>
                 <button
                   onClick={handleConfirmarFinalizacaoAntecipada}
                   disabled={isSaving || !justificativaMotivo.trim()}
-                  className="flex-1 py-2.5 bg-rose-700 hover:bg-rose-800 text-white rounded text-[10px] font-mono font-black uppercase tracking-widest transition-colors cursor-pointer disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-rose-700 hover:bg-rose-800 text-white rounded text-lg font-mono font-black uppercase tracking-widest transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Confirmar Finalização
                 </button>

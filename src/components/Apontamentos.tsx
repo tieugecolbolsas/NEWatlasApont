@@ -477,7 +477,9 @@ export default function Apontamentos() {
         .from('registros_producao_terminal')
         .select('*');
 
-      if (userObj?.role !== 'admin') {
+      const userEmail = (userObj?.email || '').toLowerCase();
+      const isColaboradora = userEmail.includes('apontamento') || userObj?.role === 'colaboradora';
+      if (userId && isColaboradora) {
         query = query.eq('user_id', userId);
       }
 

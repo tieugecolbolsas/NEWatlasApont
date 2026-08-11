@@ -9,6 +9,7 @@ export interface UserSession {
   role: 'admin' | 'colaboradora';
   createdAt: string;
   token?: string;
+  sessionStart?: string;
 }
 
 // Configurações do Firebase para o projeto eugecolstoragedata
@@ -93,6 +94,7 @@ export async function loginHibrido(emailRaw: string, passwordRaw: string): Promi
         displayName: user.displayName || email.split('@')[0],
         role,
         createdAt: new Date().toISOString(),
+        sessionStart: new Date().toISOString(),
         token: (user as any).accessToken || 'fb-token'
       };
     } catch (fbErr: any) {
@@ -114,7 +116,8 @@ export async function loginHibrido(emailRaw: string, passwordRaw: string): Promi
         uid: data.user.id,
         email: data.user.email || email,
         role,
-        createdAt: data.user.created_at || new Date().toISOString()
+        createdAt: data.user.created_at || new Date().toISOString(),
+        sessionStart: new Date().toISOString()
       };
     } else if (error) {
       // Se o erro do Supabase não for um 404 (NotFound do endpoint do Express proxy)
@@ -145,6 +148,7 @@ export async function loginHibrido(emailRaw: string, passwordRaw: string): Promi
         displayName: email.split('@')[0].toUpperCase(),
         role,
         createdAt: new Date().toISOString(),
+        sessionStart: new Date().toISOString(),
         token: 'local-token-session'
       };
     } else {

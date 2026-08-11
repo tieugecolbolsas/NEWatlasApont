@@ -154,10 +154,17 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode; addToast: (
         const userId = userObj?.id || userObj?.uid;
         if (!userId) return;
 
-        const { data, error } = await supabase
+        let query = supabase
           .from('registros_producao_teste')
-          .select('*')
-          .eq('user_id', userId)
+          .select('*');
+
+        const userEmail = (userObj?.email || '').toLowerCase();
+        const isColaboradora = userEmail.includes('apontamento') || userObj?.role === 'colaboradora';
+        if (userId && isColaboradora) {
+          query = query.eq('user_id', userId);
+        }
+
+        const { data, error } = await query
           .order('id', { ascending: false })
           .limit(100);
 

@@ -28,7 +28,16 @@ export default function App() {
         // Tenta recuperar do localStorage primeiro para manter o estado completo (com role e displayName)
         const localUser = getLocalSessionUser();
         if (localUser) {
-          setUser(localUser);
+          let sessionStart = localStorage.getItem('atlas_session_start_time');
+          if (!sessionStart) {
+            sessionStart = localUser.sessionStart || new Date().toISOString();
+            localStorage.setItem('atlas_session_start_time', sessionStart);
+          }
+          const userWithStart = {
+            ...localUser,
+            sessionStart
+          };
+          setUser(userWithStart);
           return;
         }
 
@@ -42,12 +51,19 @@ export default function App() {
             const email = (sessionUser.email || 'operator@eugecol.com').toLowerCase();
             const calculatedRole = email.includes('apontamento') ? 'colaboradora' : 'admin';
 
+            let sessionStart = localStorage.getItem('atlas_session_start_time');
+            if (!sessionStart) {
+              sessionStart = new Date().toISOString();
+              localStorage.setItem('atlas_session_start_time', sessionStart);
+            }
+
             const restoredUser = {
+              ...sessionUser,
               uid: sessionUser.id || sessionUser.uid || 'local-user',
-              email: sessionUser.email || 'operator@eugecol.com',
-              role: sessionUser.role || calculatedRole,
+              email: email,
+              role: calculatedRole,
               createdAt: sessionUser.created_at || sessionUser.createdAt || new Date().toISOString(),
-              ...sessionUser
+              sessionStart
             } as UserSession;
 
             setUser(restoredUser);
@@ -64,17 +80,87 @@ export default function App() {
   }, []);
 
   const handleLoginSuccess = (userObj: UserSession) => {
-    setUser(userObj);
-    setLocalSessionUser(userObj);
+    const sessionStart = userObj.sessionStart || new Date().toISOString();
+    localStorage.setItem('atlas_session_start_time', sessionStart);
+    const userWithStart = {
+      ...userObj,
+      sessionStart
+    };
+    setUser(userWithStart);
+    setLocalSessionUser(userWithStart);
   };
 
-  const handleLogout = (showToast = true) => {
+  const handleLogout = async (showToast = true) => {
     setUser(null);
     setLocalSessionUser(null);
+    localStorage.removeItem('atlas_session_start_time');
+    try {
+      if (supabase && supabase.auth && typeof supabase.auth.signOut === 'function') {
+        await supabase.auth.signOut();
+      }
+    } catch (err) {
+      console.warn('[Atlas Auth] Erro ao deslogar do Supabase:', err);
+    }
     if (showToast) {
       addToast('Sessão encerrada com sucesso.', 'info');
     }
   };
+
+  // Monitoramento de Ociosidade (Idle Timeout) para deslogar automaticamente após 1 hora de inatividade
+  useEffect(() => {
+    if (!user) return;
+
+    // Tempo limite de inatividade (1 hora)
+    const IDLE_TIMEOUT = 60 * 60 * 1000; 
+    let timeoutId: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        handleLogout(false);
+        addToast('Sessão encerrada automaticamente por inatividade.', 'info');
+      }, IDLE_TIMEOUT);
+    };
+
+    const activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+
+    resetTimer();
+    
+    activityEvents.forEach((event) => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    return () => {
+      clearTimeout(timeoutId);
+      activityEvents.forEach((event) => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [user]);
+
+  // Tempo limite absoluto de sessão de 1 hora (Segurança e controle de sessão do Atlas)
+  useEffect(() => {
+    if (!user) return;
+
+    const sessionStart = user.sessionStart || localStorage.getItem('atlas_session_start_time') || new Date().toISOString();
+    const sessionStartTime = new Date(sessionStart).getTime();
+    const oneHourMs = 60 * 60 * 1000;
+    const elapsedTime = Date.now() - sessionStartTime;
+    const remainingTime = oneHourMs - elapsedTime;
+
+    if (remainingTime <= 0) {
+      handleLogout(false);
+      addToast('Sessão expirada após tempo limite de 1 hora.', 'info');
+      return;
+    }
+
+    const absoluteTimeoutId = setTimeout(() => {
+      handleLogout(false);
+      addToast('Sessão encerrada por tempo limite de 1 hora.', 'info');
+    }, remainingTime);
+
+    return () => clearTimeout(absoluteTimeoutId);
+  }, [user]);
 
   const addToast = (text: string, type: 'success' | 'error' | 'info') => {
     const id = Math.random().toString();

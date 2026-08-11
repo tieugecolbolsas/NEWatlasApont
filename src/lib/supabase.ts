@@ -62,6 +62,14 @@ if (useDirectClient) {
         } catch (err: any) {
           return { data: { user: null }, error: { message: err.message || 'Erro ao conectar ao servidor seguro.' } };
         }
+      },
+      signOut: async () => {
+        try {
+          localStorage.removeItem('atlas_supervisor_session');
+          return { error: null };
+        } catch (err: any) {
+          return { error: { message: err.message } };
+        }
       }
     },
     channel: (name: string) => {
