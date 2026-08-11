@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ChevronLeft, QrCode } from 'lucide-react';
+import { Menu, X, ChevronLeft, QrCode, Type } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
 import Sidebar, { menuItems } from './Sidebar';
@@ -25,6 +25,20 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
   const [isQuickQRModalOpen, setIsQuickQRModalOpen] = useState(false);
   const [pendingScanCode, setPendingScanCode] = useState('');
   const [isScannerOverlayOpen, setIsScannerOverlayOpen] = useState(false);
+
+  const [largeFont, setLargeFont] = useState(() => {
+    return localStorage.getItem('atlas_large_font') === 'true';
+  });
+
+  useEffect(() => {
+    if (largeFont) {
+      document.documentElement.classList.add('large-font-mode');
+      localStorage.setItem('atlas_large_font', 'true');
+    } else {
+      document.documentElement.classList.remove('large-font-mode');
+      localStorage.setItem('atlas_large_font', 'false');
+    }
+  }, [largeFont]);
 
   // Lock background scrolling when mobile navigation sidebar is open
   useEffect(() => {
@@ -149,6 +163,17 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLargeFont(!largeFont)}
+              className={`p-1.5 rounded-lg border flex items-center justify-center transition-colors cursor-pointer ${
+                largeFont 
+                  ? 'bg-[#00624C]/20 border-[#00624C] text-emerald-400' 
+                  : 'bg-neutral-900 border-neutral-800 text-[#00624C]'
+              }`}
+              title="Tamanho da Fonte"
+            >
+              <Type className="w-5 h-5" />
+            </button>
             <button 
               id="mobile-qr-scan-btn"
               onClick={() => setIsQuickQRModalOpen(true)}
@@ -238,6 +263,20 @@ export default function Dashboard({ userEmail, onLogout, addToast, mode }: Dashb
                       </button>
                     );
                   })}
+                  
+                  <div className="w-px h-5 bg-white/20 mx-1"></div>
+                  
+                  <button
+                    onClick={() => setLargeFont(!largeFont)}
+                    className={`flex items-center justify-center p-1.5 rounded-full transition-all duration-200 cursor-pointer ${
+                      largeFont
+                        ? 'bg-[#00624C]/20 text-emerald-400 border border-[#00624C]/30'
+                        : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/40 border border-transparent'
+                    }`}
+                    title="Alternar Tamanho da Fonte"
+                  >
+                    <Type className="w-4 h-4" />
+                  </button>
                 </div>
               </motion.header>
             )}
