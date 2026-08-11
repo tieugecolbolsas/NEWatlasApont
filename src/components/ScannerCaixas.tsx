@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
+  X,
   Camera, 
   CheckCircle2, 
   XCircle, 
@@ -208,6 +209,9 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
   const [confirmaBObservacao, setConfirmaBObservacao] = useState(false);
 
   // Body scroll lock on modal open
+  
+
+
   useEffect(() => {
     const isAnyModalOpen = showScenarioA || !!activeSession || showManutencaoForm || showJustificativaModal || !!customAlert;
     if (isAnyModalOpen) {
@@ -354,6 +358,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
   const [qualidadeRefugo, setQualidadeRefugo] = useState<number>(0);
   
   const [isSaving, setIsSaving] = useState(false);
+  const [showBConfirmationModal, setShowBConfirmationModal] = useState(false);
   const [cameraDisponivel, setCameraDisponivel] = useState(false);
   const [permissaoNegada, setPermissaoNegada] = useState(false);
 
@@ -1403,12 +1408,18 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
     (isRetTerceiroEmpty || confirmaBRetrabalhoTerceiro) &&
     !(isConformeEmpty && isRefugoEmpty && isRetProprioEmpty && isRetTerceiroEmpty);
 
+  useEffect(() => {
+    if (isBValid && activeSession) {
+      setShowBConfirmationModal(true);
+    }
+  }, [isBValid]);
+
   return (
     <>
       <div className={`flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 overflow-y-auto ${isOverlayMode ? 'hidden' : ''}`} id="terminal-mobile-view">
         
         {/* HEADER PRINCIPAL */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-6xl mx-auto w-full">
           <div>
             <h2 className="font-mono text-xl font-bold uppercase tracking-[0.15em] text-[#00624C] flex items-center gap-2">
                TERMINAL DE APONTAMENTO
@@ -1419,7 +1430,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-6xl mx-auto w-full">
           
           {/* LADO ESQUERDO: SCANNER DE QR CODE DE MAQUINA */}
           <div className="lg:col-span-5 flex flex-col gap-6">
@@ -2346,44 +2357,103 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                     </div>
 
                   </div>
-
-                  {/* Botões do Form (Exatamente como o print) */}
-                  <div className="flex flex-col gap-2.5 pt-3 border-t border-zinc-900/40 font-mono">
-                    {/* Botão Principal Verde em Cima */}
-                    <button 
-                      onClick={() => handleSalvarCenarioB(false)}
-                      disabled={isSaving || !isBValid}
-                      className="h-14 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-mono font-bold uppercase rounded-lg shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                      {!isBValid
-                        ? "CONFIRME TODOS OS CAMPOS"
-                        : "💾 SALVAR E CONTINUAR"}
-                    </button>
-
-                    {/* Duas colunas embaixo */}
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <button 
-                        onClick={() => handleSalvarCenarioB(true)}
-                        disabled={isSaving || !isBValid}
-                        className="h-12 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-lg font-mono font-bold uppercase rounded-lg cursor-pointer flex items-center justify-center disabled:opacity-50"
-                        title="Fecha o lote atual e abre o form para configurar um novo processo/operadora para esta máquina"
-                      >
-                        MUDAR PROCESSO
-                      </button>
-
-                      <button 
-                        onClick={handleFinalizarProcessoClick}
-                        disabled={isSaving || !isBValid}
-                        className="h-12 bg-rose-950/20 hover:bg-rose-900/30 border border-rose-500/20 text-rose-400 text-lg font-mono font-bold uppercase rounded-lg cursor-pointer flex items-center justify-center disabled:opacity-50"
-                        title="Finaliza o lote atual gravando a contagem e encerra o processo de vez nesta máquina"
-                      >
-                        FINALIZAR
-                      </button>
-                    </div>
-                  </div>
                 </>
               )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* B CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showBConfirmationModal && (
+          <div className="fixed inset-0 bg-black/75 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+              className="bg-zinc-950 border border-zinc-800 rounded-xl w-full max-w-lg p-6 shadow-2xl overflow-hidden"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-white font-mono uppercase tracking-wider">RESUMO DA PRODUÇÃO</h3>
+                <button 
+                  onClick={() => setShowBConfirmationModal(false)}
+                  className="text-zinc-500 hover:text-white p-1"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-4 mb-8 font-mono">
+                <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800/50">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-zinc-500 text-xs font-bold block uppercase mb-1">Prod. Conforme</span>
+                      <span className="text-emerald-400 font-black text-lg">{prodConforme || '0'} pçs</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 text-xs font-bold block uppercase mb-1">Refugo</span>
+                      <span className="text-rose-400 font-black text-lg">{refugo || '0'} pçs</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 text-xs font-bold block uppercase mb-1">Retrabalho Prop.</span>
+                      <span className="text-amber-400 font-black text-lg">{retrabalhoProprio || '0'} pçs</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 text-xs font-bold block uppercase mb-1">Retrabalho Terc.</span>
+                      <span className="text-amber-400 font-black text-lg">{retrabalhoTerceiro || '0'} pçs</span>
+                    </div>
+                    <div className="col-span-2 pt-2 border-t border-zinc-800/50 mt-2">
+                      <span className="text-zinc-500 text-xs font-bold block uppercase mb-1">Lado</span>
+                      <span className="text-white font-black">{cenarioBLado || 'N/A'}</span>
+                    </div>
+                    {cenarioBObservacao && (
+                      <div className="col-span-2">
+                        <span className="text-zinc-500 text-xs font-bold block uppercase mb-1">Observação</span>
+                        <span className="text-zinc-300 text-sm whitespace-pre-wrap">{cenarioBObservacao}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <p className="text-center text-zinc-300 font-bold uppercase tracking-wider mt-6">O que gostaria de fazer agora?</p>
+              </div>
+
+              <div className="flex flex-col gap-3 font-mono">
+                <button 
+                  onClick={() => {
+                    setShowBConfirmationModal(false);
+                    handleSalvarCenarioB(false);
+                  }}
+                  disabled={isSaving}
+                  className="h-14 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-bold uppercase rounded-lg shadow-lg shadow-emerald-600/10 transition-colors flex items-center justify-center"
+                >
+                  {isSaving ? <Loader2 className="animate-spin mr-2" size={20} /> : <Save className="mr-2" size={20} />}
+                  Salvar Produção
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    setShowBConfirmationModal(false);
+                    handleSalvarCenarioB(true);
+                  }}
+                  disabled={isSaving}
+                  className="h-14 w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold uppercase rounded-lg shadow-lg shadow-blue-600/10 transition-colors flex items-center justify-center"
+                >
+                  Mudar de Processo
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    setShowBConfirmationModal(false);
+                    handleFinalizarProcessoClick();
+                  }}
+                  disabled={isSaving}
+                  className="h-14 w-full bg-rose-600 hover:bg-rose-700 text-white text-lg font-bold uppercase rounded-lg shadow-lg shadow-rose-600/10 transition-colors flex items-center justify-center"
+                >
+                  Finalizar Expediente
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
@@ -2399,7 +2469,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
               exit={{ opacity: 0, scale: 0.9, y: 10 }}
               className="bg-zinc-950 border border-zinc-800 rounded-xl w-full max-w-sm p-6 space-y-4 shadow-2xl text-center"
             >
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center justify-center gap-3">
                 {customAlert.type === 'success' && (
                   <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center text-emerald-400">
                     <CheckCircle2 size={28} />
