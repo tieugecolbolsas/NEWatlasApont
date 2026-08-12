@@ -212,6 +212,7 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
 
   // Estado para Janelas Sequenciais (Contagem)
   const [activeWindow, setActiveWindow] = useState<'conforme' | 'retProprio' | 'retTerceiro' | 'refugo' | 'final'>('conforme');
+  const [activeWindowA, setActiveWindowA] = useState<'operadora' | 'operacao' | 'lote' | 'materia' | 'extras' | 'resumo'>('operadora');
 
   // Body scroll lock on modal open
   
@@ -908,6 +909,8 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
     setConfirmaBProdConforme(false);
     setConfirmaBRetrabalhoProprio(false);
     setConfirmaBRetrabalhoTerceiro(false);
+    setActiveWindow('conforme');
+    setActiveWindowA('operadora');
     setIsScanning(true);
     isProcessingScan.current = false;
     if (scannerRef.current && scannerRef.current.getState() === 3) {
@@ -1419,6 +1422,12 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
     }
   }, [isBValid]);
 
+  useEffect(() => {
+    if (showScenarioA) {
+      setActiveWindowA('operadora');
+    }
+  }, [showScenarioA]);
+
   return (
     <>
       <div className={`flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 overflow-y-auto ${isOverlayMode ? 'hidden' : ''}`} id="terminal-mobile-view">
@@ -1677,361 +1686,463 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                 </button>
               </div>
 
-              {/* Formulário */}
-              <div className="space-y-3 font-mono text-lg">
+              {/* Formulário Sequencial (Janelas Móveis Touch-First) */}
+              <div className="space-y-4 font-mono">
                 
-                {/* 2. Display Bar de Leitura Travada (Substitui Máquina Alvo / Cód. Curto Gerado) */}
-                <div className="relative overflow-hidden bg-zinc-900/90 border border-zinc-800/80 rounded-lg p-3.5 flex items-center justify-between shadow-inner">
-                  {/* Decorative industrial corner/line */}
+                {/* 2. Display Bar de Leitura Travada (Contexto Permanente) */}
+                <div className="relative overflow-hidden bg-zinc-900/90 border border-zinc-800/80 rounded-lg p-3.5 flex items-center justify-between shadow-inner mb-2">
                   <div className="absolute top-0 left-0 w-1 h-full bg-[#00624C]" />
-                  
                   <div className="flex items-center gap-3 pl-2">
                     <div className="h-9 w-9 rounded-md bg-zinc-950 border border-zinc-800/80 flex items-center justify-center text-[#00624C] shadow-sm">
                       <Cpu size={18} className="animate-pulse" />
                     </div>
                     <div>
-                      <span className="text-lg font-mono text-zinc-500 uppercase tracking-widest block font-bold">MÁQUINA IDENTIFICADA</span>
-                      <span className="font-mono text-lg sm:text-lg font-black text-white tracking-wider">
+                      <span className="text-sm font-mono text-zinc-500 uppercase tracking-widest block font-bold">MÁQUINA IDENTIFICADA</span>
+                      <span className="font-mono text-lg sm:text-xl font-black text-white tracking-wider">
                         N.º {formMaquina}
                       </span>
                     </div>
                   </div>
-                  
                   <div className="text-right pr-1">
-                    <span className="text-lg font-mono text-zinc-500 uppercase tracking-widest block font-bold">TIPO DE EQUIPAMENTO</span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-lg font-bold font-mono bg-[#00624C]/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block font-bold">TIPO DE EQUIPAMENTO</span>
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold font-mono bg-[#00624C]/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
                       <Settings size={10} className="animate-[spin_8s_linear_infinite]" />
                       {formTipoMaquina || 'RETA'}
                     </span>
                   </div>
                 </div>
 
-                {/* Nome da Operadora */}
-                <div className="space-y-1 relative">
-                  <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operadora *</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text"
-                      required
-                      disabled={confirmaOperadora}
-                      placeholder="Ex: ANA PAULA SILVA"
-                      value={formOperadora}
-                      onChange={(e) => {
-                        setFormOperadora(e.target.value);
-                        setShowOperadoraSuggestions(true);
-                      }}
-                      onFocus={() => setShowOperadoraSuggestions(true)}
-                      onBlur={() => {
-                        setTimeout(() => setShowOperadoraSuggestions(false), 200);
-                      }}
-                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-bold font-mono text-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!formOperadora.trim()) {
-                          showAlert('warning', "Por favor, preencha o Nome da Operadora antes de confirmar.");
-                          return;
-                        }
-                        setConfirmaOperadora(!confirmaOperadora);
-                      }}
-                      className={`p-2.5 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                        confirmaOperadora 
-                          ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                      }`}
-                      title={confirmaOperadora ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                    >
-                      <Check size={16} className={confirmaOperadora ? "scale-110" : ""} />
-                    </button>
+                {/* Indicador de Passos */}
+                {activeWindowA !== 'resumo' && (
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className={`w-2 h-2 rounded-full transition-all ${activeWindowA === 'operadora' ? 'bg-emerald-500 scale-125' : 'bg-emerald-500'}`}></div>
+                    <div className={`w-2 h-2 rounded-full transition-all ${activeWindowA === 'operacao' ? 'bg-emerald-500 scale-125' : (['lote','materia','extras'].includes(activeWindowA) ? 'bg-emerald-500' : 'bg-zinc-800')}`}></div>
+                    <div className={`w-2 h-2 rounded-full transition-all ${activeWindowA === 'lote' ? 'bg-emerald-500 scale-125' : (['materia','extras'].includes(activeWindowA) ? 'bg-emerald-500' : 'bg-zinc-800')}`}></div>
+                    <div className={`w-2 h-2 rounded-full transition-all ${activeWindowA === 'materia' ? 'bg-emerald-500 scale-125' : (activeWindowA === 'extras' ? 'bg-emerald-500' : 'bg-zinc-800')}`}></div>
+                    <div className={`w-2 h-2 rounded-full transition-all ${activeWindowA === 'extras' ? 'bg-emerald-500 scale-125' : 'bg-zinc-800'}`}></div>
                   </div>
-                  {showOperadoraSuggestions && listaOperadoras.filter(op => op.toLowerCase().includes(formOperadora.toLowerCase())).length > 0 && (
-                    <div className="absolute left-0 right-0 bg-zinc-950 border border-zinc-800 rounded mt-1 max-h-40 overflow-y-auto z-50 shadow-2xl">
-                      {listaOperadoras.filter(op => op.toLowerCase().includes(formOperadora.toLowerCase())).map((op, opIdx) => (
-                        <div
-                          key={opIdx}
-                          onMouseDown={() => {
-                            if (!confirmaOperadora) {
-                              setFormOperadora(op);
-                              setShowOperadoraSuggestions(false);
-                            }
+                )}
+
+                <AnimatePresence mode="wait">
+                  {/* JANELA 1: OPERADORA */}
+                  {activeWindowA === 'operadora' && (
+                    <motion.div 
+                      key="operadora"
+                      initial={{ opacity: 0, x: 15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-xl"
+                    >
+                      <label className="text-sm font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operadora *</label>
+                      <div className="relative">
+                        <input 
+                          type="text"
+                          placeholder="Ex: ANA PAULA SILVA"
+                          value={formOperadora}
+                          onChange={(e) => {
+                            setFormOperadora(e.target.value);
+                            setShowOperadoraSuggestions(true);
                           }}
-                          className="px-3 py-2 text-zinc-300 hover:bg-[#00624C] hover:text-white cursor-pointer transition-colors text-left font-mono text-lg"
-                        >
-                          {op}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Nome da Operação */}
-                <div className="space-y-1 relative">
-                  <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operação *</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text"
-                      required
-                      disabled={confirmaOperacao}
-                      placeholder="Ex: COSTURA GOLA"
-                      value={formOperacao}
-                      onChange={(e) => {
-                        setFormOperacao(e.target.value);
-                        setShowOperacaoSuggestions(true);
-                      }}
-                      onFocus={() => setShowOperacaoSuggestions(true)}
-                      onBlur={() => {
-                        setTimeout(() => setShowOperacaoSuggestions(false), 200);
-                      }}
-                      className="flex-1 h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!formOperacao.trim()) {
-                          showAlert('warning', "Por favor, preencha a Operação antes de confirmar.");
-                          return;
-                        }
-                        setConfirmaOperacao(!confirmaOperacao);
-                      }}
-                      className={`p-2.5 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                        confirmaOperacao 
-                          ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                      }`}
-                      title={confirmaOperacao ? "Desbloquear Campo" : "Confirmar e Travar Campo"}
-                    >
-                      <Check size={16} className={confirmaOperacao ? "scale-110" : ""} />
-                    </button>
-                  </div>
-                  {showOperacaoSuggestions && (
-                    <div className="absolute left-0 right-0 bg-zinc-950 border border-zinc-800 rounded mt-1 z-50 shadow-2xl p-1">
-                      {(() => {
-                        const query = formOperacao.toLowerCase();
-                        const filtered = filteredOperations.filter(item => 
-                          item.operacao_nome.toLowerCase().includes(query) ||
-                          item.categoria_nome.toLowerCase().includes(query)
-                        );
-                        
-                        // Group by category
-                        const grouped = filtered.reduce((acc, curr) => {
-                          const cat = curr.categoria_nome || 'DIVERSOS';
-                          if (!acc[cat]) acc[cat] = [];
-                          acc[cat].push(curr.operacao_nome);
-                          return acc;
-                        }, {} as Record<string, string[]>);
-                        
-                        const totalFiltered = filtered.length;
-                        
-                        if (totalFiltered === 0) {
-                          return <div className="p-2 text-zinc-500 text-lg font-mono">Nenhuma operação encontrada</div>;
-                        }
-                        
-                        const sortedEntries = (Object.entries(grouped) as [string, string[]][]).sort(([catA], [catB]) => {
-                          const getWeight = (cat: string) => {
-                            const norm = cat.toUpperCase().trim();
-                            if (norm === 'FORRAÇÃO CITY' || norm === 'FORRACAO CITY') return 1;
-                            if (norm === 'ORELHA CITY') return 2;
-                            return 3;
-                          };
-                          const weightA = getWeight(catA);
-                          const weightB = getWeight(catB);
-                          if (weightA !== weightB) return weightA - weightB;
-                          return catA.toUpperCase().localeCompare(catB.toUpperCase());
-                        });
-                        
-                        return (
-                          <select
-                            size={Math.min(8, totalFiltered + Object.keys(grouped).length)}
-                            className="w-full bg-transparent text-zinc-300 font-mono text-lg focus:outline-none border-none cursor-pointer"
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                setFormOperacao(e.target.value);
-                                setShowOperacaoSuggestions(false);
-                              }
-                            }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            {sortedEntries.map(([category, ops]) => (
-                              <optgroup key={category} label={category.toUpperCase()} className="text-[#00624C] font-extrabold bg-zinc-950 px-2 py-1">
-                                {ops.map(op => (
-                                  <option 
-                                    key={op} 
-                                    value={op} 
-                                    className="text-zinc-300 font-mono text-lg bg-zinc-900 px-3 py-1.5 hover:bg-[#00624C] hover:text-white cursor-pointer"
-                                    onClick={() => {
-                                      setFormOperacao(op);
-                                      setShowOperacaoSuggestions(false);
-                                    }}
-                                  >
-                                    {op}
-                                  </option>
-                                ))}
-                              </optgroup>
+                          onFocus={() => setShowOperadoraSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowOperadoraSuggestions(false), 200)}
+                          className="w-full h-14 bg-zinc-900 border border-zinc-700 text-white rounded-lg px-4 focus:outline-none focus:border-emerald-500 uppercase placeholder-zinc-600 font-bold font-mono text-xl"
+                        />
+                        {showOperadoraSuggestions && listaOperadoras.filter(op => op.toLowerCase().includes(formOperadora.toLowerCase())).length > 0 && (
+                          <div className="absolute left-0 right-0 bg-zinc-900 border border-zinc-700 rounded-lg mt-1 max-h-48 overflow-y-auto z-50 shadow-2xl">
+                            {listaOperadoras.filter(op => op.toLowerCase().includes(formOperadora.toLowerCase())).map((op, opIdx) => (
+                              <div
+                                key={opIdx}
+                                onMouseDown={() => {
+                                  setFormOperadora(op);
+                                  setShowOperadoraSuggestions(false);
+                                }}
+                                className="px-4 py-3 text-zinc-300 hover:bg-emerald-600 hover:text-white cursor-pointer transition-colors text-left font-mono text-base font-bold border-b border-zinc-800/50 last:border-0"
+                              >
+                                {op}
+                              </div>
                             ))}
-                          </select>
-                        );
-                      })()}
-                    </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          if (!formOperadora.trim()) {
+                            showAlert('warning', "Por favor, preencha o Nome da Operadora.");
+                            return;
+                          }
+                          setConfirmaOperadora(true);
+                          setActiveWindowA('operacao');
+                        }}
+                        className="w-full h-14 mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider rounded-lg active:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center select-none"
+                        style={{WebkitTapHighlightColor: 'transparent'}}
+                      >
+                        Continuar
+                      </button>
+                    </motion.div>
                   )}
-                </div>
 
-                {/* 5. Agrupamento: Lote de Produção e Lado (Confirmados juntos) */}
-                <div className="flex gap-2 items-end">
-                  {/* Lote Input (numeric keypad trigger) */}
-                  <div className="space-y-1 flex-1">
-                    <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lote de Produção *</label>
-                    <input 
-                      type="text" 
-                      inputMode="numeric" 
-                      pattern="[0-9]*"
-                      required
-                      disabled={confirmaLote}
-                      placeholder="Ex: 205"
-                      value={formLote}
-                      onChange={(e) => setFormLote(e.target.value)}
-                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] uppercase placeholder-zinc-600 font-mono text-lg font-bold"
-                    />
-                  </div>
-                  
-                  {/* Lado Select Dropdown */}
-                  <div className="space-y-1 flex-1">
-                    <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lado</label>
-                    <select 
-                      disabled={confirmaLado}
-                      value={formLado} 
-                      onChange={(e) => setFormLado(e.target.value as any)}
-                      className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] font-mono text-lg font-bold"
+                  {/* JANELA 2: OPERAÇÃO */}
+                  {activeWindowA === 'operacao' && (
+                    <motion.div 
+                      key="operacao"
+                      initial={{ opacity: 0, x: 15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-xl"
                     >
-                      <option value="Único">Único</option>
-                      <option value="Esquerdo">Esquerdo</option>
-                      <option value="Direito">Direito</option>
-                    </select>
-                  </div>
-                  
-                  {/* Botão Único de Confirmação para Lote e Lado */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!confirmaLote && !formLote.trim()) {
-                        showAlert('warning', "Por favor, preencha o Lote antes de confirmar.");
-                        return;
-                      }
-                      const nextState = !confirmaLote;
-                      setConfirmaLote(nextState);
-                      setConfirmaLado(nextState);
-                    }}
-                    className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                      confirmaLote 
-                        ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                    }`}
-                    title={confirmaLote ? "Desbloquear Campos (Lote e Lado)" : "Confirmar e Travar Campos (Lote e Lado)"}
-                  >
-                    <Check size={16} className={confirmaLote ? "scale-110" : ""} />
-                  </button>
-                </div>
+                      <label className="text-sm font-mono uppercase tracking-wider text-zinc-500 font-bold block">Nome da Operação *</label>
+                      <div className="relative">
+                        <input 
+                          type="text"
+                          placeholder="Ex: COSTURA GOLA"
+                          value={formOperacao}
+                          onChange={(e) => {
+                            setFormOperacao(e.target.value);
+                            setShowOperacaoSuggestions(true);
+                          }}
+                          onFocus={() => setShowOperacaoSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowOperacaoSuggestions(false), 200)}
+                          className="w-full h-14 bg-zinc-900 border border-zinc-700 text-white rounded-lg px-4 focus:outline-none focus:border-emerald-500 uppercase placeholder-zinc-600 font-bold font-mono text-xl"
+                        />
+                        {showOperacaoSuggestions && (
+                          <div className="absolute left-0 right-0 bg-zinc-900 border border-zinc-700 rounded-lg mt-1 z-50 shadow-2xl p-1 max-h-48 overflow-y-auto">
+                            {(() => {
+                              const query = formOperacao.toLowerCase();
+                              const filtered = filteredOperations.filter(item => 
+                                item.operacao_nome.toLowerCase().includes(query) ||
+                                item.categoria_nome.toLowerCase().includes(query)
+                              );
+                              
+                              const grouped = filtered.reduce((acc, curr) => {
+                                const cat = curr.categoria_nome || 'DIVERSOS';
+                                if (!acc[cat]) acc[cat] = [];
+                                acc[cat].push(curr.operacao_nome);
+                                return acc;
+                              }, {} as Record<string, string[]>);
+                              
+                              if (filtered.length === 0) {
+                                return <div className="p-3 text-zinc-500 text-sm font-mono text-center">Nenhuma operação encontrada</div>;
+                              }
+                              
+                              const sortedEntries = (Object.entries(grouped) as [string, string[]][]).sort(([catA], [catB]) => {
+                                const getWeight = (c: string) => {
+                                  const norm = c.toUpperCase().trim();
+                                  if (norm === 'FORRAÇÃO CITY' || norm === 'FORRACAO CITY') return 1;
+                                  if (norm === 'ORELHA CITY') return 2;
+                                  return 3;
+                                };
+                                return getWeight(catA) - getWeight(catB) || catA.toUpperCase().localeCompare(catB.toUpperCase());
+                              });
+                              
+                              return sortedEntries.map(([category, ops]) => (
+                                <div key={category} className="mb-2 last:mb-0">
+                                  <div className="text-emerald-500 font-black text-[10px] uppercase tracking-widest px-3 py-1 bg-zinc-950/50 rounded">{category}</div>
+                                  {ops.map(op => (
+                                    <div
+                                      key={op}
+                                      onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        setFormOperacao(op);
+                                        setShowOperacaoSuggestions(false);
+                                      }}
+                                      className="px-3 py-2 text-zinc-300 hover:bg-emerald-600 hover:text-white cursor-pointer transition-colors text-left font-mono text-sm font-bold rounded-md my-0.5"
+                                    >
+                                      {op}
+                                    </div>
+                                  ))}
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex gap-2 mt-2">
+                        <button 
+                          type="button" 
+                          onClick={() => setActiveWindowA('operadora')}
+                          className="h-14 w-16 bg-zinc-900 text-zinc-400 hover:text-white rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                          style={{WebkitTapHighlightColor: 'transparent'}}
+                        >
+                          <ChevronLeft size={24} />
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            if (!formOperacao.trim()) {
+                              showAlert('warning', "Por favor, preencha a Operação.");
+                              return;
+                            }
+                            setConfirmaOperacao(true);
+                            setActiveWindowA('lote');
+                          }}
+                          className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider rounded-lg active:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center select-none"
+                          style={{WebkitTapHighlightColor: 'transparent'}}
+                        >
+                          Continuar
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
 
-                {/* Matéria-Prima Alimentada & Observação */}
-                <div className="flex gap-2 items-end">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
-                    <div className="space-y-1">
-                      <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Matéria-Prima Alimentada *</label>
+                  {/* JANELA 3: LOTE DE PRODUÇÃO E LADO */}
+                  {activeWindowA === 'lote' && (
+                    <motion.div 
+                      key="lote"
+                      initial={{ opacity: 0, x: 15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-xl"
+                    >
+                      <div className="space-y-1">
+                        <label className="text-sm font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lote de Produção *</label>
+                        <input 
+                          type="text" 
+                          inputMode="numeric" 
+                          pattern="[0-9]*"
+                          placeholder="Ex: 205"
+                          value={formLote}
+                          onChange={(e) => setFormLote(e.target.value)}
+                          className="w-full h-14 bg-zinc-900 border border-zinc-700 text-white rounded-lg px-4 focus:outline-none focus:border-emerald-500 uppercase placeholder-zinc-600 font-bold font-mono text-xl"
+                        />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-sm font-mono uppercase tracking-wider text-zinc-500 font-bold block">Lado de Produção *</label>
+                        <select 
+                          value={formLado} 
+                          onChange={(e) => setFormLado(e.target.value as any)}
+                          className="w-full h-14 bg-zinc-900 border border-zinc-700 text-white rounded-lg px-4 focus:outline-none focus:border-emerald-500 font-bold font-mono text-lg"
+                        >
+                          <option value="Único">Único</option>
+                          <option value="Esquerdo">Esquerdo</option>
+                          <option value="Direito">Direito</option>
+                        </select>
+                      </div>
+                      
+                      <div className="flex gap-2 mt-2">
+                        <button 
+                          type="button" 
+                          onClick={() => setActiveWindowA('operacao')}
+                          className="h-14 w-16 bg-zinc-900 text-zinc-400 hover:text-white rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                          style={{WebkitTapHighlightColor: 'transparent'}}
+                        >
+                          <ChevronLeft size={24} />
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            if (!formLote.trim()) {
+                              showAlert('warning', "Por favor, preencha o Lote.");
+                              return;
+                            }
+                            setConfirmaLote(true);
+                            setConfirmaLado(true);
+                            setActiveWindowA('materia');
+                          }}
+                          className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider rounded-lg active:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center select-none"
+                          style={{WebkitTapHighlightColor: 'transparent'}}
+                        >
+                          Continuar
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* JANELA 4: MATÉRIA-PRIMA ALIMENTADA */}
+                  {activeWindowA === 'materia' && (
+                    <motion.div 
+                      key="materia"
+                      initial={{ opacity: 0, x: 15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-xl"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-black text-zinc-400 uppercase tracking-wider">Matéria-Prima Alimentada *</span>
+                        <span className="text-xs font-bold text-zinc-500">Un.</span>
+                      </div>
+                      
                       <input 
-                        type="number"
-                        required
-                        min="0"
-                        disabled={confirmaMateriaPrima}
-                        placeholder="Ex: 500"
-                        value={formMateriaPrima === '' ? '' : formMateriaPrima}
+                        type="text" 
+                        inputMode="numeric" 
+                        pattern="[0-9]*"
+                        value={formMateriaPrima}
                         onChange={(e) => {
                           const val = e.target.value;
                           setFormMateriaPrima(val === '' ? '' : Math.max(0, parseInt(val) || 0));
                         }}
                         onFocus={() => {
-                          if (formMateriaPrima === 0) {
+                          if (formMateriaPrima === 0) setFormMateriaPrima('');
+                        }}
+                        className="w-full h-16 bg-zinc-900 border border-zinc-700 rounded-lg px-4 text-4xl font-black font-mono text-emerald-400 text-center focus:outline-none focus:border-emerald-500"
+                      />
+                      
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => setFormMateriaPrima((Number(formMateriaPrima) || 0) + 1)} className="flex-1 h-14 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-xl rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+1</button>
+                        <button type="button" onClick={() => setFormMateriaPrima((Number(formMateriaPrima) || 0) + 10)} className="flex-1 h-14 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-xl rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+10</button>
+                        <button type="button" onClick={() => setFormMateriaPrima((Number(formMateriaPrima) || 0) + 100)} className="flex-1 h-14 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-xl rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+100</button>
+                      </div>
+                      
+                      <div className="flex gap-2 mt-2">
+                        <button 
+                          type="button" 
+                          onClick={() => setActiveWindowA('lote')}
+                          className="h-14 w-16 bg-zinc-900 text-zinc-400 hover:text-white rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                          style={{WebkitTapHighlightColor: 'transparent'}}
+                        >
+                          <ChevronLeft size={24} />
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            if (formMateriaPrima === '') setFormMateriaPrima(0);
+                            setConfirmaMateriaPrima(true);
+                            setActiveWindowA('extras');
+                          }}
+                          className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider rounded-lg active:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center select-none"
+                          style={{WebkitTapHighlightColor: 'transparent'}}
+                        >
+                          Continuar
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* JANELA 5: EXTRAS E OBSERVAÇÕES */}
+                  {activeWindowA === 'extras' && (
+                    <motion.div 
+                      key="extras"
+                      initial={{ opacity: 0, x: 15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-xl"
+                    >
+                      <div className="space-y-2">
+                        <label className="text-sm font-mono uppercase tracking-wider text-zinc-500 font-bold block">Regime de Hora Extra?</label>
+                        <div className="flex bg-zinc-900 border border-zinc-700 rounded-lg p-1 h-14">
+                          <button 
+                            type="button"
+                            onClick={() => setFormHoraExtra(false)}
+                            className={`flex-1 rounded-md font-bold uppercase transition-all select-none text-base ${!formHoraExtra ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-400'}`}
+                            style={{WebkitTapHighlightColor: 'transparent'}}
+                          >
+                            Não (N)
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setFormHoraExtra(true)}
+                            className={`flex-1 rounded-md font-bold uppercase transition-all select-none text-base ${formHoraExtra ? 'bg-[#00624C] text-white shadow-md' : 'text-zinc-500 hover:text-zinc-400'}`}
+                            style={{WebkitTapHighlightColor: 'transparent'}}
+                          >
+                            Sim (S)
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <label className="text-sm font-mono uppercase tracking-wider text-zinc-500 font-bold block">Observação (Opcional)</label>
+                          <span className="text-xs text-zinc-600 font-mono">{formObservacao.length}/150</span>
+                        </div>
+                        <input 
+                          type="text"
+                          maxLength={150}
+                          placeholder="Ex: Treinamento / Setup"
+                          value={formObservacao}
+                          onChange={(e) => setFormObservacao(e.target.value)}
+                          className="w-full h-14 bg-zinc-900 border border-zinc-700 text-white rounded-lg px-4 focus:outline-none focus:border-emerald-500 placeholder-zinc-600 font-mono text-lg"
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2 mt-2">
+                        <button 
+                          type="button" 
+                          onClick={() => setActiveWindowA('materia')}
+                          className="h-14 w-16 bg-zinc-900 text-zinc-400 hover:text-white rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                          style={{WebkitTapHighlightColor: 'transparent'}}
+                        >
+                          <ChevronLeft size={24} />
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => setActiveWindowA('resumo')}
+                          className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider rounded-lg active:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center select-none"
+                          style={{WebkitTapHighlightColor: 'transparent'}}
+                        >
+                          Revisar
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* JANELA 6: RESUMO FINAL E ENVIO */}
+                  {activeWindowA === 'resumo' && (
+                    <motion.div 
+                      key="resumo"
+                      initial={{ opacity: 0, x: 15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex flex-col gap-4"
+                    >
+                      <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 shadow-xl">
+                        <div className="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
+                          <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Resumo da Inicialização</span>
+                          <button type="button" onClick={() => setActiveWindowA('operadora')} className="text-[#00624C] hover:text-emerald-400 text-[10px] font-bold uppercase underline">Editar</button>
+                        </div>
+                        <div className="space-y-2 text-sm font-mono">
+                          <div className="flex justify-between border-b border-zinc-900 pb-1"><span className="text-zinc-500">Operadora:</span> <span className="font-bold text-white uppercase truncate pl-2">{formOperadora}</span></div>
+                          <div className="flex justify-between border-b border-zinc-900 pb-1"><span className="text-zinc-500">Operação:</span> <span className="font-bold text-white uppercase truncate pl-2">{formOperacao}</span></div>
+                          <div className="flex justify-between border-b border-zinc-900 pb-1"><span className="text-zinc-500">Lote / Lado:</span> <span className="font-bold text-white uppercase">{formLote} ({formLado})</span></div>
+                          <div className="flex justify-between border-b border-zinc-900 pb-1"><span className="text-zinc-500">Matéria-Prima:</span> <span className="font-bold text-emerald-400">{formMateriaPrima || 0} un.</span></div>
+                          <div className="flex justify-between border-b border-zinc-900 pb-1"><span className="text-zinc-500">Hora Extra:</span> <span className="font-bold text-white">{formHoraExtra ? 'SIM (S)' : 'NÃO (N)'}</span></div>
+                          <div className="flex justify-between pb-1"><span className="text-zinc-500">Observação:</span> <span className="font-bold text-white truncate pl-2">{formObservacao || '-'}</span></div>
+                        </div>
+                      </div>
+
+                      <button 
+                        type="button"
+                        onClick={handleSalvarCenarioA}
+                        disabled={isSaving}
+                        className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest rounded-lg active:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 select-none disabled:opacity-50"
+                        style={{WebkitTapHighlightColor: 'transparent'}}
+                      >
+                        {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Check size={20} />}
+                        Confirmar Todos os Campos
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          if (confirm("Tem certeza que deseja cancelar e limpar esta inicialização?")) {
+                            setFormOperadora('');
+                            setFormOperacao('');
+                            setFormLote('');
+                            setFormLado('Único');
                             setFormMateriaPrima('');
+                            setFormHoraExtra(false);
+                            setFormObservacao('');
+                            setActiveWindowA('operadora');
                           }
                         }}
-                        className="w-full h-10 bg-zinc-900 border border-zinc-800 disabled:opacity-50 disabled:bg-zinc-900/35 disabled:border-emerald-600/30 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-lg font-bold"
-                      />
-                    </div>
+                        disabled={isSaving}
+                        className="w-full h-12 bg-transparent border border-rose-900/50 text-rose-500 font-bold uppercase tracking-widest rounded-lg active:bg-rose-950 active:scale-95 transition-all flex items-center justify-center select-none"
+                        style={{WebkitTapHighlightColor: 'transparent'}}
+                      >
+                        Cancelar Sessão
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <label className="text-lg font-mono uppercase tracking-wider text-zinc-500 font-bold block">Observação</label>
-                        <span className="text-lg text-zinc-600 font-mono">{formObservacao.length}/150</span>
-                      </div>
-                      <input 
-                        type="text"
-                        maxLength={150}
-                        placeholder="Ex: Treinamento / Parada"
-                        value={formObservacao}
-                        onChange={(e) => setFormObservacao(e.target.value)}
-                        className="w-full h-10 bg-zinc-900 border border-zinc-800 text-white rounded px-3 focus:outline-none focus:border-[#00624C] placeholder-zinc-600 font-mono text-lg"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setConfirmaMateriaPrima(!confirmaMateriaPrima)}
-                    className={`p-2 rounded border h-10 w-10 flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                      confirmaMateriaPrima 
-                        ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                    }`}
-                    title={confirmaMateriaPrima ? "Desbloquear Campo (Matéria-Prima)" : "Confirmar e Travar Campo (Matéria-Prima)"}
-                  >
-                    <Check size={16} className={confirmaMateriaPrima ? "scale-110" : ""} />
-                  </button>
-                </div>
-
-                {/* 6. Compact Regime de Hora Extra Toggle Section */}
-                <div className="bg-zinc-900/30 px-3 py-2 border border-zinc-800 rounded flex justify-between items-center">
-                  <div>
-                    <span className="font-bold text-zinc-300 text-lg block">Regime de Hora Extra?</span>
-                    <span className="text-lg text-zinc-500 font-mono">Determina se o tempo conta como HE</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setFormHoraExtra(!formHoraExtra)}
-                    className={`px-3 h-8 rounded font-bold font-mono uppercase transition-all flex items-center justify-center gap-1 cursor-pointer text-lg ${
-                      formHoraExtra 
-                        ? 'bg-[#00624C] text-white shadow-md shadow-[#00624C]/20' 
-                        : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
-                    }`}
-                  >
-                    {formHoraExtra ? <Check size={12} /> : null}
-                    {formHoraExtra ? 'SIM (S)' : 'NÃO (N)'}
-                  </button>
-                </div>
-
-              </div>
-
-              {/* 7. Enlarged Bottom Action Buttons (Thick, tall touch targets on mobile) */}
-              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-zinc-900/40">
-                <button 
-                  type="button"
-                  onClick={retomarScanner}
-                  className="h-14 text-lg font-mono font-bold uppercase text-zinc-400 hover:text-white rounded-lg border border-zinc-800 bg-transparent cursor-pointer transition-all flex items-center justify-center gap-2"
-                >
-                  <XCircle size={16} />
-                  Cancelar
-                </button>
-                <button 
-                  type="button"
-                  onClick={handleSalvarCenarioA}
-                  disabled={isSaving || !(confirmaOperadora && confirmaOperacao && confirmaLote && confirmaLado && confirmaTipoMaquina && confirmaMateriaPrima)}
-                  className="h-14 text-lg font-mono font-bold uppercase text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg shadow-lg shadow-emerald-600/10 cursor-pointer transition-all flex items-center justify-center gap-2 text-center"
-                >
-                  {isSaving ? <Loader2 className="animate-spin" size={16} /> : null}
-                  {!(confirmaOperadora && confirmaOperacao && confirmaLote && confirmaLado && confirmaTipoMaquina && confirmaMateriaPrima)
-                    ? "Confirme Todos os Campos"
-                    : "Iniciar Processo"}
-                </button>
               </div>
             </motion.div>
           </div>
