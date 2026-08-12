@@ -1252,219 +1252,169 @@ export default function Apontamentos() {
                   {/* CARD FECHADO REFORMULADO (Opção 1 com todos os dados integrados) */}
                   <button
                     onClick={() => toggleGroup(block.key)}
-                    className={`w-full p-4 hover:bg-zinc-900/40 transition-colors duration-200 font-mono focus:outline-none cursor-pointer text-left ${headerBgClass} ${headerBorderClass}`}
+                    className="w-full text-left bg-[#0f1319] border-2 border-[#202730] rounded-xl p-4 flex flex-col md:flex-row gap-4 shadow-[0_16px_40px_rgba(0,0,0,0.8)] focus:outline-none transition-all hover:border-zinc-700 hover:shadow-black cursor-pointer transform-gpu backface-hidden"
                   >
-                    {/* Alertas de Notificação (Restaurados no topo) */}
-                    {hasObs && (
-                      <div className="flex items-center space-x-2 mb-2 pr-8 sm:pr-32">
-                        <span className="text-amber-500 bg-amber-950/30 border border-amber-500/20 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold" title={`${somaObservacoes} observações registradas`}>
-                          <Mail size={12} className="inline mr-0.5" /> +{somaObservacoes}
+                    {/* Barra Lateral de Status (ESQUERDA) */}
+                    <aside className="w-full md:w-[140px] bg-[#071915] border border-[#10332a] rounded-lg p-3 md:p-5 flex flex-row md:flex-col justify-between md:justify-start md:gap-6 shrink-0 flex-wrap">
+                      
+                      <div className="flex flex-col gap-1 md:gap-1.5 w-1/2 md:w-full">
+                        <span className="text-[11px] text-[#708882] uppercase tracking-[1px] font-bold">Máq.</span>
+                        <span className="text-3xl md:text-4xl font-extrabold text-[#00ff88] leading-none font-mono">
+                          {String(block.num_maquina || '').replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '') || '--'}
                         </span>
                       </div>
-                    )}
-
-                    {/* Linha 1: Identificação, Linha de Máquina e Status do Processo */}
-                    <div className="flex items-start sm:items-center justify-between gap-2">
-                      <span className="bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 text-[9px] sm:text-xs font-mono font-bold px-1 py-0.5 sm:px-2.5 sm:py-1 rounded shrink-0 whitespace-nowrap mt-0.5 sm:mt-0">
-                        {(() => {
-                          const num = String(block.num_maquina || '');
-                          const cleanNum = num.replace(/^(MQ[-_]0*|MÁQ:\s*0*|0*)/i, '');
-                          return `MÁQ: ${cleanNum}`;
-                        })()}
-                      </span>
-                      {isSessionActive ? (
-                        <span className="text-blue-400 text-[7.5px] sm:text-xs font-bold uppercase tracking-wider bg-blue-950/20 border border-blue-500/20 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded whitespace-normal sm:truncate leading-tight text-right">
-                          ● PROCESSO EM ANDAMENTO
+                      
+                      <div className="flex flex-col gap-1 md:gap-1.5 w-1/2 md:w-full text-right md:text-left">
+                        <span className="text-[11px] text-[#708882] uppercase tracking-[1px] font-bold">Status</span>
+                        <span className={`text-xs font-bold uppercase tracking-[0.5px] ${isSessionActive ? 'text-blue-400' : 'text-[#ff3355]'}`}>
+                          {isSessionActive ? 'EM ANDAMENTO' : 'ENCERRADO'}
                         </span>
-                      ) : (
-                        <span className="text-rose-400 text-[7.5px] sm:text-xs font-bold uppercase tracking-wider bg-rose-950/20 border border-rose-500/20 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded whitespace-normal sm:truncate leading-tight text-right">
-                          ● PROCESSO ENCERRADO
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Linha 2: Informações do Processo (Alinhadas verticalmente sem embolar) */}
-                    <div className="border-t border-zinc-900/60 pt-4 space-y-2">
-                      <div>
-                        <span className="text-zinc-500 text-[9px] uppercase font-bold tracking-wider block mb-0.5">Operadora</span>
-                        <div className="flex justify-between items-start w-full">
-                          <span className="text-[15px] font-bold text-zinc-100 flex items-center gap-1 truncate mt-0.5" title={`${block.colaboradora} - [${block.processo}]`}>
-                            👤 {block.colaboradora}
+                        {/* Alertas de Notificação */}
+                        {hasObs && (
+                          <span className="text-amber-500 text-[9px] font-mono font-bold mt-1">
+                            <Mail size={10} className="inline mr-1" /> +{somaObservacoes} OBS
                           </span>
-                          <div className="flex flex-col items-end">
-                            <span className="text-zinc-400 text-xs font-bold bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded shrink-0">
-                              [{block.processo}]
-                            </span>
-                            {hasFinalizacaoAutomatica && (
-                              <span className="bg-rose-950/40 border border-rose-500/20 text-rose-400 text-[8px] px-2.5 py-1 mt-2 rounded font-bold uppercase tracking-wider flex items-center gap-1 w-fit text-right">
-                                ⚠ FINALIZAÇÃO AUTOMÁTICA
-                              </span>
-                            )}
-                            {hasFinalizacaoAntecipada && !hasFinalizacaoAutomatica && (
-                              <span className="bg-rose-950/40 border border-rose-500/20 text-rose-400 text-[8px] px-2.5 py-1 mt-2 rounded font-bold uppercase tracking-wider flex items-center gap-1 w-fit text-right">
-                                ⚠ FINALIZAÇÃO ANTECIPADA
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                        )}
                       </div>
-                      <div>
-                        <span className="text-zinc-500 text-[9px] uppercase font-bold tracking-wider block mb-0.5">Operação</span>
-                        <span className="text-sm font-semibold text-zinc-300 flex items-center gap-1.5 break-words whitespace-normal leading-snug" title={block.operacao_nome}>
-                          {/* Ícone de Máquina de Costura Real */}
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline text-emerald-500 shrink-0">
-                            <rect x="1" y="18" width="22" height="3" rx="1.5" /><rect x="3" y="3" width="2" height="11" rx="1" /><line x1="4" y1="14" x2="4" y2="17" /><path d="M 4.5 5 h 11 c 2 0, 3.5 1, 3.5 3 v 10" /><path d="M 4.5 10 c 4 0, 7 1, 10 3.5 c 1 0.8, 1.5 2, 1.5 4.5" /><rect x="20" y="6" width="1" height="5" rx="0.5" /><line x1="16" y1="5" x2="16" y2="2" />
-                          </svg>
+
+                      <div className="flex flex-col gap-1 md:gap-1.5 w-1/2 md:w-full mt-3 md:mt-0">
+                        <span className="text-[11px] text-[#708882] uppercase tracking-[1px] font-bold">Início</span>
+                        <span className="text-sm font-semibold text-[#a3b8b4] font-mono">
+                          {earliestStart ? earliestStart.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '--:--:--'}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col gap-1 md:gap-1.5 w-1/2 md:w-full text-right md:text-left mt-3 md:mt-0">
+                        <span className="text-[11px] text-[#708882] uppercase tracking-[1px] font-bold">Data</span>
+                        <span className="text-sm font-semibold text-[#a3b8b4] font-mono">
+                          {block.data}
+                        </span>
+                      </div>
+
+                    </aside>
+
+                    {/* Conteúdo Principal (DIREITA) */}
+                    <main className="flex-1 flex flex-col gap-4 md:gap-6 p-0 md:p-2 min-w-0">
+                      
+                      {/* Cabeçalho do Processo */}
+                      <header className="flex flex-col gap-1.5">
+                        <h1 className="text-lg md:text-2xl font-bold text-white tracking-[0.5px] truncate" title={block.operacao_nome}>
                           {block.operacao_nome}
-                        </span>
-                      </div>
-                    </div>
+                        </h1>
+                        <p className="text-xs md:text-sm text-[#8a95a5] font-medium truncate">
+                          Operadora {block.colaboradora} &nbsp;|&nbsp; {block.processo}
+                        </p>
+                        {/* Indicadores Adicionais se houver */}
+                        {(hasFinalizacaoAutomatica || (hasFinalizacaoAntecipada && !hasFinalizacaoAutomatica)) && (
+                          <span className="text-rose-400 text-[10px] font-bold uppercase tracking-wider mt-1 block">
+                            ⚠ {hasFinalizacaoAutomatica ? 'FINALIZAÇÃO AUTOMÁTICA' : 'FINALIZAÇÃO ANTECIPADA'}
+                          </span>
+                        )}
+                      </header>
 
-                    {/* Linha 3: Bloco de Dados Técnicos (Data e Cronômetro) */}
-                    <div className="border-t border-zinc-900/60 pt-3.5 flex justify-between items-center gap-3 text-sm font-mono text-zinc-400">
-                      {/* Coluna 1: Data do Processo */}
-                      <div className="flex flex-col">
-                        <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-0.5">Data Processo</span>
-                        <span className="text-zinc-300 truncate text-[11px] sm:text-sm">📅 {block.data}</span>
-                      </div>
+                      {/* Grid de Cards */}
+                      {(() => {
+                        const somaProdConforme = block.somaProdConforme !== undefined ? block.somaProdConforme : (block.somaTotal || 0);
+                        const somaTotalContado = block.somaTotalContado !== undefined ? block.somaTotalContado : somaProdConforme;
+                        const refugoCount = block.somaRefugo || 0;
 
-                      {/* Coluna 2: Tempo Corrido/Operação */}
-                      <div className="flex flex-col items-end">
-                        <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-0.5">Tempo Operação</span>
-                        <span className="text-zinc-300 font-bold bg-zinc-950 border border-zinc-900 px-1.5 py-0.5 rounded truncate text-[11px] sm:text-sm">
-                          ⏱ {(() => {
-                            let baseMs = block.tempoTotalMs || 0;
-                            if (isSessionActive && activeSessionForBlock && activeSessionForBlock.horario_inicio) {
-                              const dInicio = parseTimeToDateToday(activeSessionForBlock.horario_inicio, block.data);
-                              if (dInicio) {
-                                const liveMs = Math.max(0, now.getTime() - dInicio.getTime());
-                                baseMs += liveMs;
-                              }
-                            }
-
-                            if (baseMs <= 0) {
-                              let earliestStart: Date | null = null;
-                              let latestEnd: Date | null = null;
-                              block.itens.forEach((item: any) => {
-                                const hIni = item.horario_inicio;
-                                if (hIni) {
-                                  const d = parseTimeToDateToday(hIni, item.data);
-                                  if (d && (!earliestStart || d < earliestStart)) earliestStart = d;
-                                }
-                                const hTerm = item.horario_termino || item.created_at || item.timestamp;
-                                if (hTerm) {
-                                  const d = parseTimeToDateToday(hTerm, item.data);
-                                  if (d && (!latestEnd || d > latestEnd)) latestEnd = d;
-                                }
-                              });
-                              if (earliestStart) {
-                                const baseEnd = latestEnd || now;
-                                const diffMs = Math.max(0, baseEnd.getTime() - earliestStart.getTime());
-                                return formatProductionTime(diffMs);
-                              }
-                              return '00:00:00';
-                            }
-                            return formatProductionTime(baseMs);
-                          })()}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Linha 4: Produção Acumulada, Meta e Barra de Progresso */}
-                    {(() => {
-                      const somaProdConforme = block.somaProdConforme !== undefined ? block.somaProdConforme : (block.somaTotal || 0);
-                      const somaTotalContado = block.somaTotalContado !== undefined ? block.somaTotalContado : somaProdConforme;
-                      const refugoCount = block.somaRefugo || 0;
-
-                      let metaAlvo = 1000;
-                      let progColor = 'bg-zinc-300';
-                      let textColor = 'text-emerald-400';
-                      
-                      if (somaProdConforme < 1000) {
-                        metaAlvo = 1000;
-                        if (somaProdConforme < 500) {
-                          progColor = 'bg-red-500';
-                          textColor = 'text-red-500';
-                        } else if (somaProdConforme < 750) {
-                          progColor = 'bg-orange-500';
-                          textColor = 'text-orange-500';
+                        let metaAlvo = 1000;
+                        if (somaProdConforme < 1000) {
+                          metaAlvo = 1000;
+                        } else if (somaProdConforme < 1200) {
+                          metaAlvo = 1200;
                         } else {
-                          progColor = 'bg-yellow-500';
-                          textColor = 'text-yellow-500';
+                          metaAlvo = 1500;
                         }
-                      } else if (somaProdConforme < 1200) {
-                        metaAlvo = 1200;
-                        progColor = 'bg-emerald-500';
-                        textColor = 'text-emerald-500';
-                      } else {
-                        metaAlvo = 1500;
-                        progColor = 'bg-emerald-500';
-                        textColor = 'text-emerald-500';
-                      }
-                      
-                      const percent = Math.min(100, (somaProdConforme / metaAlvo) * 100);
-                      const isMetaBatida = somaProdConforme >= metaAlvo;
+                        
+                        const percent = Math.min(100, (somaProdConforme / metaAlvo) * 100);
 
-                      return (
-                        <div className="border-t border-zinc-900/80 pt-3 space-y-2.5 text-left">
-                          {/* Meta & Título */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-zinc-500 text-[9px] uppercase font-bold tracking-wider">Produção Acumulada</span>
-                              {isMetaBatida && (
-                                <span className="text-[8px] text-emerald-400 bg-emerald-950/60 border border-emerald-500/40 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                                  ✓ Meta Batida
+                        // Calcula Tempo Operação
+                        let tempoOperacaoStr = '00:00:00';
+                        let baseMs = block.tempoTotalMs || 0;
+                        if (isSessionActive && activeSessionForBlock && activeSessionForBlock.horario_inicio) {
+                          const dInicio = parseTimeToDateToday(activeSessionForBlock.horario_inicio, block.data);
+                          if (dInicio) {
+                            const liveMs = Math.max(0, now.getTime() - dInicio.getTime());
+                            baseMs += liveMs;
+                          }
+                        }
+
+                        if (baseMs <= 0) {
+                          let eStart: Date | null = null;
+                          let lEnd: Date | null = null;
+                          block.itens.forEach((item: any) => {
+                            const hIni = item.horario_inicio;
+                            if (hIni) {
+                              const d = parseTimeToDateToday(hIni, block.data);
+                              if (d && (!eStart || d < eStart)) eStart = d;
+                            }
+                            const hTerm = item.horario_termino || item.created_at || item.timestamp;
+                            if (hTerm) {
+                              const d = parseTimeToDateToday(hTerm, block.data);
+                              if (d && (!lEnd || d > lEnd)) lEnd = d;
+                            }
+                          });
+                          if (eStart) {
+                            const baseEnd = lEnd || now;
+                            const diffMs = Math.max(0, baseEnd.getTime() - eStart.getTime());
+                            tempoOperacaoStr = formatProductionTime(diffMs);
+                          }
+                        } else {
+                          tempoOperacaoStr = formatProductionTime(baseMs);
+                        }
+
+                        return (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                            
+                            {/* Tempo Operação */}
+                            <div className="bg-[#141922] border border-[#2e3846] rounded-lg p-3 md:p-4 flex flex-col justify-center gap-1 md:gap-2 min-h-[90px] md:min-h-[100px]">
+                              <span className="text-[9px] md:text-[10px] font-bold text-[#707e94] uppercase tracking-[1px]">Tempo Operação</span>
+                              <span className="text-xl md:text-2xl font-bold font-mono text-white">{tempoOperacaoStr}</span>
+                            </div>
+
+                            {/* Grupo de Produção Principal */}
+                            <div className="sm:col-span-2 md:col-span-2 bg-[rgba(0,180,148,0.05)] border border-[rgba(0,180,148,0.15)] rounded-[10px] p-2.5 md:p-3 grid grid-cols-2 gap-2.5 md:gap-3">
+                              
+                              {/* Prod. Confere */}
+                              <div className="bg-[#0e121a] border border-[#00b494] rounded-lg p-3 md:p-4 flex flex-col justify-center gap-1 md:gap-2 min-h-[90px] md:min-h-[100px]">
+                                <span className="text-[9px] md:text-[10px] font-bold text-[#707e94] uppercase tracking-[1px] truncate">Prod. Confere</span>
+                                <span className="text-xl md:text-2xl font-bold font-mono text-[#00ffcc]">
+                                  {somaProdConforme} <span className="text-sm md:text-base font-sans text-[#00ffcc]/70">PCS</span>
                                 </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 font-mono text-[9px] text-zinc-400">
-                              <span className="text-zinc-500 text-[8px] uppercase font-bold">Meta Diária:</span>
-                              <span className="font-bold text-zinc-200">{somaProdConforme} / {metaAlvo}</span>
-                              <span className={`font-bold ${textColor}`}>({percent.toFixed(0)}%)</span>
-                            </div>
-                          </div>
+                              </div>
 
-                          {/* Progress Bar */}
-                          <div className="w-full bg-zinc-950 rounded-full h-1.5 border border-zinc-900 overflow-hidden transform-gpu backface-hidden">
-                            <div className={`${progColor} h-full rounded-full transition-all duration-500`} style={{ width: `${percent}%` }}></div>
-                          </div>
+                              {/* Total Apontado */}
+                              <div className="bg-[#0e121a] border border-[#0077c2] rounded-lg p-3 md:p-4 flex flex-col justify-center gap-1 md:gap-2 min-h-[90px] md:min-h-[100px]">
+                                <span className="text-[9px] md:text-[10px] font-bold text-[#707e94] uppercase tracking-[1px] truncate">Total Apontado</span>
+                                <span className="text-xl md:text-2xl font-bold font-mono text-[#00b0ff]">
+                                  {somaTotalContado} <span className="text-sm md:text-base font-sans text-[#00b0ff]/70">PCS</span>
+                                </span>
+                              </div>
 
-                          {/* Metrics Breakdown Grid (Pills limpas e organizadas) */}
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5 font-mono">
-                            {/* Conforme */}
-                            <div className="bg-emerald-950/30 border border-emerald-500/30 rounded px-2 py-1.5 flex flex-col justify-center">
-                              <span className="text-[7px] text-emerald-400/80 uppercase font-bold tracking-wider">Prod. Conforme</span>
-                              <span className="text-xs text-emerald-400 font-black leading-tight mt-0.5">
-                                {somaProdConforme} <span className="text-[9px] text-emerald-400/70 font-normal">pçs</span>
-                              </span>
-                            </div>
-
-                            {/* Total Contado */}
-                            <div className="bg-zinc-950/80 border border-zinc-800 rounded px-2 py-1.5 flex flex-col justify-center">
-                              <span className="text-[7px] text-zinc-400 uppercase font-bold tracking-wider">Total Apontado</span>
-                              <span className="text-xs text-zinc-200 font-bold leading-tight mt-0.5">
-                                {somaTotalContado} <span className="text-[9px] text-zinc-500 font-normal">pçs</span>
-                              </span>
                             </div>
 
                             {/* Refugo */}
-                            {refugoCount > 0 ? (
-                              <div className="bg-rose-950/30 border border-rose-500/30 rounded px-2 py-1.5 flex flex-col justify-center col-span-2 sm:col-span-1">
-                                <span className="text-[7px] text-rose-400/80 uppercase font-bold tracking-wider">Refugo</span>
-                                <span className="text-xs text-rose-400 font-bold leading-tight mt-0.5">
-                                  {refugoCount} <span className="text-[9px] text-rose-400/70 font-normal">pçs</span>
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="bg-zinc-950/40 border border-zinc-900 rounded px-2 py-1.5 flex flex-col justify-center col-span-2 sm:col-span-1 opacity-60">
-                                <span className="text-[7px] text-zinc-600 uppercase font-bold tracking-wider">Refugo</span>
-                                <span className="text-xs text-zinc-500 font-medium leading-tight mt-0.5">0 pçs</span>
-                              </div>
-                            )}
+                            <div className="bg-[#141922] border border-[#7c4dff] rounded-lg p-3 md:p-4 flex flex-col justify-center gap-1 md:gap-2 min-h-[90px] md:min-h-[100px]">
+                              <span className="text-[9px] md:text-[10px] font-bold text-[#707e94] uppercase tracking-[1px]">Refugo</span>
+                              <span className="text-xl md:text-2xl font-bold font-mono text-[#b388ff]">
+                                {refugoCount} <span className="text-sm md:text-base font-sans text-[#b388ff]/70">PCS</span>
+                              </span>
+                            </div>
+
+                            {/* Meta Diária */}
+                            <div className="sm:col-span-2 md:col-span-2 bg-[#141922] border border-[#ff3366] rounded-lg p-3 md:p-4 flex flex-col justify-center gap-1 md:gap-2 min-h-[90px] md:min-h-[100px]">
+                              <span className="text-[9px] md:text-[10px] font-bold text-[#707e94] uppercase tracking-[1px]">Meta Diária</span>
+                              <span className="text-xl md:text-2xl font-bold font-mono text-[#ff80ab]">
+                                {somaProdConforme} / {metaAlvo} <span className="text-sm md:text-base font-sans text-[#ff80ab]/70">({percent.toFixed(0)}%)</span>
+                              </span>
+                            </div>
+
                           </div>
-                        </div>
-                      );
-                    })()}
+                        );
+                      })()}
+
+                    </main>
                   </button>
 
                   {/* Detalhes expandidos movidos para a gaveta lateral */}
