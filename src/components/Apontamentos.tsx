@@ -772,9 +772,38 @@ export default function Apontamentos() {
       }
     );
     
+    // 1) "Em Andamento" (isSessionActive) vem primeiro
     if (isSessionActiveA && !isSessionActiveB) return -1;
     if (!isSessionActiveA && isSessionActiveB) return 1;
-    return 0;
+
+    // 2) Desempate: Mais recentes primeiro (baseado na data/hora de criação dos itens do bloco)
+    const getLatestTimestamp = (block: any) => {
+      let latest = 0;
+      if (block.itens && block.itens.length > 0) {
+        block.itens.forEach((item: any) => {
+          const dStr = item.created_at || item.data_ocorrencia || item.timestamp;
+          if (dStr) {
+            const t = new Date(dStr).getTime();
+            if (!isNaN(t) && t > latest) {
+              latest = t;
+            }
+          }
+        });
+      }
+      return latest;
+    };
+
+    const timeA = getLatestTimestamp(a);
+    const timeB = getLatestTimestamp(b);
+    
+    if (timeB !== timeA) {
+      return timeB - timeA; // Descending (mais recentes primeiro)
+    }
+
+    // 3) Desempate final: ordem alfabética da máquina para manter a lista estrita e não pular
+    const maqA = a.num_maquina || '';
+    const maqB = b.num_maquina || '';
+    return maqA.localeCompare(maqB);
   });
 
   const toggleGroup = (key: string) => {
@@ -1298,7 +1327,7 @@ export default function Apontamentos() {
                       
                       {/* Cabeçalho do Processo */}
                       <header className="flex flex-col gap-1.5">
-                        <h1 className="text-lg md:text-2xl font-bold text-white tracking-[0.5px] truncate" title={block.operacao_nome}>
+                        <h1 className="text-lg md:text-2xl font-bold text-white tracking-[0.5px] break-words whitespace-normal leading-tight" title={block.operacao_nome}>
                           {block.operacao_nome}
                         </h1>
                         <p className="text-xs md:text-sm text-[#8a95a5] font-medium truncate">
@@ -1374,7 +1403,7 @@ export default function Apontamentos() {
                             </div>
 
                             {/* Grupo de Produção Principal */}
-                            <div className="sm:col-span-2 md:col-span-2 bg-[rgba(0,180,148,0.05)] border border-[rgba(0,180,148,0.15)] rounded-[10px] p-2.5 md:p-3 grid grid-cols-2 gap-2.5 md:gap-3">
+                            <div className="sm:col-span-2 md:col-span-2 bg-[#00b494]/20 border border-[#00b494]/30 rounded-[10px] p-2.5 md:p-3 grid grid-cols-2 gap-2.5 md:gap-3">
                               
                               {/* Prod. Confere */}
                               <div className="bg-[#0e121a] border border-[#00b494] rounded-lg p-3 md:p-4 flex flex-col justify-center gap-1 md:gap-2 min-h-[90px] md:min-h-[100px]">
