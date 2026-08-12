@@ -138,30 +138,6 @@ export default function App() {
     };
   }, [user]);
 
-  // Tempo limite absoluto de sessão de 1 hora (Segurança e controle de sessão do Atlas)
-  useEffect(() => {
-    if (!user) return;
-
-    const sessionStart = user.sessionStart || localStorage.getItem('atlas_session_start_time') || new Date().toISOString();
-    const sessionStartTime = new Date(sessionStart).getTime();
-    const oneHourMs = 60 * 60 * 1000;
-    const elapsedTime = Date.now() - sessionStartTime;
-    const remainingTime = oneHourMs - elapsedTime;
-
-    if (remainingTime <= 0) {
-      handleLogout(false);
-      addToast('Sessão expirada após tempo limite de 1 hora.', 'info');
-      return;
-    }
-
-    const absoluteTimeoutId = setTimeout(() => {
-      handleLogout(false);
-      addToast('Sessão encerrada por tempo limite de 1 hora.', 'info');
-    }, remainingTime);
-
-    return () => clearTimeout(absoluteTimeoutId);
-  }, [user]);
-
   const addToast = (text: string, type: 'success' | 'error' | 'info') => {
     const id = Math.random().toString();
     setToasts((prev) => [...prev, { id, text, type }]);

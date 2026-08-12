@@ -21,6 +21,7 @@ import {
   FileText,
   Sparkles,
   Check,
+  ChevronLeft,
   Percent,
   Play,
   Cpu
@@ -207,6 +208,10 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
   const [confirmaBRetrabalhoTerceiro, setConfirmaBRetrabalhoTerceiro] = useState(false);
   const [confirmaBMotivoOcorrencia, setConfirmaBMotivoOcorrencia] = useState(false);
   const [confirmaBObservacao, setConfirmaBObservacao] = useState(false);
+  const [lastCheckedFieldB, setLastCheckedFieldB] = useState<string | null>(null);
+
+  // Estado para Janelas Sequenciais (Contagem)
+  const [activeWindow, setActiveWindow] = useState<'conforme' | 'retProprio' | 'retTerceiro' | 'refugo' | 'final'>('conforme');
 
   // Body scroll lock on modal open
   
@@ -2150,39 +2155,71 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                 </div>
               ) : showManutencaoForm ? (
                 // FORMULÁRIO DE MANUTENÇÃO
-                <div className="space-y-4 font-mono text-lg">
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <label className="text-rose-400 font-bold block">Descrever Problema da Máquina (Opcional)</label>
-                      <span className="text-lg text-zinc-500 font-mono">{manutencaoDesc.length}/150</span>
+                <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <div className="bg-rose-950/20 border border-rose-500/30 rounded-xl p-5 md:p-6 mb-4 shadow-inner shadow-rose-500/5">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center shrink-0 border border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.15)]">
+                        <AlertCircle className="text-rose-500 w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-mono text-xl md:text-2xl font-black text-rose-500 uppercase tracking-widest mb-1">
+                          Chamado de Manutenção
+                        </h3>
+                        <p className="text-zinc-400 font-mono text-sm leading-relaxed">
+                          A solicitação de manutenção não interrompe imediatamente o apontamento atual, mas alerta a equipe técnica.
+                        </p>
+                      </div>
                     </div>
-                    <textarea 
-                      maxLength={150}
-                      rows={3}
-                      placeholder="Descreva o problema ou ruído da máquina (máx 150 caracteres)..."
-                      value={manutencaoDesc}
-                      onChange={(e) => setManutencaoDesc(e.target.value)}
-                      className="w-full bg-zinc-900 border border-zinc-800 text-white rounded p-3 focus:outline-none focus:border-rose-500 placeholder-zinc-600 resize-none"
-                    />
+                  </div>
+
+                  <div className="flex-1 space-y-4">
+                    <div className="bg-zinc-900/50 p-5 rounded-xl border border-zinc-800/80 space-y-3">
+                      <div className="flex justify-between items-end">
+                        <label className="text-zinc-300 font-mono text-sm font-bold uppercase tracking-wider block">
+                          Descreva o Problema <span className="text-zinc-600 font-normal lowercase">(Opcional)</span>
+                        </label>
+                        <span className="text-xs text-zinc-500 font-mono bg-zinc-950 px-2 py-1 rounded">
+                          {manutencaoDesc.length}/150
+                        </span>
+                      </div>
+                      <textarea 
+                        maxLength={150}
+                        rows={4}
+                        placeholder="Ex: Barulho estranho no motor, falha intermitente, vazamento..."
+                        value={manutencaoDesc}
+                        onChange={(e) => setManutencaoDesc(e.target.value)}
+                        className="w-full bg-zinc-950/80 border border-zinc-800 text-zinc-100 rounded-lg p-4 font-mono focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500/50 placeholder-zinc-700 resize-none transition-all shadow-inner"
+                      />
+                    </div>
                   </div>
                   
-                  <div className="flex flex-col gap-2.5 pt-4 border-t border-zinc-900">
-                    <button 
-                      onClick={handleConfirmarManutencao}
-                      disabled={isSaving}
-                      className="h-14 w-full bg-rose-600 hover:bg-rose-700 text-white text-lg font-mono font-bold uppercase rounded-lg shadow-lg shadow-rose-600/10 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {isSaving ? <Loader2 className="animate-spin" size={16} /> : <AlertCircle size={16} />}
-                      CONFIRMAR CHAMADO DE MANUTENÇÃO
-                    </button>
+                  <div className="flex flex-col md:flex-row gap-3 pt-6 mt-4 border-t border-zinc-800">
                     <button 
                       onClick={() => {
                         setShowManutencaoForm(false);
                         setManutencaoDesc('');
                       }}
-                      className="h-12 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-lg font-mono font-bold uppercase rounded-lg cursor-pointer flex justify-center items-center gap-2 w-full"
+                      className="order-2 md:order-1 h-14 px-6 bg-zinc-900 md:hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-lg font-mono font-bold uppercase rounded-lg cursor-pointer flex justify-center items-center gap-2 transition-all w-full md:w-auto shrink-0"
                     >
-                      Voltar
+                      <X size={20} className="text-zinc-500" />
+                      CANCELAR
+                    </button>
+                    <button 
+                      onClick={handleConfirmarManutencao}
+                      disabled={isSaving}
+                      className="order-1 md:order-2 h-14 w-full bg-rose-600 hover:bg-rose-700 text-white text-lg font-mono font-black uppercase tracking-wider rounded-lg shadow-[0_0_20px_rgba(225,29,72,0.2)] cursor-pointer flex items-center justify-center gap-3 disabled:opacity-50 disabled:shadow-none transition-all"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="animate-spin" size={20} />
+                          PROCESSANDO...
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle size={20} />
+                          ENVIAR CHAMADO
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -2191,169 +2228,281 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
                   {/* Inputs para digitação */}
                   <div className="space-y-4 font-mono text-lg">
                     
-                    {/* Apontamento de Volumes (Grid de 3 Colunas: Conforme, Ret. Próprio, Ret. Terceiro) */}
-                    <div className="space-y-3.5">
-                      <span className="text-lg font-mono text-zinc-400 uppercase font-black tracking-wider block">
-                        Apontamento de Volumes
-                      </span>
+                    {/* Apontamento de Volumes Sequencial (Janelas Móveis Touch-First) */}
+                    <div className="space-y-4 font-mono">
                       
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {/* Column 1: Conforme (Verde) */}
-                        <div className="space-y-1">
-                          <label className="text-lg text-emerald-400 font-black uppercase tracking-wider block">Conforme *</label>
-                          <div className="flex flex-col gap-1.5">
+                      {/* Indicador de Passos */}
+                      {activeWindow !== 'final' && (
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <div className={`w-2.5 h-2.5 rounded-full transition-all ${activeWindow === 'conforme' ? 'bg-emerald-500 scale-125' : 'bg-emerald-500'}`}></div>
+                          <div className={`w-2.5 h-2.5 rounded-full transition-all ${activeWindow === 'retProprio' ? 'bg-amber-500 scale-125' : (activeWindow === 'retTerceiro' || activeWindow === 'refugo' ? 'bg-amber-500' : 'bg-zinc-800')}`}></div>
+                          <div className={`w-2.5 h-2.5 rounded-full transition-all ${activeWindow === 'retTerceiro' ? 'bg-amber-500 scale-125' : (activeWindow === 'refugo' ? 'bg-amber-500' : 'bg-zinc-800')}`}></div>
+                          <div className={`w-2.5 h-2.5 rounded-full transition-all ${activeWindow === 'refugo' ? 'bg-rose-500 scale-125' : 'bg-zinc-800'}`}></div>
+                        </div>
+                      )}
+
+                      <AnimatePresence mode="wait">
+                        {/* JANELA 1: CONFORME */}
+                        {activeWindow === 'conforme' && (
+                          <motion.div 
+                            key="conforme"
+                            initial={{ opacity: 0, x: 15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -15 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-xl"
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="text-xl font-black text-emerald-400 uppercase tracking-wider">Conforme *</span>
+                              <span className="text-sm font-bold text-zinc-500">Pçs</span>
+                            </div>
+                            
                             <input 
                               type="text" 
                               inputMode="numeric" 
                               pattern="[0-9]*" 
-                              placeholder="Pçs" 
                               value={prodConforme}
                               onChange={(e) => setProdConforme(e.target.value === '' ? '' : Number(e.target.value))}
-                              disabled={confirmaBProdConforme}
-                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-lg font-mono text-white text-center focus:outline-none focus:border-emerald-500 disabled:opacity-50" 
+                              className="w-full h-14 bg-zinc-900 border border-zinc-700 rounded-lg px-4 text-3xl font-black font-mono text-white text-center focus:outline-none focus:border-emerald-500"
                             />
+                            
+                            <div className="flex gap-2">
+                              <button type="button" onClick={() => setProdConforme((Number(prodConforme) || 0) + 1)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+1</button>
+                              <button type="button" onClick={() => setProdConforme((Number(prodConforme) || 0) + 10)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+10</button>
+                              <button type="button" onClick={() => setProdConforme((Number(prodConforme) || 0) + 100)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+100</button>
+                            </div>
+                            
                             <button 
                               type="button" 
-                              onClick={() => setConfirmaBProdConforme(!confirmaBProdConforme)}
-                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all ${
-                                confirmaBProdConforme 
-                                  ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                              }`}
+                              onClick={() => { setConfirmaBProdConforme(true); setLastCheckedFieldB("conforme"); setActiveWindow('retProprio'); }}
+                              className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider rounded-lg active:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center mt-2 select-none"
+                              style={{WebkitTapHighlightColor: 'transparent'}}
                             >
-                              <Check size={16} className={confirmaBProdConforme ? "scale-110" : ""} />
+                              Confirmar Conforme
                             </button>
-                          </div>
-                        </div>
+                          </motion.div>
+                        )}
 
-                        {/* Column 2: Refugo (Rose/Vermelho) */}
-                        <div className="space-y-1">
-                          <label className="text-lg text-rose-400 font-black uppercase tracking-wider block">Refugo</label>
-                          <div className="flex flex-col gap-1.5">
+                        {/* JANELA 2: RETRABALHO PRÓPRIO */}
+                        {activeWindow === 'retProprio' && (
+                          <motion.div 
+                            key="retProprio"
+                            initial={{ opacity: 0, x: 15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -15 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-xl"
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="text-xl font-black text-amber-400 uppercase tracking-wider">Ret. Próprio</span>
+                              <span className="text-sm font-bold text-zinc-500">Un.</span>
+                            </div>
+                            
                             <input 
                               type="text" 
                               inputMode="numeric" 
                               pattern="[0-9]*" 
-                              placeholder="Refugo" 
-                              value={refugo}
-                              onChange={(e) => setRefugo(e.target.value === '' ? '' : Number(e.target.value))}
-                              disabled={confirmaBRefugo}
-                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-lg font-mono text-white text-center focus:outline-none focus:border-rose-500 disabled:opacity-50" 
-                            />
-                            <button 
-                              type="button" 
-                              onClick={() => setConfirmaBRefugo(!confirmaBRefugo)}
-                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all ${
-                                confirmaBRefugo 
-                                  ? 'bg-rose-600 border-rose-500 text-white shadow-md shadow-rose-600/20' 
-                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                              }`}
-                            >
-                              <Check size={16} className={confirmaBRefugo ? "scale-110" : ""} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Column 3: Retrabalho Próprio (Laranja) */}
-                        <div className="space-y-1">
-                          <label className="text-lg text-amber-400 font-black uppercase tracking-wider block">Ret. Próprio</label>
-                          <div className="flex flex-col gap-1.5">
-                            <input 
-                              type="text" 
-                              inputMode="numeric" 
-                              pattern="[0-9]*" 
-                              placeholder="Próp." 
                               value={retrabalhoProprio}
                               onChange={(e) => setRetrabalhoProprio(e.target.value === '' ? '' : Number(e.target.value))}
-                              disabled={confirmaBRetrabalhoProprio}
-                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-lg font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                              className="w-full h-14 bg-zinc-900 border border-zinc-700 rounded-lg px-4 text-3xl font-black font-mono text-white text-center focus:outline-none focus:border-amber-500"
                             />
-                            <button 
-                              type="button" 
-                              onClick={() => setConfirmaBRetrabalhoProprio(!confirmaBRetrabalhoProprio)}
-                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all ${
-                                confirmaBRetrabalhoProprio 
-                                  ? 'bg-amber-600 border-amber-500 text-white shadow-md shadow-amber-600/20' 
-                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                              }`}
-                            >
-                              <Check size={16} className={confirmaBRetrabalhoProprio ? "scale-110" : ""} />
-                            </button>
-                          </div>
-                        </div>
+                            
+                            <div className="flex gap-2">
+                              <button type="button" onClick={() => setRetrabalhoProprio((Number(retrabalhoProprio) || 0) + 1)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+1</button>
+                              <button type="button" onClick={() => setRetrabalhoProprio((Number(retrabalhoProprio) || 0) + 10)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+10</button>
+                              <button type="button" onClick={() => setRetrabalhoProprio((Number(retrabalhoProprio) || 0) + 100)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+100</button>
+                            </div>
+                            
+                            <div className="flex gap-2 mt-2">
+                              <button 
+                                type="button" 
+                                onClick={() => setActiveWindow('conforme')}
+                                className="h-12 w-16 bg-zinc-900 text-zinc-400 rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                              >
+                                <ChevronLeft size={24} />
+                              </button>
+                              <button 
+                                type="button" 
+                                onClick={() => { setConfirmaBRetrabalhoProprio(true); setLastCheckedFieldB("retrabalhoProprio"); setActiveWindow('retTerceiro'); }}
+                                className="flex-1 h-12 bg-amber-600 hover:bg-amber-500 text-white font-black uppercase tracking-wider rounded-lg active:bg-amber-700 active:scale-95 transition-all flex items-center justify-center select-none"
+                                style={{WebkitTapHighlightColor: 'transparent'}}
+                              >
+                                Confirmar R. Próprio
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
 
-                        {/* Column 4: Retrabalho Terceiro (Laranja) */}
-                        <div className="space-y-1">
-                          <label className="text-lg text-amber-400 font-black uppercase tracking-wider block">Ret. Terc.</label>
-                          <div className="flex flex-col gap-1.5">
+                        {/* JANELA 3: RETRABALHO TERCEIROS */}
+                        {activeWindow === 'retTerceiro' && (
+                          <motion.div 
+                            key="retTerceiro"
+                            initial={{ opacity: 0, x: 15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -15 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-xl"
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="text-xl font-black text-amber-400 uppercase tracking-wider">Ret. Terceiros</span>
+                              <span className="text-sm font-bold text-zinc-500">Un.</span>
+                            </div>
+                            
                             <input 
                               type="text" 
                               inputMode="numeric" 
                               pattern="[0-9]*" 
-                              placeholder="Terc." 
                               value={retrabalhoTerceiro}
                               onChange={(e) => setRetrabalhoTerceiro(e.target.value === '' ? '' : Number(e.target.value))}
-                              disabled={confirmaBRetrabalhoTerceiro}
-                              className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded px-2 text-lg font-mono text-white text-center focus:outline-none focus:border-amber-500 disabled:opacity-50" 
+                              className="w-full h-14 bg-zinc-900 border border-zinc-700 rounded-lg px-4 text-3xl font-black font-mono text-white text-center focus:outline-none focus:border-amber-500"
                             />
-                            <button 
-                              type="button" 
-                              onClick={() => setConfirmaBRetrabalhoTerceiro(!confirmaBRetrabalhoTerceiro)}
-                              className={`w-full h-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all ${
-                                confirmaBRetrabalhoTerceiro 
-                                  ? 'bg-amber-600 border-amber-500 text-white shadow-md shadow-amber-600/20' 
-                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                              }`}
-                            >
-                              <Check size={16} className={confirmaBRetrabalhoTerceiro ? "scale-110" : ""} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                            
+                            <div className="flex gap-2">
+                              <button type="button" onClick={() => setRetrabalhoTerceiro((Number(retrabalhoTerceiro) || 0) + 1)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+1</button>
+                              <button type="button" onClick={() => setRetrabalhoTerceiro((Number(retrabalhoTerceiro) || 0) + 10)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+10</button>
+                              <button type="button" onClick={() => setRetrabalhoTerceiro((Number(retrabalhoTerceiro) || 0) + 100)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+100</button>
+                            </div>
+                            
+                            <div className="flex gap-2 mt-2">
+                              <button 
+                                type="button" 
+                                onClick={() => setActiveWindow('retProprio')}
+                                className="h-12 w-16 bg-zinc-900 text-zinc-400 rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                              >
+                                <ChevronLeft size={24} />
+                              </button>
+                              <button 
+                                type="button" 
+                                onClick={() => { setConfirmaBRetrabalhoTerceiro(true); setLastCheckedFieldB("retrabalhoTerceiro"); setActiveWindow('refugo'); }}
+                                className="flex-1 h-12 bg-amber-600 hover:bg-amber-500 text-white font-black uppercase tracking-wider rounded-lg active:bg-amber-700 active:scale-95 transition-all flex items-center justify-center select-none"
+                                style={{WebkitTapHighlightColor: 'transparent'}}
+                              >
+                                Confirmar R. Terc.
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
 
-                    {/* Lado (Dropdown) */}
-                    <div className="flex items-center justify-between bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60">
-                      <span className="text-lg font-mono text-zinc-300 uppercase font-black tracking-wider">Lado de Produção:</span>
-                      <div className="flex items-center gap-2">
-                        <select 
-                          disabled={confirmaBLado}
-                          value={cenarioBLado} 
-                          onChange={(e) => setCenarioBLado(e.target.value as any)}
-                          className="h-10 bg-zinc-900 border border-zinc-800 text-white text-lg font-mono font-bold rounded px-2 focus:outline-none focus:border-[#00624C] disabled:opacity-50"
-                        >
-                          <option value="Único">Único</option>
-                          <option value="Esquerdo">Esquerdo</option>
-                          <option value="Direito">Direito</option>
-                        </select>
-                        <button
-                          type="button"
-                          onClick={() => setConfirmaBLado(!confirmaBLado)}
-                          className={`h-10 w-10 rounded border flex items-center justify-center font-bold text-lg cursor-pointer transition-all shrink-0 ${
-                            confirmaBLado 
-                              ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
-                              : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                          }`}
-                          title={confirmaBLado ? "Desbloquear Lado" : "Confirmar Lado"}
-                        >
-                          <Check size={16} className={confirmaBLado ? "scale-110" : ""} />
-                        </button>
-                      </div>
-                    </div>
+                        {/* JANELA 4: REFUGO */}
+                        {activeWindow === 'refugo' && (
+                          <motion.div 
+                            key="refugo"
+                            initial={{ opacity: 0, x: 15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -15 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 shadow-xl"
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="text-xl font-black text-rose-400 uppercase tracking-wider">Refugo</span>
+                              <span className="text-sm font-bold text-zinc-500">Un.</span>
+                            </div>
+                            
+                            <input 
+                              type="text" 
+                              inputMode="numeric" 
+                              pattern="[0-9]*" 
+                              value={refugo}
+                              onChange={(e) => setRefugo(e.target.value === '' ? '' : Number(e.target.value))}
+                              className="w-full h-14 bg-zinc-900 border border-zinc-700 rounded-lg px-4 text-3xl font-black font-mono text-white text-center focus:outline-none focus:border-rose-500"
+                            />
+                            
+                            <div className="flex gap-2">
+                              <button type="button" onClick={() => setRefugo((Number(refugo) || 0) + 1)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+1</button>
+                              <button type="button" onClick={() => setRefugo((Number(refugo) || 0) + 10)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+10</button>
+                              <button type="button" onClick={() => setRefugo((Number(refugo) || 0) + 100)} className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-lg rounded-lg active:bg-zinc-800 active:scale-95 transition-all select-none" style={{WebkitTapHighlightColor: 'transparent'}}>+100</button>
+                            </div>
+                            
+                            <div className="flex gap-2 mt-2">
+                              <button 
+                                type="button" 
+                                onClick={() => setActiveWindow('retTerceiro')}
+                                className="h-12 w-16 bg-zinc-900 text-zinc-400 rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                              >
+                                <ChevronLeft size={24} />
+                              </button>
+                              <button 
+                                type="button" 
+                                onClick={() => { setConfirmaBRefugo(true); setLastCheckedFieldB("refugo"); setActiveWindow('final'); }}
+                                className="flex-1 h-12 bg-rose-600 hover:bg-rose-500 text-white font-black uppercase tracking-wider rounded-lg active:bg-rose-700 active:scale-95 transition-all flex items-center justify-center select-none"
+                                style={{WebkitTapHighlightColor: 'transparent'}}
+                              >
+                                Confirmar Refugo
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
 
-                    {/* Observação (Justificativa) */}
-                    <div className="space-y-1.5">
-                      <label className="text-lg font-mono text-zinc-400 uppercase tracking-wider block font-black">
-                        OBSERVAÇÃO (JUSTIFICATIVA)
-                      </label>
-                      <textarea 
-                        maxLength={150}
-                        rows={2}
-                        placeholder="Ex: Treinamento ou justificativa de parada..."
-                        value={cenarioBObservacao}
-                        onChange={(e) => setCenarioBObservacao(e.target.value)}
-                        className="w-full h-16 bg-zinc-900 border border-zinc-800 rounded p-2.5 text-lg text-white focus:outline-none focus:border-[#00624C] resize-none font-mono placeholder-zinc-600"
-                      />
+                        {/* JANELA 5: FINAL (PARÂMETROS E RESUMO) */}
+                        {activeWindow === 'final' && (
+                          <motion.div 
+                            key="final"
+                            initial={{ opacity: 0, x: 15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -15 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex flex-col gap-4"
+                          >
+                            {/* Resumo da Contagem */}
+                            <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 shadow-xl">
+                              <div className="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
+                                <span className="text-sm text-zinc-400 font-bold uppercase tracking-wider">Resumo Registrado</span>
+                                <button type="button" onClick={() => setActiveWindow('conforme')} className="text-[#00624C] hover:text-emerald-400 text-xs font-bold uppercase underline">Editar</button>
+                              </div>
+                              <div className="space-y-1.5 text-sm">
+                                <div className="flex justify-between"><span className="text-emerald-400">Conforme:</span> <span className="font-bold text-white">{prodConforme || '0'} pçs</span></div>
+                                <div className="flex justify-between"><span className="text-amber-400">R. Próprio:</span> <span className="font-bold text-white">{retrabalhoProprio || '0'} un.</span></div>
+                                <div className="flex justify-between"><span className="text-amber-400">R. Terc:</span> <span className="font-bold text-white">{retrabalhoTerceiro || '0'} un.</span></div>
+                                <div className="flex justify-between"><span className="text-rose-400">Refugo:</span> <span className="font-bold text-white">{refugo || '0'} un.</span></div>
+                              </div>
+                            </div>
+
+                            {/* Lado (Dropdown) */}
+                            <div className="flex items-center justify-between bg-zinc-950/60 p-3 rounded-xl border border-zinc-900/60 shadow-xl">
+                              <span className="text-sm text-zinc-400 uppercase font-black tracking-wider">Lado de Produção:</span>
+                              <div className="flex items-center gap-2">
+                                <select 
+                                  disabled={confirmaBLado}
+                                  value={cenarioBLado} 
+                                  onChange={(e) => setCenarioBLado(e.target.value as any)}
+                                  className="h-12 bg-zinc-900 border border-zinc-800 text-white text-base font-mono font-bold rounded-lg px-3 focus:outline-none focus:border-[#00624C] disabled:opacity-50"
+                                >
+                                  <option value="Único">Único</option>
+                                  <option value="Esquerdo">Esquerdo</option>
+                                  <option value="Direito">Direito</option>
+                                </select>
+                                <button
+                                  type="button"
+                                  onClick={() => { const v = !confirmaBLado; setConfirmaBLado(v); if(v) setLastCheckedFieldB("lado"); }}
+                                  className={`h-12 w-12 rounded-lg border flex items-center justify-center font-bold text-lg cursor-pointer transition-all shrink-0 ${
+                                    confirmaBLado 
+                                      ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-600/20' 
+                                      : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                                  }`}
+                                  title={confirmaBLado ? "Desbloquear Lado" : "Confirmar Lado"}
+                                >
+                                  <Check size={18} className={confirmaBLado ? "scale-110" : ""} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Observação (Justificativa) */}
+                            <div className="space-y-1.5 bg-zinc-950 border border-zinc-800 rounded-xl p-4 shadow-xl">
+                              <label className="text-sm font-mono text-zinc-400 uppercase tracking-wider block font-black">
+                                OBSERVAÇÃO (JUSTIFICATIVA)
+                              </label>
+                              <textarea 
+                                maxLength={150}
+                                rows={2}
+                                placeholder="Ex: Treinamento ou justificativa de parada..."
+                                value={cenarioBObservacao}
+                                onChange={(e) => setCenarioBObservacao(e.target.value)}
+                                className="w-full h-16 bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-base text-white focus:outline-none focus:border-[#00624C] resize-none font-mono placeholder-zinc-600"
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
                   </div>
@@ -2377,7 +2526,14 @@ export default function ScannerCaixas({ pendingScanCode, onClearPendingScanCode,
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-black text-white font-mono uppercase tracking-wider">RESUMO DA PRODUÇÃO</h3>
                 <button 
-                  onClick={() => setShowBConfirmationModal(false)}
+                  onClick={() => {
+                    setShowBConfirmationModal(false);
+                    if (lastCheckedFieldB === 'conforme') setConfirmaBProdConforme(false);
+                    else if (lastCheckedFieldB === 'refugo') setConfirmaBRefugo(false);
+                    else if (lastCheckedFieldB === 'retrabalhoProprio') setConfirmaBRetrabalhoProprio(false);
+                    else if (lastCheckedFieldB === 'retrabalhoTerceiro') setConfirmaBRetrabalhoTerceiro(false);
+                    else if (lastCheckedFieldB === 'lado') setConfirmaBLado(false);
+                  }}
                   className="text-zinc-500 hover:text-white p-1"
                 >
                   <X size={24} />
